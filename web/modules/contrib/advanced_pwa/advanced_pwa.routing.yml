@@ -1,0 +1,81 @@
+advanced_pwa.settings:
+  path: '/admin/config/system/advanced-pwa'
+  defaults:
+    _form: '\Drupal\advanced_pwa\Form\ManifestConfigurationForm'
+    _title: 'Progressive web app configuration'
+  requirements:
+    _permission: 'access content'
+  options:
+    _admin_route: TRUE
+    no_cache: 'TRUE'
+
+advanced_pwa.manifest:
+  path: '/manifest.json'
+  defaults:
+    _controller: '\Drupal\advanced_pwa\Controller\AdvancedpwaController::advancedpwaGetManifest'
+  requirements:
+    _permission: 'access content'
+
+advanced_pwa.config.push_conf:
+  path: '/admin/config/system/advanced-pwa/config'
+  defaults:
+    _form: '\Drupal\advanced_pwa\Form\AdvancedpwaForm'
+    _title: 'Push Notification Configuration'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+advanced_pwa.config.subscription:
+  path: '/admin/config/system/advanced-pwa/config-subscription'
+  defaults:
+    _form: '\Drupal\advanced_pwa\Form\AdvancedpwaSubscriptionForm'
+    _title: 'Push Notification Content'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+advanced_pwa.config.broadcast:
+  path: '/admin/config/system/advanced-pwa/config-broadcast'
+  defaults:
+    _form: '\Drupal\advanced_pwa\Form\AdvancedpwaBroadcastForm'
+    _title: 'Broadcast Push Notification'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+advanced_pwa.subscribe:
+  path: '/advanced_pwa/subscribe'
+  defaults:
+    _controller: '\Drupal\advanced_pwa\Controller\AdvancedpwaController::subscribe'
+    _title: 'subscribe'
+  requirements:
+    _permission: 'access content'
+
+advanced_pwa.unsubscribe:
+  path: '/advanced_pwa/unsubscribe'
+  defaults:
+    _controller: '\Drupal\advanced_pwa\Controller\AdvancedpwaController::unsubscribe'
+    _title: 'unsubscribe'
+  requirements:
+    _permission: 'access content'
+
+advanced_pwa.subscription_list:
+  path: '/admin/config/system/advanced-pwa/subscription-list'
+  defaults:
+    _controller: '\Drupal\advanced_pwa\Controller\AdvancedpwaController::subscriptionList'
+    _title: 'Push Notification Subscription List'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+advanced_pwa.serviceworker_file_data:
+  path: /serviceworker-advanced_pwa_js
+  defaults:
+    _controller: '\Drupal\advanced_pwa\Controller\AdvancedpwaController::advancedpwaServiceWorkerFileData'
+    _disable_route_normalizer: TRUE
+  requirements:
+    _permission: 'access content'

@@ -1,0 +1,11 @@
+advanced_pwa.js:
+  version: 1.x
+  js:
+    js/main.js: {}
+  dependencies:
+    - core/jquery
+    - core/jquery.cookie
+    - core/ajax
+    - core/drupal 
+    - core/drupalSettings
+    - core/drupal.dialog.ajax

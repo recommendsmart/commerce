@@ -39,6 +39,7 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         '751a5a3f463e4be759be31748b61737c' => __DIR__ . '/..' . '/laminas/laminas-diactoros/src/functions/parse_cookie_header.legacy.php',
         '2f69d3914119f042cca9e44442d5ce95' => __DIR__ . '/../..' . '/web/core/includes/bootstrap.inc',
         '6db5533840cb1ae1bc049452845aa88e' => __DIR__ . '/../..' . '/web/core/includes/guzzle_php81_shim.php',
+        '3109cb1a231dcd04bee1f9f620d46975' => __DIR__ . '/..' . '/paragonie/sodium_compat/autoload.php',
         '6124b4c8570aa390c21fafd04a26c69f' => __DIR__ . '/..' . '/myclabs/deep-copy/src/DeepCopy/deep_copy.php',
         'ad155f8f1cf0d418fe49e248db8c661b' => __DIR__ . '/..' . '/react/promise/src/functions_include.php',
         '2c102faa651ef8ea5874edb585946bce' => __DIR__ . '/..' . '/swiftmailer/swiftmailer/lib/swift_required.php',
@@ -152,6 +153,7 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         ),
         'M' => 
         array (
+            'Minishlink\\WebPush\\' => 19,
             'Masterminds\\' => 12,
         ),
         'L' => 
@@ -167,6 +169,11 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'J' => 
         array (
             'JsonSchema\\' => 11,
+            'Jose\\Component\\Signature\\Algorithm\\' => 35,
+            'Jose\\Component\\Signature\\' => 25,
+            'Jose\\Component\\KeyManagement\\' => 29,
+            'Jose\\Component\\Core\\Util\\Ecc\\' => 29,
+            'Jose\\Component\\Core\\' => 20,
         ),
         'H' => 
         array (
@@ -184,6 +191,7 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'F' => 
         array (
             'Firebase\\JWT\\' => 13,
+            'FG\\' => 3,
         ),
         'E' => 
         array (
@@ -239,6 +247,7 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
             'Braintree\\' => 10,
             'Behat\\Mink\\Driver\\' => 18,
             'Behat\\Mink\\' => 11,
+            'Base64Url\\' => 10,
         ),
         'A' => 
         array (
@@ -518,6 +527,10 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         array (
             0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
         ),
+        'Minishlink\\WebPush\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/minishlink/web-push/src',
+        ),
         'Masterminds\\' => 
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
@@ -554,6 +567,30 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         array (
             0 => __DIR__ . '/..' . '/justinrainbow/json-schema/src/JsonSchema',
         ),
+        'Jose\\Component\\Signature\\Algorithm\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-signature-algorithm-rsa',
+            1 => __DIR__ . '/..' . '/web-token/jwt-signature-algorithm-none',
+            2 => __DIR__ . '/..' . '/web-token/jwt-signature-algorithm-hmac',
+            3 => __DIR__ . '/..' . '/web-token/jwt-signature-algorithm-eddsa',
+            4 => __DIR__ . '/..' . '/web-token/jwt-signature-algorithm-ecdsa',
+        ),
+        'Jose\\Component\\Signature\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-signature',
+        ),
+        'Jose\\Component\\KeyManagement\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-key-mgmt',
+        ),
+        'Jose\\Component\\Core\\Util\\Ecc\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-util-ecc',
+        ),
+        'Jose\\Component\\Core\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/web-token/jwt-core',
+        ),
         'Html2Text\\' => 
         array (
             0 => __DIR__ . '/..' . '/html2text/html2text/src',
@@ -586,6 +623,10 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'Firebase\\JWT\\' => 
         array (
             0 => __DIR__ . '/..' . '/firebase/php-jwt/src',
+        ),
+        'FG\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/fgrosse/phpasn1/lib',
         ),
         'Enlightn\\SecurityChecker\\' => 
         array (
@@ -759,6 +800,10 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'Behat\\Mink\\' => 
         array (
             0 => __DIR__ . '/..' . '/behat/mink/src',
+        ),
+        'Base64Url\\' => 
+        array (
+            0 => __DIR__ . '/..' . '/spomky-labs/base64url/src',
         ),
         'Asm89\\Stack\\' => 
         array (

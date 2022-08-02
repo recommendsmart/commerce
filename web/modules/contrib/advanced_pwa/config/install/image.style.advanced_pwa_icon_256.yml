@@ -1,0 +1,13 @@
+langcode: en
+status: true
+dependencies: {  }
+name: advanced_pwa_icon_256
+label: 'advanced_pwa Icon (256 x 256)'
+effects:
+  advanced_pwa_icon_256:
+    uuid: advanced_pwa_icon_256
+    id: image_scale
+    weight: 1
+    data:
+      width: 256
+      height: 256
