@@ -3,7 +3,7 @@
         'name' => 'centarro/commerce-kickstart-project',
         'pretty_version' => 'dev-master',
         'version' => 'dev-master',
-        'reference' => 'fcb400f8f6b76efadbdb956fb09781e60dc1f8d0',
+        'reference' => '27ebb137d9b8d7367c689769b477e55c96f15645',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -91,7 +91,7 @@
         'centarro/commerce-kickstart-project' => array(
             'pretty_version' => 'dev-master',
             'version' => 'dev-master',
-            'reference' => 'fcb400f8f6b76efadbdb956fb09781e60dc1f8d0',
+            'reference' => '27ebb137d9b8d7367c689769b477e55c96f15645',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
