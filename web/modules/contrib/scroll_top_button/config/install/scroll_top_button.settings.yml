@@ -1,0 +1,8 @@
+enabled: 'off'
+show_on_admin: FALSE
+button_text: 'Scroll to top'
+button_style: 'image'
+button_animation: 'fade'
+button_animation_speed: 200
+scroll_distance: 100
+scroll_speed: 300

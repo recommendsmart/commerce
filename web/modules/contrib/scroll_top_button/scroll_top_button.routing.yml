@@ -1,0 +1,7 @@
+scroll_top_button.settings:
+  path: '/admin/config/user-interface/scroll_top_button'
+  defaults:
+    _form: '\Drupal\scroll_top_button\Form\ScrollTopButtonSettingsForm'
+    _title: 'Scroll To Top Button'
+  requirements:
+    _permission: 'administer site configuration'

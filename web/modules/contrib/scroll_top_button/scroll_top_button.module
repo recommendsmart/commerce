@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * Contains scroll_top_button.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function scroll_top_button_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    case 'help.page.scroll_top_button':
+      $output = '';
+      $output .= '<h3>' . t('Scroll to top button') . '</h3>';
+      $output .= '<p>' . t('Provide addtional configuration for administrator to manage options of the scroll to top button.') . '</p>';
+      return $output;
+
+    default:
+      return '';
+  }
+}
+
+/**
+ * Implements hook_page_attachments().
+ */
+function scroll_top_button_page_attachments(&$page) {
+  $config = \Drupal::config('scroll_top_button.settings');
+  // Check if scroll to top button is enabled or disabled.
+  if ($config->get('enabled') == 'on') {
+    $stb_show = TRUE;
+    // Check for the admin routes/pages.
+    if (\Drupal::service('router.admin_context')->isAdminRoute() && !$config->get('show_on_admin')) {
+      $stb_show = FALSE;
+    }
+
+    if ($stb_show) {
+      // Attach scroll to top button library.
+      $page['#attached']['library'][] = 'scroll_top_button/scroll_top_button';
+      // Set configuration values to drupal settings.
+      $page['#attached']['drupalSettings']['button_text'] = $config->get('button_text');
+      $page['#attached']['drupalSettings']['button_style'] = $config->get('button_style');
+      $page['#attached']['drupalSettings']['button_animation'] = $config->get('button_animation');
+      $page['#attached']['drupalSettings']['button_animation_speed'] = $config->get('button_animation_speed');
+      $page['#attached']['drupalSettings']['scroll_distance'] = $config->get('scroll_distance');
+      $page['#attached']['drupalSettings']['scroll_speed'] = $config->get('scroll_speed');
+    }
+  }
+}

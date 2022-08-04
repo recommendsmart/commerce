@@ -1,0 +1,5 @@
+scroll_top_button.settings:
+  title: 'Scroll to top button'
+  description: 'Configure settings for scroll to top button'
+  route_name: scroll_top_button.settings
+  parent: system.admin_config_ui

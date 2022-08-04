@@ -1,0 +1,10 @@
+scroll_top_button:
+  version: 1.x
+  css:
+    theme:
+      css/scroll.top.button.css: {}
+  js:    
+    js/scroll.top.button.js: {}
+  dependencies:
+    - core/jquery
+    - core/drupal

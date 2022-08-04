@@ -1,0 +1,30 @@
+# Schema for the configuration files of the Scroll to top button module.
+
+scroll_top_button.settings:
+  type: config_object
+  label: 'Scroll to top button settings'
+  mapping:
+    enabled:
+      type: string
+      label: 'Enable scroll to top button'
+    show_on_admin:
+      type: boolean
+      label: 'Show scroll to top button on admin pages'    
+    button_text:
+      type: string
+      label: 'Text to show on the scroll to top button'
+    button_style:
+      type: string
+      label: 'Button style to display'
+    button_animation:
+      type: string
+      label: 'Button animation effect'
+    button_animation_speed:
+      type: integer
+      label: 'Button animation speed (ms)'
+    scroll_distance:
+      type: integer
+      label: 'Distance from top before showing button'
+    scroll_speed:
+      type: integer
+      label: 'Speed scroll to top (ms)'

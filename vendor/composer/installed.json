@@ -8162,6 +8162,57 @@
             "install-path": "../../web/modules/contrib/recurring_period"
         },
         {
+            "name": "drupal/scroll_top_button",
+            "version": "2.0.0",
+            "version_normalized": "2.0.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://git.drupalcode.org/project/scroll_top_button.git",
+                "reference": "2.0.0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://ftp.drupal.org/files/projects/scroll_top_button-2.0.0.zip",
+                "reference": "2.0.0",
+                "shasum": "5f119ba986a17a3b2a8f9cfc1160a4b0721fa30f"
+            },
+            "require": {
+                "drupal/core": "^8 || ^9 || ^10"
+            },
+            "type": "drupal-module",
+            "extra": {
+                "drupal": {
+                    "version": "2.0.0",
+                    "datestamp": "1659428470",
+                    "security-coverage": {
+                        "status": "covered",
+                        "message": "Covered by Drupal's security advisory policy"
+                    }
+                }
+            },
+            "installation-source": "dist",
+            "notification-url": "https://packages.drupal.org/8/downloads",
+            "license": [
+                "GPL-2.0-or-later"
+            ],
+            "authors": [
+                {
+                    "name": "Hemant Bansal",
+                    "homepage": "https://www.drupal.org/user/1988382"
+                },
+                {
+                    "name": "Mukesh Kumar Sharma",
+                    "homepage": "https://www.drupal.org/user/3125499"
+                }
+            ],
+            "description": "This module add scroll to top botton on pages with customizable options",
+            "homepage": "https://www.drupal.org/project/scroll_top_button",
+            "support": {
+                "source": "https://git.drupalcode.org/project/scroll_top_button"
+            },
+            "install-path": "../../web/modules/contrib/scroll_top_button"
+        },
+        {
             "name": "drupal/search_api",
             "version": "1.25.0",
             "version_normalized": "1.25.0.0",
