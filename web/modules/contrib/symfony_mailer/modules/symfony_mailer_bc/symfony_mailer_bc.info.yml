@@ -3,5 +3,3 @@ type: module
 description: 'Overrides email building for key core and contrib modules, improving features and integration with Symfony Mailer.'
 core_version_requirement: ^9.4 || ^10
 package: Mail
-lifecycle: obsolete
-lifecycle_link: 'https://www.drupal.org/project/symfony_mailer/issues/3355626'
