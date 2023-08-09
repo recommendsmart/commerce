@@ -4,4 +4,4 @@ api_version: 1
 php_version: 8.1.6
 web_docroot: true
 database:
-  version: 10.4
+  version: 10.6
