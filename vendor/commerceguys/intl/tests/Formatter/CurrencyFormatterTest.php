@@ -2,11 +2,9 @@
 
 namespace CommerceGuys\Intl\Tests\Formatter;
 
-use CommerceGuys\Intl\Currency\Currency;
 use CommerceGuys\Intl\Currency\CurrencyRepository;
 use CommerceGuys\Intl\Exception\InvalidArgumentException;
 use CommerceGuys\Intl\Formatter\CurrencyFormatter;
-use CommerceGuys\Intl\NumberFormat\NumberFormat;
 use CommerceGuys\Intl\NumberFormat\NumberFormatRepository;
 use PHPUnit\Framework\TestCase;
 
@@ -58,12 +56,11 @@ final class CurrencyFormatterTest extends TestCase
 
     /**
      * @covers ::format
-     *
-     * @expectedException \CommerceGuys\Intl\Exception\InvalidArgumentException
-     * @expectedExceptionMessage The provided value "a12.34" is not a valid number or numeric string.
      */
     public function testFormatWithInvalidNumber()
     {
+        $this->expectException(InvalidArgumentException::class);
+        $this->expectExceptionMessage('The provided value "a12.34" is not a valid number or numeric string.');
         $formatter = new CurrencyFormatter(new NumberFormatRepository(), new CurrencyRepository());
         $formatter->format('a12.34', 'USD');
     }
@@ -188,7 +185,7 @@ final class CurrencyFormatterTest extends TestCase
     /**
      * Provides the number format, currency format, number style, value and expected formatted value.
      */
-    public function currencyValueProvider()
+    public static function currencyValueProvider()
     {
         return [
             ['en', 'USD', 'standard', '-5.05', '-$5.05'],
@@ -205,7 +202,7 @@ final class CurrencyFormatterTest extends TestCase
     /**
      * Provides values for the formatted currency parser.
      */
-    public function formattedCurrencyProvider()
+    public static function formattedCurrencyProvider()
     {
         return [
             ['en', 'USD', '$500,100.05', '500100.05'],

@@ -1,40 +1,44 @@
-(function ($, Drupal) {
+(function ($, Drupal, once) {
 
   'use strict';
 
   Drupal.behaviors.LayoutBuilderLock = {
     attach: function () {
 
-      // Explicitly set display block on the form items. In some circumstances
-      // the checkboxes are aligned left, so fix it here since this file
-      // is loaded anyway.
-      $('.layout-builder-lock-section-settings .form-item').css('display', 'block');
+      $(once('layout-builder-lock', 'fieldset.layout-builder-lock-section-settings')).each(function() {
 
-      // Default value for the toggle all checkbox.
-      let defaultChecked = $('.layout-builder-lock-section-settings .form-checkboxes .form-checkbox:checked').length === $('.layout-builder-lock-section-settings .form-checkboxes .form-checkbox').length;
+        let lockFieldset = $(this);
 
-      // Prepend the toggle all checkbox.
-      let checkbox = '<div class="form-type-checkbox form-item">';
-      checkbox += '<input type="checkbox" class="layout-builder-lock-toggle-all form-checkbox" id="layout-builder-lock-toggle-all" /> ';
-      checkbox += '<label class="option" for="layout-builder-lock-toggle-all">' + Drupal.t('Toggle all') + '</label>';
-      checkbox += '</div>';
-      $('.layout-builder-lock-section-settings .form-checkboxes').prepend(checkbox);
+        // Explicitly set display block on the form items. In some circumstances
+        // the checkboxes are aligned left, so fix it here since this file
+        // is loaded anyway.
+        $('.form-item', lockFieldset).css('display', 'block');
 
-      let $toggleAll = $('.layout-builder-lock-toggle-all');
+        // Default value for the toggle all checkbox.
+        let defaultChecked = $('.form-checkboxes .form-checkbox:checked', lockFieldset).length === $('.form-checkboxes .form-checkbox', lockFieldset).length;
 
-      // Set default value.
-      $toggleAll.prop('checked', defaultChecked);
+        // Prepend the toggle all checkbox.
+        let checkbox = '<div class="form-type-checkbox form-item">';
+        checkbox += '<input type="checkbox" class="layout-builder-lock-toggle-all form-checkbox" id="layout-builder-lock-toggle-all" /> ';
+        checkbox += '<label class="option" for="layout-builder-lock-toggle-all">' + Drupal.t('Toggle all') + '</label>';
+        checkbox += '</div>';
+        $('.form-checkboxes', lockFieldset).prepend(checkbox);
 
-      // Listen on change.
-      $toggleAll.on('change', function() {
-        let checked = false;
-        if ($(this).prop('checked')) {
-          checked = true;
-        }
-        $('.layout-builder-lock-section-settings .form-checkboxes .form-checkbox').prop('checked', checked);
+        let $toggleAll = $('.layout-builder-lock-toggle-all', lockFieldset);
+
+        // Set default value.
+        $toggleAll.prop('checked', defaultChecked);
+
+        // Listen on change.
+        $toggleAll.on('change', function() {
+          let checked = false;
+          if ($(this).prop('checked')) {
+            checked = true;
+          }
+          $('.form-checkboxes .form-checkbox', lockFieldset).prop('checked', checked);
+        });
       });
-
     }
   };
 
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

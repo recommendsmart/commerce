@@ -1,11 +1,10 @@
 name: Belgrade
 description: Bootstrap Drupal theme built for Centarro Commerce
 screenshot: screenshot.png
-core_version_requirement: ^8 || ^9
-core: 8.x
+core_version_requirement: ^9.2 || ^10
 engine: twig
 type: theme
-base theme: stable
+base theme: false
 
 regions:
   navigation: 'Navigation'
@@ -39,19 +38,19 @@ libraries-override:
   commerce_cart/cart_block:
       css:
         theme:
-          css/commerce_cart.theme.css: dist/commerce/commerce_cart_block.css
+          css/commerce_cart.theme.css: dist/components/commerce/commerce_cart_block.css
   commerce_checkout/checkout_progress:
       css:
         theme:
-          css/commerce_checkout.progress.css: dist/commerce/commerce_checkout-progress.css
+          css/commerce_checkout.progress.css: dist/components/commerce/commerce_checkout-progress.css
   commerce_wishlist/user:
     css:
       layout:
-        css/commerce_wishlist.user.css: dist/commerce/commerce_wishlist.css
+        css/commerce_wishlist.user.css: dist/components/commerce/commerce_wishlist.css
   better_exposed_filters/general:
     css:
       theme:
-        css/better_exposed_filters.css: dist/components/better_exposed_filters.css
+        css/better_exposed_filters.css: dist/theme/better-exposed-filters.css
 
   commerce_order/address_book: false
   commerce_product/rendered-attributes: false

@@ -234,9 +234,6 @@
 	"LAK": {
 		"name": "kip laosiano"
 	},
-	"HRK": {
-		"name": "kuna croata"
-	},
 	"MWK": {
 		"name": "kwacha malauiano"
 	},
@@ -461,9 +458,6 @@
 	},
 	"MNT": {
 		"name": "tugrik mongol"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"VUV": {
 		"name": "vatu de Vanuatu"

@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_pricelist\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_pricelist\Entity\PriceListItemInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the price list item event.
  *
  * @see \Drupal\commerce_pricelist\Event\PriceListEvents
  */
-class PriceListItemEvent extends Event {
+class PriceListItemEvent extends EventBase {
 
   /**
    * The price list item.
@@ -35,7 +35,7 @@ class PriceListItemEvent extends Event {
    * @return \Drupal\commerce_pricelist\Entity\PriceListItemInterface
    *   Gets the price list item.
    */
-  public function getPriceListItem() {
+  public function getPriceListItem() : PriceListItemInterface {
     return $this->priceListItem;
   }
 

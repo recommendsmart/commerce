@@ -2,7 +2,7 @@
 
 namespace Drupal\Tests\facets_pretty_paths\Traits;
 
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\Routing\Route;

@@ -20,11 +20,38 @@ use Drupal\Core\Render\Element;
  *   - attributes: HTML attributes for the containing element.
  */
 function template_preprocess_commerce_license(array &$variables) {
-  // Fetch License Entity Object.
-  $commerce_license = $variables['elements']['#commerce_license'];
+  /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
+  $license = $variables['elements']['#commerce_license'];
 
-  // Helpful $content variable for templates.
+  $variables['license_entity'] = $license;
+  $variables['license'] = [];
   foreach (Element::children($variables['elements']) as $key) {
-    $variables['content'][$key] = $variables['elements'][$key];
+    $variables['license'][$key] = $variables['elements'][$key];
   }
+
+  if (\Drupal::moduleHandler()->moduleExists('commerce_log')) {
+    $variables['license']['activity'] = [
+      '#type' => 'view',
+      '#name' => 'commerce_activity',
+      '#display_id' => 'default',
+      '#arguments' => [$license->id(), 'commerce_license'],
+      '#embed' => TRUE,
+      '#title' => t('License activity'),
+    ];
+  }
+
+  // Inject license fields not manually printed in a separate variable for
+  // easier rendering.
+  $printed_fields = [
+    'granted',
+    'renewed',
+    'expires',
+    'created',
+    'changed',
+    'uid',
+    'state',
+    'activity',
+    '_layout_builder',
+  ];
+  $variables['additional_license_fields'] = array_diff_key($variables['license'], array_combine($printed_fields, $printed_fields));
 }

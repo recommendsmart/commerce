@@ -18,3 +18,6 @@ commerce_payment.commerce_payment_gateway.plugin.braintree_hostedfields:
     3d_secure:
       type: string
       label: '3D Secure 2'
+    enable_credit_card_icons:
+      type: boolean
+      label: 'Enable credit card icons'

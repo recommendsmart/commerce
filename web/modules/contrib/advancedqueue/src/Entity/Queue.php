@@ -46,6 +46,7 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     "backend_configuration",
  *     "processor",
  *     "processing_time",
+ *     "threshold",
  *     "locked",
  *   },
  *   links = {
@@ -101,6 +102,13 @@ class Queue extends ConfigEntityBase implements QueueInterface {
    * @var int
    */
   protected $processing_time = 90;
+
+  /**
+   * Determine the type of queue cleanup threshold.
+   *
+   * @var array
+   */
+  protected $threshold = [];
 
   /**
    * Whether the queue is locked, indicating that it cannot be deleted.
@@ -197,6 +205,21 @@ class Queue extends ConfigEntityBase implements QueueInterface {
    */
   public function setProcessingTime($processing_time) {
     $this->processing_time = $processing_time;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getThreshold() {
+    return $this->threshold;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setThreshold(array $threshold) {
+    $this->threshold = $threshold;
     return $this;
   }
 

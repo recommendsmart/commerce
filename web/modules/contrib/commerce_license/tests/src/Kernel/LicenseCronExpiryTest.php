@@ -2,11 +2,12 @@
 
 namespace Drupal\Tests\commerce_license\Kernel\System;
 
+use DMS\PHPUnitExtensions\ArraySubset\ArraySubsetAsserts;
 use Drupal\advancedqueue\Entity\Queue;
 use Drupal\advancedqueue\Job;
+use Drupal\commerce_license\Cron;
 use Drupal\Core\Test\AssertMailTrait;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
-use ReflectionClass;
 
 /**
  * Tests that cron expires a license.
@@ -16,23 +17,22 @@ use ReflectionClass;
 class LicenseCronExpiryTest extends OrderKernelTestBase {
 
   use AssertMailTrait;
+  use ArraySubsetAsserts;
 
   /**
    * The number of seconds in one day.
    */
-  const TIME_ONE_DAY = 60 * 60 * 24;
+  public const TIME_ONE_DAY = 60 * 60 * 24;
 
   /**
    * The modules to enable.
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'advancedqueue',
     'commerce_license',
     'commerce_license_test',
-    'interval',
-    'recurring_period',
     'commerce_license_set_expiry_test',
   ];
 
@@ -72,7 +72,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
    * @return int
    *   The time.
    */
-  protected static function today() {
+  protected static function today(): int {
     return time();
   }
 
@@ -104,11 +104,13 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
    * @param string $name
    *   Name of the method.
    *
-   * @return mixed
+   * @return \ReflectionMethod
    *   The method.
+   *
+   * @throws \ReflectionException
    */
-  protected static function getMethod($class, $name) {
-    $class = new ReflectionClass($class);
+  protected static function getMethod(string $class, string $name): \ReflectionMethod {
+    $class = new \ReflectionClass($class);
     $method = $class->getMethod($name);
     $method->setAccessible(TRUE);
     return $method;
@@ -120,7 +122,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
    * Tests that getLicenseIdsToExpire doesn't return a license that hasn't
    * expired yet.
    */
-  public function testGetLicenseIdsToExpireTomorrow() {
+  public function testGetLicenseIdsToExpireTomorrow(): void {
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
 
     $license_owner = $this->createUser();
@@ -146,9 +148,9 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
 
     // Test getLicensesToExpire() method.
     $cron = \Drupal::service('commerce_license.cron');
-    $getLicenseIdsToExpire = self::getMethod('\Drupal\commerce_license\Cron', 'getLicensesToExpire');
+    $getLicenseIdsToExpire = self::getMethod(Cron::class, 'getLicensesToExpire');
     $expire_ids = $getLicenseIdsToExpire->invokeArgs($cron, [self::today()]);
-    $this->assertEquals([], $expire_ids, "The license ID is not returned by the expiration query.");
+    $this->assertEquals([], $expire_ids, 'The license ID is not returned by the expiration query.');
   }
 
   /**
@@ -157,7 +159,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
    * Tests that getLicenseIdsToExpire doesn't return a license that hasn't
    * expired yet.
    */
-  public function testGetLicenseIdsToExpireYesterday() {
+  public function testGetLicenseIdsToExpireYesterday(): void {
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
 
     $license_owner = $this->createUser();
@@ -183,15 +185,15 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
 
     // Test getLicensesToExpire() method.
     $cron = \Drupal::service('commerce_license.cron');
-    $getLicenseIdsToExpire = self::getMethod('\Drupal\commerce_license\Cron', 'getLicensesToExpire');
+    $getLicenseIdsToExpire = self::getMethod(Cron::class, 'getLicensesToExpire');
     $expire_ids = $getLicenseIdsToExpire->invokeArgs($cron, [self::today()]);
-    $this->assertEquals([$license->id() => $license->id()], $expire_ids, "The license ID is returned by the expiration query.");
+    $this->assertEquals([$license->id() => $license->id()], $expire_ids, 'The license ID is returned by the expiration query.');
   }
 
   /**
    * Tests that a cron run won't expire a current license.
    */
-  public function testLicenseCronExpiryCurrent() {
+  public function testLicenseCronExpiryCurrent(): void {
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
 
     $license_owner = $this->createUser();
@@ -218,7 +220,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $this->cron->run();
 
     // Check the license has not been changed.
-    $this->assertEquals('active', $license->getState()->getId(), "The license has not been changed and is still active.");
+    $this->assertEquals('active', $license->getState()->getId(), 'The license has not been changed and is still active.');
 
     $queue = $this->container->get('queue')->get('commerce_license_expire');
     $this->assertEquals(0, $queue->numberOfItems(), 'The license item was not added to the queue.');
@@ -227,7 +229,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
   /**
    * Tests that a cron run expires an expired license.
    */
-  public function testLicenseCronExpiryExpired() {
+  public function testLicenseCronExpiryExpired(): void {
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
 
     $license_owner = $this->createUser();
@@ -262,14 +264,14 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $this->assertEquals([Job::STATE_QUEUED => 1], $counts);
 
     $job1 = $queue->getBackend()->claimJob();
-    $this->assertArraySubset(['license_id' => $license->id()], $job1->getPayload());
+    self::assertArraySubset(['license_id' => $license->id()], $job1->getPayload());
     $this->assertEquals('commerce_license_expire', $job1->getType());
   }
 
   /**
    * Tests that the LicenseExpire job expires the license.
    */
-  public function testLicenseExpireJob() {
+  public function testLicenseExpireJob(): void {
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
 
     $license_owner = $this->createUser();
@@ -294,7 +296,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $license->save();
 
     $license = $this->reloadEntity($license);
-    $this->assertEquals('active', $license->getState()->getId(), "The license is currently active.");
+    $this->assertEquals('active', $license->getState()->getId(), 'The license is currently active.');
 
     /** @var \Drupal\advancedqueue\Entity\QueueInterface $queue */
     $queue = Queue::load('commerce_license');
@@ -307,7 +309,7 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $this->assertEquals([Job::STATE_SUCCESS => 1], $counts);
 
     $license = $this->reloadEntity($license);
-    $this->assertEquals('expired', $license->getState()->getId(), "The license is now expired.");
+    $this->assertEquals('expired', $license->getState()->getId(), 'The license is now expired.');
 
     // Note that we don't need to check that the expiry did something, as that
     // is covered by LicenseStateChangeTest.
@@ -324,15 +326,15 @@ class LicenseCronExpiryTest extends OrderKernelTestBase {
     $this->assertEquals([Job::STATE_SUCCESS => 1], $counts);
 
     $mails = $this->getMails();
-    $this->assertEquals(1, count($mails));
+    $this->assertCount(1, $mails);
 
     $expiry_email = reset($mails);
     $this->assertEquals('text/html; charset=UTF-8;', $expiry_email['headers']['Content-Type']);
     $this->assertEquals('8Bit', $expiry_email['headers']['Content-Transfer-Encoding']);
-    $this->assertMailString('subject', 'Your purchase of test license has now expired', 1);
+    $this->assertMailString('subject', 'Your purchase of test license #1 has now expired', 1);
     $this->assertMailString('body', 'License Expiry', 1);
-    $this->assertMailString('body', 'Your purchase of test license has now expired', 1);
-    // TODO: add a product to test the product text.
+    $this->assertMailString('body', 'Your purchase of test license #1 has now expired', 1);
+    // @todo add a product to test the product text.
   }
 
 }

@@ -64,7 +64,7 @@ class DefaultContentCommands extends DrushCommands {
   public function contentExportReferences($entity_type_id, $entity_id = NULL, $options = ['folder' => NULL]) {
     $folder = $options['folder'];
     if (is_null($entity_id)) {
-      $entities = \Drupal::entityQuery($entity_type_id)->execute();
+      $entities = \Drupal::entityQuery($entity_type_id)->accessCheck(FALSE)->execute();
     }
     else {
       $entities = [$entity_id];

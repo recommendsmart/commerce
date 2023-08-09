@@ -21,9 +21,8 @@ interface EmailBuilderInterface extends EmailProcessorInterface {
   /**
    * Creates an email from a message array.
    *
-   * Implement this function to support conversion from the old email interface
-   * (with module symfony_mailer_bc enabled). This function will eventually be
-   * deprecated and removed.
+   * Implement this function to support conversion from the old email
+   * interface. This function will eventually be deprecated and removed.
    *
    * @param \Drupal\symfony_mailer\EmailFactoryInterface $factory
    *   The Email Factory for creating the email.

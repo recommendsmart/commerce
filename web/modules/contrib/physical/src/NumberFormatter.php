@@ -22,13 +22,6 @@ class NumberFormatter implements NumberFormatterInterface {
   protected $numberFormatter;
 
   /**
-   * The language manager.
-   *
-   * @var \Drupal\Core\Language\LanguageManagerInterface
-   */
-  protected $languageManager;
-
-  /**
    * Constructs a new NumberFormatter object.
    *
    * @param \Drupal\Core\Language\LanguageManagerInterface $language_manager
@@ -44,7 +37,7 @@ class NumberFormatter implements NumberFormatterInterface {
   /**
    * {@inheritdoc}
    */
-  public function format($number, array $options = []) {
+  public function format(string $number, array $options = []): string {
     $default_options = [
       'use_grouping' => TRUE,
       'minimum_fraction_digits' => 0,
@@ -69,7 +62,7 @@ class NumberFormatter implements NumberFormatterInterface {
   /**
    * {@inheritdoc}
    */
-  public function parse($number) {
+  public function parse(string $number): string|bool {
     if ($this->numberFormatter) {
       $number = $this->numberFormatter->parse($number);
       // The returned number should be a string.

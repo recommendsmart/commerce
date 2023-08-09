@@ -68,4 +68,16 @@ interface InternalEmailInterface extends EmailInterface {
    */
   public function getSymfonyEmail();
 
+  /**
+   * Sets the error message from sending the email.
+   *
+   * Valid: after sending.
+   *
+   * @param string $error
+   *   The error message.
+   *
+   * @return $this
+   */
+  public function setError(string $error);
+
 }

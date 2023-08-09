@@ -9,6 +9,7 @@ use Drupal\Core\TypedData\ComplexDataInterface;
 use Drupal\Core\TypedData\Type\IntegerInterface;
 use Drupal\Core\TypedData\Type\StringInterface;
 use Drupal\KernelTests\KernelTestBase;
+use PHPUnit\Framework\Error\Error;
 use Symfony\Component\Validator\ConstraintViolationListInterface;
 
 /**
@@ -38,6 +39,16 @@ class TypedConfigTest extends KernelTestBase {
   public function testTypedDataAPI() {
     /** @var \Drupal\Core\Config\TypedConfigManagerInterface $typed_config_manager */
     $typed_config_manager = \Drupal::service('config.typed');
+
+    // Test non-existent data.
+    try {
+      $typed_config_manager->get('config_test.non_existent');
+      $this->fail('Expected error when trying to get non-existent typed config.');
+    }
+    catch (Error $e) {
+      $this->assertEquals('Missing required data for typed configuration: config_test.non_existent', $e->getMessage());
+    }
+
     /** @var \Drupal\Core\Config\Schema\TypedConfigInterface $typed_config */
     $typed_config = $typed_config_manager->get('config_test.validation');
 
@@ -76,6 +87,9 @@ class TypedConfigTest extends KernelTestBase {
     $typed_config = $typed_config_manager->createFromNameAndData('config_test.validation', \Drupal::configFactory()->get('config_test.validation')->get());
     $this->assertInstanceOf(TypedConfigInterface::class, $typed_config);
     $this->assertEquals(['_core', 'llama', 'cat', 'giraffe', 'uuid'], array_keys($typed_config->getElements()));
+    $this->assertSame('config_test.validation', $typed_config->getName());
+    $this->assertSame('config_test.validation', $typed_config->getPropertyPath());
+    $this->assertSame('config_test.validation.llama', $typed_config->get('llama')->getPropertyPath());
 
     $config_test_entity = \Drupal::entityTypeManager()->getStorage('config_test')->create([
       'id' => 'asterix',
@@ -123,7 +137,7 @@ class TypedConfigTest extends KernelTestBase {
     $this->assertEmpty($result);
 
     // Test constrains on nested mapping.
-    $config->set('cat.type', 'miaus');
+    $config->set('cat.type', 'tiger');
     $config->save();
 
     $typed_config = $typed_config_manager->get('config_test.validation');

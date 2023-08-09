@@ -1,0 +1,13 @@
+diff --git a/pwa.module b/pwa.module
+index 6316bf3..53f0b02 100644
+--- a/pwa.module
++++ b/pwa.module
+@@ -76,7 +76,7 @@ function pwa_theme() {
+  * Check data from input.
+  */
+ function pwa_str_to_list($string) {
+-  $list = explode("\n", $string);
++  $list = $string ? explode("\n", $string) : [];
+   $list = array_map('trim', $list);
+   return array_filter($list, 'strlen');
+ }

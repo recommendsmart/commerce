@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\IntervalPluginManager.
- */
-
 namespace Drupal\interval;
 
 use Drupal\Core\Cache\CacheBackendInterface;
@@ -22,14 +17,14 @@ class IntervalPluginManager extends DefaultPluginManager implements IntervalPlug
   /**
    * {@inheritdoc}
    */
-  protected $defaults = array(
+  protected $defaults = [
     'plural' => '',
     'singular' => '',
     'php' => 'hours',
     'multiplier' => 1,
     'class' => 'Drupal\interval\IntervalBase',
     'id' => '',
-  );
+  ];
 
   /**
    * Constructs a new IntervalPluginManager.

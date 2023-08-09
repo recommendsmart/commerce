@@ -45,6 +45,12 @@ class SettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('hide_section_settings'),
     ];
 
+    $form['live_preview'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable live preview'),
+      '#default_value' => $config->get('live_preview'),
+    ];
+
     $form['one_col_layout_class'] = [
       '#type' => 'textfield',
       '#title' => $this->t('One col layout class'),
@@ -63,6 +69,7 @@ class SettingsForm extends ConfigFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $this->configFactory->getEditable(static::SETTINGS)
       ->set('hide_section_settings', $form_state->getValue('hide_section_settings'))
+      ->set('live_preview', $form_state->getValue('live_preview'))
       ->set('one_col_layout_class', $form_state->getValue('one_col_layout_class'))
       ->save();
 

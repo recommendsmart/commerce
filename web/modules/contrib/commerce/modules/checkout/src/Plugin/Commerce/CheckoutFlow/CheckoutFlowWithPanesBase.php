@@ -121,7 +121,7 @@ abstract class CheckoutFlowWithPanesBase extends CheckoutFlowBase implements Che
    */
   public function getPane($pane_id) {
     $panes = $this->getPanes();
-    return isset($panes[$pane_id]) ? $panes[$pane_id] : NULL;
+    return $panes[$pane_id] ?? NULL;
   }
 
   /**

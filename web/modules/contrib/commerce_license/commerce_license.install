@@ -5,6 +5,8 @@
  * Contains install and update functions for Commerce License.
  */
 
+use Drupal\commerce_license\Event\LicenseEvent;
+use Drupal\Core\Config\FileStorage;
 use Drupal\Core\Field\BaseFieldDefinition;
 
 /**
@@ -34,4 +36,111 @@ function commerce_license_update_8202() {
 
   $update_manager = \Drupal::entityDefinitionUpdateManager();
   $update_manager->installFieldStorageDefinition('originating_order', 'commerce_license', 'commerce_license', $storage_definition);
+}
+
+/**
+ * Add an event handler to licenses.
+ */
+function commerce_license_update_8203() {
+  $entity_definition_update = \Drupal::entityDefinitionUpdateManager();
+  $entity_type = $entity_definition_update->getEntityType('commerce_license');
+  $entity_type->setHandlerClass('event', LicenseEvent::class);
+  $entity_definition_update->updateEntityType($entity_type);
+}
+
+/**
+ * Add the delete action, if it doesn't already exist.
+ */
+function commerce_license_update_8204() {
+  if (count(\Drupal::configFactory()->listAll('system.action.commerce_license_delete_action')) === 0) {
+    /** @var \Drupal\Core\Config\StorageInterface $active_storage */
+    $active_storage = \Drupal::service('config.storage');
+
+    $module_handler = Drupal::service('module_handler');
+    $path = $module_handler->getModule('commerce_license')->getPath();
+
+    $source = new FileStorage($path . '/config/install');
+
+    $active_storage->write('system.action.commerce_license_delete_action', $source->read('system.action.commerce_license_delete_action'));
+  }
+}
+
+/**
+ * Convert recurring_period to commerce_license_period.
+ */
+function commerce_license_update_8205() {
+  $bundle_info = \Drupal::service('entity_type.bundle.info')->getBundleInfo('commerce_product_variation');
+  $types = array_keys($bundle_info);
+  $config_factory = \Drupal::configFactory();
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+
+  $entity_type_manager->clearCachedDefinitions();
+  $entity_field_manager->clearCachedFieldDefinitions();
+
+  $configuration_to_update = ['field.storage.commerce_product_variation.license_expiration'];
+  foreach ($types as $bundle) {
+    $configuration_to_update[] = 'field.field.commerce_product_variation.' . $bundle . '.license_expiration';
+  }
+
+  foreach ($configuration_to_update as $config) {
+    $config_entity = $config_factory->getEditable($config);
+    if (!$config_entity->isNew()) {
+      if ($config_entity->get('field_type') === 'commerce_plugin_item:recurring_period') {
+        $config_entity->set('field_type', 'commerce_plugin_item:commerce_license_period');
+        $config_entity->save();
+      }
+      elseif ($config_entity->get('type') === 'commerce_plugin_item:recurring_period') {
+        $config_entity->set('type', 'commerce_plugin_item:commerce_license_period');
+        $config_entity->save();
+      }
+    }
+  }
+}
+
+/**
+ * Convert recurring_period to commerce_license_period.
+ */
+function commerce_license_update_8206() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+
+  $entity_type_manager->clearCachedDefinitions();
+  $entity_field_manager->clearCachedFieldDefinitions();
+
+  $key = 'commerce_license.field_storage_definitions';
+  $entity_definitions_installed = \Drupal::keyValue('entity.definitions.installed');
+  $definitions = $entity_definitions_installed->get($key);
+  /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_field_definitions */
+  $base_field_definitions = $entity_field_manager->getBaseFieldDefinitions('commerce_license');
+  $definitions['expiration_type'] = $base_field_definitions['expiration_type']->getFieldStorageDefinition();
+  $entity_definitions_installed->set($key, $definitions);
+
+  $key_2 = 'commerce_product_variation';
+  $entity_definitions_installed_bundle_field_map = \Drupal::keyValue('entity.definitions.bundle_field_map');
+  $bundle_field_map = $entity_definitions_installed_bundle_field_map->get($key_2);
+  if ($bundle_field_map['license_expiration']['type'] === 'commerce_plugin_item:recurring_period') {
+    $bundle_field_map['license_expiration']['type'] = 'commerce_plugin_item:commerce_license_period';
+  }
+  $entity_definitions_installed_bundle_field_map->set($key_2, $bundle_field_map);
+}
+
+/**
+ * Convert recurring_period to commerce_license_period.
+ */
+function commerce_license_update_8207() {
+  $entity_type_manager = \Drupal::entityTypeManager();
+  $entity_field_manager = \Drupal::service('entity_field.manager');
+
+  $entity_type_manager->clearCachedDefinitions();
+  $entity_field_manager->clearCachedFieldDefinitions();
+
+  $key = 'commerce_product_variation.field_storage_definitions';
+  $entity_definitions_installed = \Drupal::keyValue('entity.definitions.installed');
+  $definitions = $entity_definitions_installed->get($key);
+
+  /** @var \Drupal\Core\Field\FieldDefinitionInterface[] $base_field_definitions */
+  $field_storage_definitions = $entity_field_manager->getFieldStorageDefinitions('commerce_product_variation');
+  $definitions['license_expiration'] = $field_storage_definitions['license_expiration'];
+  $entity_definitions_installed->set($key, $definitions);
 }

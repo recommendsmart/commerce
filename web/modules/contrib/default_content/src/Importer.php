@@ -12,10 +12,8 @@ use Drupal\default_content\Event\DefaultContentEvents;
 use Drupal\default_content\Event\ImportEvent;
 use Drupal\default_content\Normalizer\ContentEntityNormalizerInterface;
 use Drupal\file\FileInterface;
-use Drupal\hal\LinkManager\LinkManagerInterface;
 use Drupal\user\EntityOwnerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
-use Symfony\Component\Serializer\Serializer;
 
 /**
  * A service for handling import of default content.
@@ -28,6 +26,11 @@ class Importer implements ImporterInterface {
    * Defines relation domain URI for entity links.
    *
    * @var string
+   *
+   * @deprecated in default_content:2.0.0-alpha2 and is removed from
+   *   default_content:3.0.0.
+   *
+   * @see https://www.drupal.org/node/3296226
    */
   protected $linkDomain;
 
@@ -35,6 +38,11 @@ class Importer implements ImporterInterface {
    * The serializer service.
    *
    * @var \Symfony\Component\Serializer\Serializer
+   *
+   * @deprecated in default_content:2.0.0-alpha2 and is removed from
+   *   default_content:3.0.0.
+   *
+   * @see https://www.drupal.org/node/3296226
    */
   protected $serializer;
 
@@ -63,6 +71,11 @@ class Importer implements ImporterInterface {
    * The link manager service.
    *
    * @var \Drupal\hal\LinkManager\LinkManagerInterface
+   *
+   * @deprecated in default_content:2.0.0-alpha2 and is removed from
+   *   default_content:3.0.0.
+   *
+   * @see https://www.drupal.org/node/3296226
    */
   protected $linkManager;
 
@@ -95,34 +108,42 @@ class Importer implements ImporterInterface {
   protected $contentEntityNormalizer;
 
   /**
+   * List of HAL-JSON serialized files.
+   *
+   * @var string[]
+   *
+   * @deprecated in default_content:2.0.0-alpha2 and is removed from
+   *   default_content:3.0.0.
+   *
+   * @see https://www.drupal.org/node/3296226
+   */
+  protected $halJsonSerializedFiles = [];
+
+  /**
    * Constructs the default content manager.
    *
-   * @param \Symfony\Component\Serializer\Serializer $serializer
-   *   The serializer service.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager service.
-   * @param \Drupal\hal\LinkManager\LinkManagerInterface $link_manager
-   *   The link manager service.
    * @param \Symfony\Component\EventDispatcher\EventDispatcherInterface $event_dispatcher
    *   The event dispatcher.
    * @param \Drupal\default_content\ContentFileStorageInterface $content_file_storage
    *   The file scanner.
    * @param string $link_domain
-   *   Defines relation domain URI for entity links.
+   *   (deprecated) Defines relation domain URI for entity links. The $link_domain parameter is deprecated in default_content:2.0.0-alpha2 and is removed from default_content:3.0.0.
    * @param \Drupal\Core\Session\AccountSwitcherInterface $account_switcher
    *   The account switcher.
    * @param \Drupal\default_content\Normalizer\ContentEntityNormalizerInterface $content_entity_normaler
    *   The YAML normalizer.
+   *
+   * @see https://www.drupal.org/node/3296226
    */
-  public function __construct(Serializer $serializer, EntityTypeManagerInterface $entity_type_manager, LinkManagerInterface $link_manager, EventDispatcherInterface $event_dispatcher, ContentFileStorageInterface $content_file_storage, $link_domain, AccountSwitcherInterface $account_switcher, ContentEntityNormalizerInterface $content_entity_normaler) {
-    $this->serializer = $serializer;
+  public function __construct(EntityTypeManagerInterface $entity_type_manager, EventDispatcherInterface $event_dispatcher, ContentFileStorageInterface $content_file_storage,AccountSwitcherInterface $account_switcher, ContentEntityNormalizerInterface $content_entity_normaler, $link_domain) {
     $this->entityTypeManager = $entity_type_manager;
-    $this->linkManager = $link_manager;
     $this->eventDispatcher = $event_dispatcher;
     $this->contentFileStorage = $content_file_storage;
-    $this->linkDomain = $link_domain;
     $this->accountSwitcher = $account_switcher;
     $this->contentEntityNormalizer = $content_entity_normaler;
+    $this->linkDomain = $link_domain;
   }
 
   /**
@@ -130,7 +151,7 @@ class Importer implements ImporterInterface {
    */
   public function importContent($module) {
     $created = [];
-    $folder = drupal_get_path('module', $module) . "/content";
+    $folder = \Drupal::service('extension.list.module')->getPath($module) . "/content";
 
     if (file_exists($folder)) {
       $root_user = $this->entityTypeManager->getStorage('user')->load(1);
@@ -146,9 +167,7 @@ class Importer implements ImporterInterface {
           continue;
         }
         $files = $this->contentFileStorage->scan($folder . '/' . $entity_type_id);
-        // Default content uses drupal.org as domain.
-        // @todo Make this use a uri like default-content:.
-        $this->linkManager->setLinkDomain($this->linkDomain);
+
         // Parse all of the files and sort them in order of dependency.
         foreach ($files as $file) {
           $contents = $this->parseFile($file);
@@ -157,6 +176,7 @@ class Importer implements ImporterInterface {
 
           // Decode the file contents.
           if ($extension == 'json') {
+            $this->checkHalJsonImport($file->uri);
             $decoded = $this->serializer->decode($contents, 'hal_json');
             // Get the link to this entity.
             $item_uuid = $decoded['uuid'][0]['value'];
@@ -169,8 +189,10 @@ class Importer implements ImporterInterface {
 
           // Throw an exception when this UUID already exists.
           if (isset($file_map[$item_uuid])) {
-            // Reset link domain.
-            $this->linkManager->setLinkDomain(FALSE);
+            if ($this->linkManager) {
+              // Reset link domain.
+              $this->linkManager->setLinkDomain(FALSE);
+            }
             throw new \Exception(sprintf('Default content with uuid "%s" exists twice: "%s" "%s"', $item_uuid, $file_map[$item_uuid]->uri, $file->uri));
           }
 
@@ -207,6 +229,13 @@ class Importer implements ImporterInterface {
             }
           }
         }
+      }
+
+      if ($this->halJsonSerializedFiles) {
+        // Make the order predictable for tests.
+        sort($this->halJsonSerializedFiles);
+
+        \Drupal::logger('default_content')->warning('Importing entities from files serialized with hal_json is deprecated in default_content:2.0.0-alpha2 and is removed from default_content:3.0.0. The following files were serialized using hal_json serialization: @files. Import all entities and re-export them as YAML files. See https://www.drupal.org/node/3296226', ['@files' => implode(', ', $this->halJsonSerializedFiles)]);
       }
 
       // @todo what if no dependencies?
@@ -248,13 +277,16 @@ class Importer implements ImporterInterface {
           $created[$entity->uuid()] = $entity;
         }
       }
-      $this->eventDispatcher->dispatch(DefaultContentEvents::IMPORT, new ImportEvent($created, $module));
+      $this->eventDispatcher->dispatch(new ImportEvent($created, $module), DefaultContentEvents::IMPORT);
       $this->accountSwitcher->switchBack();
     }
     // Reset the tree.
     $this->resetTree();
-    // Reset link domain.
-    $this->linkManager->setLinkDomain(FALSE);
+
+    if ($this->linkManager) {
+      // Reset link domain.
+      $this->linkManager->setLinkDomain(FALSE);
+    }
     return $created;
   }
 
@@ -311,6 +343,42 @@ class Importer implements ImporterInterface {
       $this->vertexes[$item_link] = (object) ['id' => $item_link];
     }
     return $this->vertexes[$item_link];
+  }
+
+  /**
+   * Performs, once, several tasks when importing HAL-JSON serialized files.
+   *
+   * @param string $file_uri
+   *   The JSON file.
+   *
+   * @deprecated in default_content:2.0.0-alpha2 and is removed from
+   *   default_content:3.0.0.
+   *
+   * @see https://www.drupal.org/node/3296226
+   */
+  private function checkHalJsonImport(string $file_uri): void {
+    // Collect such files to be used in deprecation message.
+    $this->halJsonSerializedFiles[] = $file_uri;
+
+    // Only do this once.
+    static $processed = FALSE;
+    if (!$processed) {
+      $module_handler = \Drupal::moduleHandler();
+      if (!$module_handler->moduleExists('serialization')) {
+        throw new \Exception('To import hal_json files, the serialization module must be enabled. This is deprecated and will be removed in default_content:3.0.0. See https://www.drupal.org/node/3296226');
+      }
+      if (!$module_handler->moduleExists('hal')) {
+        throw new \Exception('To import hal_json files, the hal module must be enabled. This is deprecated and will be removed in default_content:3.0.0. See https://www.drupal.org/node/3296226');
+      }
+      $this->serializer = \Drupal::service('serializer');
+      $this->linkManager = \Drupal::service('hal.link_manager');
+      $this->linkDomain = $this->linkDomain ?: 'http://drupal.org';
+
+      // Default content uses drupal.org as domain.
+      $this->linkManager->setLinkDomain($this->linkDomain);
+
+      $processed = TRUE;
+    }
   }
 
 }

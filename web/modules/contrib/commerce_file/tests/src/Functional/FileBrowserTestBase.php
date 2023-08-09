@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_file\Functional;
 use Drupal\commerce_order\Entity\OrderItemType;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\Tests\commerce\Functional\CommerceBrowserTestBase;
 
 /**
@@ -38,7 +39,7 @@ abstract class FileBrowserTestBase extends CommerceBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_license',
     'commerce_file',
   ];
@@ -46,7 +47,7 @@ abstract class FileBrowserTestBase extends CommerceBrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $variation_traits = ['commerce_license', 'commerce_file'];
@@ -84,7 +85,7 @@ abstract class FileBrowserTestBase extends CommerceBrowserTestBase {
         'filename' => $machine_name,
         'uri' => $uri,
         'filemime' => 'text/plain',
-        'status' => FILE_STATUS_PERMANENT,
+        'status' => FileInterface::STATUS_PERMANENT,
       ]);
       $file->save();
       $this->files[] = $this->reloadEntity($file);

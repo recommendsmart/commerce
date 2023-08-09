@@ -2,4 +2,14 @@ pwa.config:
   route_name: pwa.config
   base_route: pwa.config
   title: 'Settings'
-  parent: pwa.admin_index
+  parent: system.admin_config_services
+pwa.config_manifest:
+  route_name: pwa.config_manifest
+  base_route: pwa.config
+  title: 'Manifest'
+  parent: pwa.config
+pwa.config_serviceworker:
+  route_name: pwa.config_serviceworker
+  base_route: pwa.config
+  title: 'Service Worker'
+  parent: pwa.config

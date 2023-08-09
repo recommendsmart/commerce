@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldFormatter\IntervalFormatterRaw.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Render\HtmlEscapedText;
@@ -31,11 +26,11 @@ class IntervalFormatterRaw extends IntervalFormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = array();
+    $element = [];
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
+      $element[$delta] = [
         '#markup' => new HtmlEscapedText($this->formatInterval($item)),
-      );
+      ];
     }
     return $element;
   }

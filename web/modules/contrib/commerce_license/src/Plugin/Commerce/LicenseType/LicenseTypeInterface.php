@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_license\Plugin\Commerce\LicenseType;
 
-use Drupal\Core\Plugin\PluginFormInterface;
-use Drupal\entity\BundlePlugin\BundlePluginInterface;
 use Drupal\commerce_license\Entity\LicenseInterface;
 use Drupal\Component\Plugin\ConfigurableInterface;
 use Drupal\Component\Plugin\DependentPluginInterface;
+use Drupal\Core\Plugin\PluginFormInterface;
+use Drupal\entity\BundlePlugin\BundlePluginInterface;
 
 /**
  * Defines the interface for license types.
@@ -58,7 +58,7 @@ interface LicenseTypeInterface extends BundlePluginInterface, ConfigurableInterf
   public function buildLabel(LicenseInterface $license);
 
   /**
-   * Gets the workflow ID this this license type should use.
+   * Gets the workflow ID this license type should use.
    *
    * @return string
    *   The ID of the workflow used for this license type.

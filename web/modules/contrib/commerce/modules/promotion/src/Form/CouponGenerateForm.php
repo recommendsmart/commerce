@@ -204,7 +204,7 @@ class CouponGenerateForm extends FormBase {
     $coupon_values = [
       'promotion_id' => $this->promotion->id(),
       'usage_limit' => $values['limit'] ? $values['usage_limit'] : 0,
-      'usage_limit_customer' => $values['usage_limit_customer'],
+      'usage_limit_customer' => $values['limit_customer'] ? $values['usage_limit_customer'] : 0,
     ];
     $pattern = new CouponCodePattern($values['format'], $values['prefix'], $values['suffix'], $values['length']);
 

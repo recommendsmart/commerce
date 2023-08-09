@@ -2,6 +2,7 @@
 
 namespace Drupal\gin_login\Form;
 
+use Drupal\Core\File\Exception\FileException;
 use Drupal\Core\Form\ConfigFormBase;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StreamWrapper\StreamWrapperManager;
@@ -35,12 +36,12 @@ class GinLoginConfigurationForm extends ConfigFormBase {
     $default_scheme = $this->config('system.file')->get('default_scheme');
     $form['logo'] = [
       '#type' => 'details',
-      '#title' => t('Logo image'),
+      '#title' => $this->t('Logo'),
       '#open' => TRUE,
     ];
     $form['logo']['default_logo'] = [
       '#type' => 'checkbox',
-      '#title' => t('Use default logo'),
+      '#title' => $this->t('Use default logo'),
       '#default_value' => $config->get('logo.use_default'),
       '#tree' => FALSE,
     ];
@@ -56,13 +57,12 @@ class GinLoginConfigurationForm extends ConfigFormBase {
 
     $form['logo']['settings']['logo_path'] = [
       '#type' => 'textfield',
-      '#title' => t('Path to custom logo'),
+      '#title' => $this->t('Path to custom logo'),
       '#default_value' => $config->get('logo.path') ? str_replace($default_scheme . '://', "", $config->get('logo.path')) : '',
     ];
     $form['logo']['settings']['logo_upload'] = [
       '#type' => 'file',
-      '#title' => t('Upload logo image'),
-      '#maxlength' => 40,
+      '#title' => $this->t('Upload image'),
       '#description' => t("If you don't have direct file access to the server, use this field to upload your logo."),
       '#upload_validators' => [
         'file_validate_extensions' => [
@@ -73,12 +73,12 @@ class GinLoginConfigurationForm extends ConfigFormBase {
 
     $form['brand_image'] = [
       '#type' => 'details',
-      '#title' => t('Brand image'),
+      '#title' => $this->t('Wallpaper'),
       '#open' => TRUE,
     ];
     $form['brand_image']['default_brand_image'] = [
       '#type' => 'checkbox',
-      '#title' => t('Use random image'),
+      '#title' => $this->t('Use random image'),
       '#default_value' => $config->get('brand_image.use_default'),
       '#tree' => FALSE,
     ];
@@ -93,13 +93,12 @@ class GinLoginConfigurationForm extends ConfigFormBase {
     ];
     $form['brand_image']['settings']['brand_image_path'] = [
       '#type' => 'textfield',
-      '#title' => t('Path to custom brand image'),
+      '#title' => $this->t('Path to custom image'),
       '#default_value' => $config->get('brand_image.path') ? str_replace($default_scheme . '://', "", $config->get('brand_image.path')) : '',
     ];
     $form['brand_image']['settings']['brand_image_upload'] = [
       '#type' => 'file',
-      '#title' => t('Upload Brand image'),
-      '#maxlength' => 40,
+      '#title' => $this->t('Upload image'),
       '#description' => t("If you don't have direct file access to the server, use this field to upload your brand image."),
       '#upload_validators' => [
         'file_validate_is_image' => [],

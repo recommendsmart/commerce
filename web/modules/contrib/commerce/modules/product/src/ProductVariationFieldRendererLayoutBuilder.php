@@ -87,7 +87,7 @@ class ProductVariationFieldRendererLayoutBuilder extends ProductVariationFieldRe
         if ($plugin instanceof VariationFieldBlock) {
           $plugin_id = $plugin->getPluginId();
 
-          list(,,, $field_name) = explode(PluginBase::DERIVATIVE_SEPARATOR, $plugin_id, 4);
+          [,,, $field_name] = explode(PluginBase::DERIVATIVE_SEPARATOR, $plugin_id, 4);
           $display_options = $plugin->getConfiguration()['formatter'];
 
           // Render field with display options provided from plugin formatter.

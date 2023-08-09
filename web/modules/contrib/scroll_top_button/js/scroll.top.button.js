@@ -2,7 +2,7 @@
 
     Drupal.behaviors.scrollTopButton = {
       attach: function (context, settings) {
-        
+
         var button_text = drupalSettings.button_text;
         var button_style = drupalSettings.button_style;
         var button_animation = drupalSettings.button_animation;
@@ -10,10 +10,9 @@
         var scroll_distance = parseInt(drupalSettings.scroll_distance);
         var scroll_speed = parseInt(drupalSettings.scroll_speed);
 
-        
         var element_name = 'scrollTopButton-' + button_style;
 
-        if (button_style == 'image') {                      
+        if (button_style == 'image') {
           button_text = '';
         }
 
@@ -22,7 +21,7 @@
         if ($('#' + element_name).length === 0) {
           $element.appendTo('body');
         }
-                
+
         $element.html(button_text);
 
         var animationIn = 'show';
@@ -36,7 +35,7 @@
           animationOut = 'fadeOut';
           animationSpeed = button_animation_speed;
         }
-        
+
         if (button_animation == 'slide') {
           animationIn = 'slideDown';
           animationOut = 'slideUp';
@@ -63,8 +62,8 @@
 
             $('html, body').animate({ scrollTop: 0}, scroll_speed, 'linear');
         });
-        
+
       }
     };
-  
+
   })(jQuery, window, Drupal);

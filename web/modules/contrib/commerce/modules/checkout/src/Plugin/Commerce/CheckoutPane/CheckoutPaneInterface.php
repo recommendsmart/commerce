@@ -90,7 +90,7 @@ interface CheckoutPaneInterface extends ConfigurableInterface, DependentPluginIn
   /**
    * Gets the pane weight.
    *
-   * @return string
+   * @return int
    *   The pane weight.
    */
   public function getWeight();

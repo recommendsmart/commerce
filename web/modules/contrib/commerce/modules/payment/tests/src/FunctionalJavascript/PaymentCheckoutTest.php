@@ -8,6 +8,7 @@ use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_payment\Entity\Payment;
 use Drupal\commerce_payment\Entity\PaymentGateway;
 use Drupal\commerce_payment\Entity\PaymentMethod;
+use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_price\Price;
 use Drupal\Tests\commerce\FunctionalJavascript\CommerceWebDriverTestBase;
 
@@ -216,6 +217,7 @@ class PaymentCheckoutTest extends CommerceWebDriverTestBase {
       'card_type' => 'visa',
       'card_number' => '1111',
       'billing_profile' => $profile,
+      'remote_id' => 789,
       'reusable' => TRUE,
       'expires' => strtotime('2028/03/24'),
     ]);
@@ -958,6 +960,59 @@ class PaymentCheckoutTest extends CommerceWebDriverTestBase {
 
     $this->submitForm([], 'Complete checkout');
     $this->assertSession()->pageTextContains('Your order number is 1. You can view your order on your account page when logged in.');
+  }
+
+  /**
+   * Tests updating a profile of a non tokenized payment method.
+   */
+  public function testUpdatingProfile() {
+    $this->drupalGet($this->product->toUrl()->toString());
+    $this->submitForm([], 'Add to cart');
+    $this->drupalGet('checkout/1');
+    $radio_button = $this->getSession()->getPage()->findField('Credit card');
+    $radio_button->click();
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertRenderedAddress($this->defaultAddress, 'payment_information[add_payment_method][billing_information]');
+    $this->getSession()->getPage()->pressButton('billing_edit');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+
+    $this->submitForm([
+      'payment_information[add_payment_method][payment_details][number]' => '4012888888881881',
+      'payment_information[add_payment_method][payment_details][expiration][month]' => '02',
+      'payment_information[add_payment_method][payment_details][expiration][year]' => '2024',
+      'payment_information[add_payment_method][payment_details][security_code]' => '123',
+      'payment_information[add_payment_method][billing_information][address][0][address][given_name]' => 'Johnny',
+      'payment_information[add_payment_method][billing_information][address][0][address][family_name]' => 'Appleseed',
+      'payment_information[add_payment_method][billing_information][address][0][address][address_line1]' => '123 New York Drive',
+      'payment_information[add_payment_method][billing_information][address][0][address][locality]' => 'New York City',
+      'payment_information[add_payment_method][billing_information][address][0][address][administrative_area]' => 'NY',
+      'payment_information[add_payment_method][billing_information][address][0][address][postal_code]' => '10001',
+    ], 'Continue to review');
+    $this->assertSession()->pageTextContains('Payment information');
+    $this->assertSession()->pageTextContains('Visa ending in 1881');
+    $this->assertSession()->pageTextContains('Expires 2/2024');
+    $this->assertSession()->pageTextContains('Johnny Appleseed');
+    $this->assertSession()->pageTextContains('123 New York Drive');
+
+    // Nullify the remote ID to simulate a payment method that hasn't been
+    // tokenized yet, to see if the billing information can be updated.
+    $order = Order::load(1);
+    $payment_method = $order->get('payment_method')->entity;
+    assert($payment_method instanceof PaymentMethodInterface);
+    $payment_method->set('remote_id', NULL);
+    $payment_method->save();
+
+    $this->getSession()->getPage()->clickLink('Go back');
+    $this->getSession()->getPage()->pressButton('billing_edit');
+    $this->assertSession()->assertWaitOnAjaxRequest();
+
+    $this->submitForm([
+      'payment_information[billing_information][address][0][address][given_name]' => 'Johnny updated',
+      'payment_information[billing_information][address][0][address][address_line1]' => '125 New York Drive',
+    ], 'Continue to review');
+
+    $this->assertSession()->pageTextContains('Johnny updated');
+    $this->assertSession()->pageTextContains('125 New York Drive');
   }
 
 }

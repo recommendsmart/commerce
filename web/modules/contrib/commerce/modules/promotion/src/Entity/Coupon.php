@@ -253,9 +253,16 @@ class Coupon extends CommerceContentEntityBase implements CouponInterface {
 
     // Ensure there's a reference on each promotion.
     $promotion = $this->getPromotion();
-    if ($promotion && !$promotion->hasCoupon($this)) {
-      $promotion->addCoupon($this);
-      $promotion->save();
+    if ($promotion) {
+      if (!$promotion->hasCoupon($this)) {
+        $promotion->addCoupon($this);
+      }
+      if (!$promotion->requiresCoupon()) {
+        $promotion->set('require_coupon', TRUE);
+      }
+      if ($promotion->hasTranslationChanges()) {
+        $promotion->save();
+      }
     }
   }
 

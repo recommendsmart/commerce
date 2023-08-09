@@ -44,18 +44,18 @@ class EntityPrintOrderRendererTest extends OrderKernelTestBase {
     $sut = $this->entityTypeManager->getHandler('commerce_order', 'entity_print');
     assert($sut instanceof OrderRenderer);
     $order = Order::create([
-      'id' => '123',
+      'order_id' => '123',
       'type' => 'default',
     ]);
     $filename = $sut->getFilename([$order]);
-    $this->assertEquals('Order document receipt', (string) $filename);
+    $this->assertEquals('Order 123 receipt', (string) $filename);
 
     $second_order = Order::create([
-      'id' => '789',
+      'order_id' => '789',
       'type' => 'default',
     ]);
     $filename = $sut->getFilename([$order, $second_order]);
-    $this->assertEquals('Order document receipts', (string) $filename);
+    $this->assertEquals('Order 123-789 receipts', (string) $filename);
   }
 
   /**
@@ -117,6 +117,7 @@ class EntityPrintOrderRendererTest extends OrderKernelTestBase {
     $order = Order::create([
       'type' => 'default',
       'state' => 'draft',
+      'order_number' => '1',
       'mail' => $user->getEmail(),
       'uid' => $user->id(),
       'ip_address' => '127.0.0.1',

@@ -19,8 +19,8 @@ class NodeTitleCoder extends CoderPluginBase {
   /**
    * Encode an id into an alias.
    *
-   * @param string $id
-   *   An entity id.
+   * @param string $nid
+   *   Node id.
    *
    * @return string
    *   An alias.

@@ -107,3 +107,9 @@ paypal:
     - core/drupal
     - core/jquery.once
     - commerce_braintree/braintree-paypal-checkout
+
+credit_card_icons:
+  version: VERSION
+  css:
+    theme:
+      css/commerce_braintree.credit_card_icons.css: {}

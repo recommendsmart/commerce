@@ -59,6 +59,9 @@ class OptionsFieldUITest extends FieldTestBase {
    */
   protected $adminPath;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 
@@ -344,9 +347,7 @@ class OptionsFieldUITest extends FieldTestBase {
     $on = $this->randomMachineName();
     $off = $this->randomMachineName();
     $edit = [
-      'settings[allowed_values]' =>
-        "1|$on
-        0|$off",
+      'settings[allowed_values]' => "1|$on" . PHP_EOL . "0|$off",
     ];
 
     $this->drupalGet($this->adminPath);
@@ -380,6 +381,29 @@ class OptionsFieldUITest extends FieldTestBase {
 
       // Verify that correct options are found.
       $this->assertSession()->elementsCount('xpath', '//div[text()="' . $output . '"]', 1);
+    }
+  }
+
+  /**
+   * Confirms the allowed value list is a required field.
+   */
+  public function testRequiredPropertyForAllowedValuesList() {
+    $field_types = [
+      'list_float',
+      'list_string',
+      'list_integer',
+    ];
+
+    foreach ($field_types as $field_type) {
+      $this->fieldName = "field_options_$field_type";
+      $this->createOptionsField($field_type);
+
+      // Try to proceed without entering any value.
+      $this->drupalGet($this->adminPath);
+      $this->submitForm([], 'Save field settings');
+
+      // Confirmation message that this is a required field.
+      $this->assertSession()->pageTextContains('Allowed values list field is required.');
     }
   }
 

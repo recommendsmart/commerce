@@ -6,6 +6,7 @@ use Drupal\Component\PhpStorage\FileStorage;
 use Drupal\Component\Utility\Random;
 use Drupal\Tests\Traits\PhpUnitWarnings;
 use org\bovigo\vfs\vfsStreamDirectory;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 
 /**
  * @coversDefaultClass \Drupal\Component\PhpStorage\FileStorage
@@ -14,7 +15,7 @@ use org\bovigo\vfs\vfsStreamDirectory;
  */
 class FileStorageTest extends PhpStorageTestBase {
 
-  use PhpUnitWarnings;
+  use PhpUnitWarnings, ExpectDeprecationTrait;
 
   /**
    * Standard test settings to pass to storage instances.
@@ -50,8 +51,10 @@ class FileStorageTest extends PhpStorageTestBase {
 
   /**
    * @covers ::writeable
+   * @group legacy
    */
-  public function testWriteable() {
+  public function testWritable() {
+    $this->expectDeprecation('Drupal\Component\PhpStorage\FileStorage::writeable() is deprecated in drupal:10.1.0 and will be removed from drupal:11.0.0. There is no replacement. See https://www.drupal.org/node/3155413');
     $php = new FileStorage($this->standardSettings);
     $this->assertTrue($php->writeable());
   }
@@ -70,11 +73,11 @@ class FileStorageTest extends PhpStorageTestBase {
 
     // Find a global that doesn't exist.
     do {
-      $random = mt_rand(10000, 100000);
+      $random = 'test' . mt_rand(10000, 100000);
     } while (isset($GLOBALS[$random]));
 
     // Write out a PHP file and ensure it's successfully loaded.
-    $code = "<?php\n\$GLOBALS[$random] = TRUE;";
+    $code = "<?php\n\$GLOBALS['$random'] = TRUE;";
     $this->assertTrue($php->save($name, $code), 'Saved php file');
     $php->load($name);
     $this->assertTrue($GLOBALS[$random], 'File saved correctly with correct value');

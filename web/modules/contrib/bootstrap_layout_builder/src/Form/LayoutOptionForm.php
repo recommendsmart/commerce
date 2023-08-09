@@ -108,10 +108,14 @@ class LayoutOptionForm extends EntityForm implements ContainerInjectionInterface
     ];
 
     $breakpoints = [];
-    $blb_breakpoint = $this->entityTypeManager->getStorage('blb_breakpoint')->getQuery()->sort('weight', 'ASC')->execute();
+    $default_breakpoints = [];
+    $blb_breakpoint = $this->entityTypeManager->getStorage('blb_breakpoint')->getQuery()->accessCheck(TRUE)->sort('weight', 'ASC')->execute();
     foreach ($blb_breakpoint as $breakpoint_id) {
       $breakpoint_entity = $this->entityTypeManager->getStorage('blb_breakpoint')->load($breakpoint_id);
       $breakpoints[$breakpoint_id] = $breakpoint_entity->label();
+      if (array_search($breakpoint_id, $option->getBreakpointsIds()) !== FALSE) {
+        $default_breakpoints[$breakpoint_id] = $breakpoint_entity->label();
+      }
     }
 
     $form['breakpoints'] = [
@@ -120,9 +124,41 @@ class LayoutOptionForm extends EntityForm implements ContainerInjectionInterface
       '#description' => $this->t('Select which breakpoints uses this layout option'),
       '#options' => $breakpoints,
       '#default_value' => $option->getBreakpointsIds() ?: [],
+      '#ajax' => [
+        'callback' => '::replaceDefaultBreakpointsOptions',
+        'wrapper' => 'default-breakpoints-wrapper',
+        'method' => 'replace',
+      ],
+    ];
+
+    $form['default_breakpoints'] = [
+      '#title' => $this->t('Default layout option for'),
+      '#type' => 'checkboxes',
+      '#description' => $this->t('Select the breakpoints if you want to make this layout option the default option for them.
+        Note: if the breakpoint already selected as the default option for another layout option, this selection will override it.'),
+      '#options' => $default_breakpoints,
+      '#default_value' => $option->getDefaultBreakpointsIds() ?: [],
+      '#prefix' => '<div id="default-breakpoints-wrapper">',
+      '#suffix' => '</div>',
     ];
 
     return $form;
+  }
+
+  /**
+   * AJAX callback to update the default breakpoints element when the selection
+   * changes.
+   *
+   * @param array $form
+   *   An associative array containing the structure of the form.
+   * @param \Drupal\Core\Form\FormStateInterface $form_state
+   *   The current state of the form.
+   *
+   * @return array
+   *   The default breakpoints element render array.
+   */
+  public function replaceDefaultBreakpointsOptions(array $form, FormStateInterface $form_state) {
+    return $form['default_breakpoints'];
   }
 
   /**

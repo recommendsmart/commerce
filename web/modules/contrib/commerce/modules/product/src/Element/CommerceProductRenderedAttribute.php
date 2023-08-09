@@ -56,11 +56,11 @@ class CommerceProductRenderedAttribute extends Radios {
           '#type' => 'radio',
           '#title' => $renderer->render($rendered_attribute),
           '#return_value' => $key,
-          '#default_value' => isset($element['#default_value']) ? $element['#default_value'] : FALSE,
+          '#default_value' => $element['#default_value'] ?? FALSE,
           '#attributes' => $attributes,
           '#parents' => $element['#parents'],
           '#id' => HtmlUtility::getUniqueId('edit-' . implode('-', $parents_for_id)),
-          '#ajax' => isset($element['#ajax']) ? $element['#ajax'] : NULL,
+          '#ajax' => $element['#ajax'] ?? NULL,
           // Errors should only be shown on the parent radios element.
           '#error_no_message' => TRUE,
           '#weight' => $weight,

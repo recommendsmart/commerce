@@ -46,6 +46,17 @@ interface MailerHelperInterface {
   public function policyFromAddresses(array $addresses);
 
   /**
+   * Transforms an HTML string into plain text.
+   *
+   * @param string $html
+   *   The string to be transformed.
+   *
+   * @return string
+   *   The transformed string.
+   */
+  public function htmlToText(string $html);
+
+  /**
    * Returns the configuration factory.
    *
    * @return \Drupal\Core\Config\ConfigFactoryInterface
@@ -61,13 +72,13 @@ interface MailerHelperInterface {
    *
    * @param \Drupal\Core\Config\Entity\ConfigEntityInterface $entity
    *   Config entity being edited.
-   * @param string $subtype
+   * @param string $sub_type
    *   Sub-type of the policies to show.
    *
    * @return array
    *   The render array.
    */
-  public function renderEntityPolicy(ConfigEntityInterface $entity, string $subtype);
+  public function renderEntityPolicy(ConfigEntityInterface $entity, string $sub_type);
 
   /**
    * Renders an element that lists policy for a specific type.

@@ -1,4 +1,4 @@
-Requirements 
+Requirements
 ============
 
 Drupal 8.x (https://www.drupal.org/docs/8/install)
@@ -10,11 +10,11 @@ Installation
 ============
 
 1. Download, install, and enable the following to your sites modules directory.
-	Check https://www.drupal.org/docs/8/install/step-2-install-dependencies-with-composer 
+	Check https://www.drupal.org/docs/8/install/step-2-install-dependencies-with-composer
 	for more instructions on how to install dependencies with composer in Drupal 8
 
 	With Composer instalation of any module and automatic download of libraries is done with command "composer require drupal/module_name"
-	composer require drupal/commerce_braintree 
+	composer require drupal/commerce_braintree
 
 	Enable Braintree module - Extend
 	(admin/modules)
@@ -58,11 +58,11 @@ Installation
      To create new Merchant account ID go to Account > Merchant Account Info > New Merchant Account
 
 Enable Payment Methods
-	
-	To enable PayPal Payment Method go to Settings > Processing Options and toggle the switch 
+
+	To enable PayPal Payment Method go to Settings > Processing Options and toggle the switch
 
 Select Payment method types you want to be available in your store
-	
+
 	 Credit card
 	 PayPal Express
 	 PayPal Credit
@@ -75,11 +75,25 @@ and enter a credit card. We recommend using a sandbox account for this before
 attempting to go live. If you're using a sandbox account, you can use the following
 credit card to test a transaction
 
+###### Visa Card
 Credit Card #: 4111 1111 1111 1111
 Expiration Date: Any 4 digit expiration greater than today's date
 CVC (if enabled): Any 3 digit code
 
+###### Master Card
+Credit Card #: 5555555555554444
+Expiration Date: Any 4 digit expiration greater than today's date
+CVC (if enabled): Any 3 digit code
 
+###### American Express
+Credit Card #: 378282246310005
+Expiration Date: Any 4 digit expiration greater than today's date
+CVC (if enabled): Any 3 digit code
+
+###### Discover
+Credit Card #: 6011000991300009
+Expiration Date: Any 4 digit expiration greater than today's date
+CVC (if enabled): Any 3 digit code
 
 Note about currencies
 =====================
@@ -95,3 +109,12 @@ not 10,000 JPY).
 
 You can learn more about currency handling on the Braintree website:
 https://articles.braintreepayments.com/get-started/currencies
+
+Note about credit card types
+============================
+As per Braintree documentation found in here - https://articles.braintreepayments.com/get-started/payment-methods#credit-cards
+Braintree’s US merchant accounts bundle Visa, Mastercard, Discover, JCB, and
+sometimes American Express as the default accepted payment types. Most of
+Braintree’s international merchant accounts bundle Visa and Mastercard as the
+default accepted payment types. If you need to enable more credit card types you
+have to raise a support request with Braintree

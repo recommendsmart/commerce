@@ -62,7 +62,7 @@ class StoreTest extends CommerceWebDriverTestBase {
       $path = 'address[0][address][' . $property . ']';
       $edit[$path] = $value;
     }
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains("Saved the $name store.");
   }
 
@@ -111,7 +111,7 @@ class StoreTest extends CommerceWebDriverTestBase {
     $store = $this->createStore();
     $this->drupalGet($store->toUrl('delete-form'));
     $this->assertSession()->pageTextContains('This action cannot be undone.');
-    $this->submitForm([], t('Delete'));
+    $this->submitForm([], $this->t('Delete'));
 
     $this->container->get('entity_type.manager')->getStorage('commerce_store')->resetCache([$store->id()]);
     $store_exists = (bool) Store::load($store->id());

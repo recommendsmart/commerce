@@ -7,7 +7,7 @@ use Drupal\Core\Form\FormStateInterface;
 /**
  * Defines the base class for EmailAdjuster plug-ins.
  */
-class EmailAdjusterBase extends EmailProcessorBase implements EmailAdjusterInterface {
+abstract class EmailAdjusterBase extends EmailProcessorBase implements EmailAdjusterInterface {
 
   /**
    * The default weight for an email adjuster.

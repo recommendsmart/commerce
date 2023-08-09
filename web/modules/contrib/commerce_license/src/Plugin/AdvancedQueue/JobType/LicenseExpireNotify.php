@@ -2,14 +2,15 @@
 
 namespace Drupal\commerce_license\Plugin\AdvancedQueue\JobType;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\Core\Mail\MailManagerInterface;
-use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Render\RendererInterface;
-use Drupal\Core\Render\RenderContext;
 use Drupal\advancedqueue\Job;
 use Drupal\advancedqueue\JobResult;
 use Drupal\advancedqueue\Plugin\AdvancedQueue\JobType\JobTypeBase;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Mail\MailManagerInterface;
+use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
+use Drupal\Core\Render\RenderContext;
+use Drupal\Core\Render\RendererInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -44,6 +45,13 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
   protected $pluginManagerMail;
 
   /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
+  /**
    * Creates a CommerceLicenseExpireNotify instance.
    *
    * @param array $configuration
@@ -58,19 +66,15 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
    *   The Renderer service.
    * @param \Drupal\Core\Mail\MailManagerInterface $plugin_manager_mail
    *   The Mail Manager service.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The config factory.
    */
-  public function __construct(
-    array $configuration,
-    $plugin_id,
-    $plugin_definition,
-    EntityTypeManagerInterface $entity_type_manager,
-    RendererInterface $renderer,
-    MailManagerInterface $plugin_manager_mail
-  ) {
+  public function __construct(array $configuration, string $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, RendererInterface $renderer, MailManagerInterface $plugin_manager_mail, ConfigFactoryInterface $config_factory) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->renderer = $renderer;
     $this->pluginManagerMail = $plugin_manager_mail;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -83,7 +87,8 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
       $plugin_definition,
       $container->get('entity_type.manager'),
       $container->get('renderer'),
-      $container->get('plugin.manager.mail')
+      $container->get('plugin.manager.mail'),
+      $container->get('config.factory'),
     );
   }
 
@@ -105,11 +110,19 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
     }
     $to = $owner->getEmail();
 
-    // TODO: get the email address from the store that sold the product --
-    // for which we'd a method on the license entity that queries for the
-    // order item that refers to it.
-    // this is quick temporary hack.
-    $from = \Drupal::config('system.site')->get('mail');
+    $from = NULL;
+    $order = $license->getOriginatingOrder();
+    if ($order !== NULL && ($store = $order->getStore()) && !empty($store->getEmail())) {
+      $from = $store->getEmailFromHeader();
+    }
+    else {
+      $site_config = $this->configFactory->get('system.site');
+      $name = str_replace([',', ';'], '', $site_config->get('name'));
+      $mail = $site_config->get('mail');
+      if (!empty($mail)) {
+        $from = sprintf('%s <%s>', $name, $mail);
+      }
+    }
 
     $params = [
       'headers' => [
@@ -147,9 +160,8 @@ class LicenseExpireNotify extends JobTypeBase implements ContainerFactoryPluginI
     if ($message['result']) {
       return JobResult::success();
     }
-    else {
-      return JobResult::failure('Unable to send expiry notification mail.');
-    }
+
+    return JobResult::failure('Unable to send expiry notification mail.');
   }
 
 }

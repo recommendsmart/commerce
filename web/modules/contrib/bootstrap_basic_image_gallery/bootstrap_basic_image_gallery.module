@@ -31,5 +31,24 @@ function bootstrap_basic_image_gallery_theme($existing, $type, $theme, $path) {
         ],
       ],
     ],
+    'bootstrap_basic_media_gallery' => [
+      'variables' => [
+        'main' => [],
+        'thumbnails' => [
+          'class' => NULL,
+          'images' => [],
+        ],
+        'lazyload' => NULL,
+        'modal' => [
+          'id' => NULL,
+        ],
+        'carousel' => [
+          'id' => NULL,
+          'autoplay' => NULL,
+          'interval' => 5000,
+          'images' => [],
+        ],
+      ],
+    ],
   ];
 }

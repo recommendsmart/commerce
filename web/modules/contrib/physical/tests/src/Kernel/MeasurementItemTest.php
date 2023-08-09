@@ -20,14 +20,14 @@ class MeasurementItemTest extends EntityKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'physical',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $factory = PhpUnitComparatorFactory::getInstance();

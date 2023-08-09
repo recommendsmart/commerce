@@ -164,9 +164,6 @@
 		"name": "Honq Konq Dolları",
 		"symbol": "HK$"
 	},
-	"HRK": {
-		"name": "Xorvatiya Kunası"
-	},
 	"IDR": {
 		"name": "İndoneziya Rupisi"
 	},
@@ -458,9 +455,6 @@
 	},
 	"UGX": {
 		"name": "Uqanda Şillinqi"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "Uruqvay Pesosu"

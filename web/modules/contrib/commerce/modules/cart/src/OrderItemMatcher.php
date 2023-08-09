@@ -109,7 +109,11 @@ class OrderItemMatcher implements OrderItemMatcherInterface {
     if ($form_display) {
       $field_names = array_keys($form_display->getComponents());
       // Remove base fields.
-      $field_names = array_diff($field_names, ['purchased_entity', 'quantity', 'created']);
+      $field_names = array_diff($field_names, [
+        'purchased_entity',
+        'quantity',
+        'created',
+      ]);
     }
 
     return $field_names;

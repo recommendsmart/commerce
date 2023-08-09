@@ -5,6 +5,7 @@ namespace Drupal\layout_builder_restrictions_by_region\Form;
 use Drupal\Component\Serialization\Json;
 use Drupal\Component\Uuid\UuidInterface;
 use Drupal\Core\Block\BlockManagerInterface;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
 use Drupal\Core\DependencyInjection\DependencySerializationTrait;
 use Drupal\Core\Form\FormStateInterface;
@@ -52,6 +53,14 @@ class FormAlter implements ContainerInjectionInterface {
    */
   protected $blockManager;
 
+
+  /**
+   * The config factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  protected $configFactory;
+
   /**
    * The layout manager.
    *
@@ -95,14 +104,24 @@ class FormAlter implements ContainerInjectionInterface {
    *   A service for generating UUIDs.
    * @param \Drupal\Core\TempStore\PrivateTempStoreFactory $private_temp_store_factory
    *   Creates a private temporary storage for a collection.
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
+   *   The configuration factory.
    */
-  public function __construct(SectionStorageManagerInterface $section_storage_manager, BlockManagerInterface $block_manager, LayoutPluginManagerInterface $layout_manager, ContextHandlerInterface $context_handler, UuidInterface $uuid, PrivateTempStoreFactory $private_temp_store_factory) {
+  public function __construct(
+    SectionStorageManagerInterface $section_storage_manager,
+    BlockManagerInterface $block_manager,
+    LayoutPluginManagerInterface $layout_manager,
+    ContextHandlerInterface $context_handler,
+    UuidInterface $uuid,
+    PrivateTempStoreFactory $private_temp_store_factory,
+    ConfigFactoryInterface $config_factory) {
     $this->sectionStorageManager = $section_storage_manager;
     $this->blockManager = $block_manager;
     $this->layoutManager = $layout_manager;
     $this->contextHandler = $context_handler;
     $this->uuid = $uuid;
     $this->privateTempStoreFactory = $private_temp_store_factory;
+    $this->configFactory = $config_factory;
   }
 
   /**
@@ -115,7 +134,8 @@ class FormAlter implements ContainerInjectionInterface {
       $container->get('plugin.manager.core.layout'),
       $container->get('context.handler'),
       $container->get('uuid'),
-      $container->get('tempstore.private')
+      $container->get('tempstore.private'),
+      $container->get('config.factory')
     );
   }
 
@@ -282,7 +302,7 @@ class FormAlter implements ContainerInjectionInterface {
                   'region-label',
                 ],
                 'data' => [
-                  '#markup' => $region['label']->render(),
+                  '#markup' => is_object($region['label']) ? $region['label']->render() : $region['label'],
                 ],
               ],
               'status' => [
@@ -336,6 +356,9 @@ class FormAlter implements ContainerInjectionInterface {
    * Save allowed blocks & layouts for the given entity view mode.
    */
   public function entityFormEntityBuild($entity_type_id, LayoutEntityDisplayInterface $display, &$form, FormStateInterface &$form_state) {
+    $settings = $this->configFactory->get('layout_builder_restrictions_by_region.settings');
+    $retain_restrictions_after_layout_removal = $settings->get('retain_restrictions_after_layout_removal') ?? '0';
+
     // Get any existing third party settings.
     $third_party_settings = $display->getThirdPartySetting('layout_builder_restrictions', 'entity_view_mode_restriction_by_region');
     // Get form submission data.
@@ -359,8 +382,15 @@ class FormAlter implements ContainerInjectionInterface {
     // Get extant list of site's available blocks.
     $layout_definitions = $this->getLayoutDefinitions();
 
-    // Set allowed layouts to whatever the current form submission indicates.
-    $third_party_settings = $this->setAllowedLayouts($allowed_layouts, $third_party_settings);
+    if ($retain_restrictions_after_layout_removal) {
+      // Do not clean up restrictions on layouts that have been removed.
+      // See #3305449.
+      $third_party_settings['allowed_layouts'] = $allowed_layouts;
+    }
+    else {
+      // Clean up any restrictions on layouts which have been removed.
+      $third_party_settings = $this->setAllowedLayouts($allowed_layouts, $third_party_settings);
+    }
 
     // Prepare third party settings data for each section.
     foreach ($allowed_layouts as $section) {
@@ -499,28 +529,43 @@ class FormAlter implements ContainerInjectionInterface {
    *   The updated 3rd party settings.
    */
   public function prepareRegionRestrictions($section, $scope, array $layout_definitions, PrivateTempStore $store, $static_id, array $third_party_settings = []) {
+    $types = [
+      'restricted_categories',
+      'allowlisted_blocks',
+      'denylisted_blocks',
+    ];
     $layout_definition = $layout_definitions[$section];
     $regions = $layout_definition->getRegions();
-    // First check if 'all_regions' settings have been made.
+    // First check if the layout's restriction is set to apply to all regions.
     // If so, we should delete all other regions.
-    $all_regions_temp = $store->get($static_id . ':' . $section . ':all_regions');
-    if (!is_null($all_regions_temp) || $scope == 'all') {
+    if ($scope === 'all') {
       // Delete any previously stored restrictions for specific regions.
       foreach (array_keys($regions) as $region) {
-        unset($third_party_settings['restricted_categories'][$section][$region]);
-        unset($third_party_settings['allowlisted_blocks'][$section][$region]);
-        unset($third_party_settings['denylisted_blocks'][$section][$region]);
+        foreach ($types as $type) {
+          unset($third_party_settings[$type][$section][$region]);
+        }
       }
-      // Now set the all_regions value.
-      $third_party_settings = $this->setRegionSettings('all_regions', $section, $all_regions_temp, $third_party_settings);
+      $all_regions_temp = $store->get($static_id . ':' . $section . ':all_regions');
+      if (!empty($all_regions_temp)) {
+        // Now set the all_regions value.
+        $third_party_settings = $this->setRegionSettings('all_regions', $section, $all_regions_temp, $third_party_settings);
+      }
+      foreach ($types as $type) {
+        if (empty($third_party_settings[$type][$section])) {
+          unset($third_party_settings[$type][$section]);
+        }
+      }
     }
-    else {
+    elseif ($scope === 'per-region') {
+      unset($third_party_settings['restricted_categories'][$section]['all_regions']);
+      unset($third_party_settings['allowlisted_blocks'][$section]['all_regions']);
+      unset($third_party_settings['denylisted_blocks'][$section]['all_regions']);
       // Second, check each region for temp data.
       // If there is temp data, that means changes have been made prior to save.
       // Otherwise, preserve whatever what is present before.
       foreach (array_keys($regions) as $region) {
         $region_temp = $store->get($static_id . ':' . $section . ':' . $region);
-        if (!is_null($region_temp)) {
+        if (!empty($region_temp)) {
           $third_party_settings = $this->setRegionSettings($region, $section, $region_temp, $third_party_settings);
         }
       }

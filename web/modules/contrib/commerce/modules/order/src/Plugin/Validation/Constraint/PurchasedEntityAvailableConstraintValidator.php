@@ -7,14 +7,14 @@ use Drupal\commerce\PurchasableEntityInterface;
 use Drupal\commerce_order\AvailabilityManagerInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_store\CurrentStoreInterface;
 use Drupal\commerce_store\SelectStoreTrait;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
-use Drupal\Core\Field\EntityReferenceFieldItemListInterface;
+use Drupal\Core\Field\FieldItemListInterface;
+use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
-use Drupal\commerce_store\CurrentStoreInterface;
-use Drupal\Core\Session\AccountInterface;
 
 /**
  * Constraint validator for validating purchased entity availability.
@@ -68,7 +68,7 @@ class PurchasedEntityAvailableConstraintValidator extends ConstraintValidator im
    * {@inheritdoc}
    */
   public function validate($value, Constraint $constraint) {
-    assert($value instanceof EntityReferenceFieldItemListInterface);
+    assert($value instanceof FieldItemListInterface);
     if ($value->isEmpty()) {
       return;
     }
@@ -111,6 +111,7 @@ class PurchasedEntityAvailableConstraintValidator extends ConstraintValidator im
       if (!empty($availability_result->getReason())) {
         $this->context
           ->buildViolation($availability_result->getReason())
+          ->setCode($availability_result->getCode())
           ->addViolation();
       }
       else {

@@ -127,7 +127,7 @@ class PackerManagerTest extends ShippingKernelTestBase {
     $this->packerManager->addPacker(new TestPacker());
 
     $shipments = [];
-    list($shipments, $removed_shipments) = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
+    [$shipments, $removed_shipments] = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
     $this->assertCount(1, $shipments);
     $shipment = $shipments[0];
     $this->assertEquals('Hat', $shipment->getItems()[0]->getTitle());
@@ -149,7 +149,7 @@ class PackerManagerTest extends ShippingKernelTestBase {
     // The first shipment should be reused, and a second one created.
     $shipment_id = $shipment->id();
     $shipments = [$shipment];
-    list($shipments, $removed_shipments) = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
+    [$shipments, $removed_shipments] = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
     $this->assertCount(2, $shipments);
     $first_shipment = $shipments[0];
     $this->assertEquals($shipment_id, $first_shipment->id());
@@ -164,7 +164,7 @@ class PackerManagerTest extends ShippingKernelTestBase {
 
     // The second order item will now be packed as the first shipment.
     $order->removeItem($first_order_item);
-    list($shipments, $removed_shipments) = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
+    [$shipments, $removed_shipments] = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
     $this->assertCount(1, $shipments);
     $first_shipment = $shipments[0];
     $this->assertEquals($shipment_id, $first_shipment->id());
@@ -176,7 +176,7 @@ class PackerManagerTest extends ShippingKernelTestBase {
 
     // No order items left.
     $order->removeItem($second_order_item);
-    list($shipments, $removed_shipments) = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
+    [$shipments, $removed_shipments] = $this->packerManager->packToShipments($order, $shipping_profile, $shipments);
     $this->assertCount(0, $shipments);
     $this->assertCount(1, $removed_shipments);
     $this->assertEquals($shipment_id, $removed_shipments[0]->id());

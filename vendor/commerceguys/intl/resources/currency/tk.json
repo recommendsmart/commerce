@@ -169,9 +169,6 @@
 		"name": "Hindi rupiýasy",
 		"symbol": "₹"
 	},
-	"HRK": {
-		"name": "Horwat kunasy"
-	},
 	"CNY": {
 		"name": "Hytaý ýuany",
 		"symbol": "CN¥"
@@ -357,9 +354,6 @@
 	"RUB": {
 		"name": "Rus rubly"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"WST": {
 		"name": "Samoa talasy"
 	},
@@ -450,9 +444,6 @@
 	"UAH": {
 		"name": "Ukrain griwnasy"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"UYU": {
 		"name": "Urugwaý pesosy"
 	},
@@ -487,8 +478,5 @@
 	},
 	"ZMW": {
 		"name": "Zambiýa kwaçasy"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

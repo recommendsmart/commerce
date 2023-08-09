@@ -148,8 +148,8 @@ class ShortcutLinksTest extends ShortcutTestBase {
    * Tests that the "add to shortcut" and "remove from shortcut" links work.
    */
   public function testShortcutQuickLink() {
-    \Drupal::service('theme_installer')->install(['seven']);
-    $this->config('system.theme')->set('admin', 'seven')->save();
+    \Drupal::service('theme_installer')->install(['claro']);
+    $this->config('system.theme')->set('admin', 'claro')->save();
     $this->config('node.settings')->set('use_admin_theme', '1')->save();
     $this->container->get('router.builder')->rebuild();
 
@@ -197,7 +197,7 @@ class ShortcutLinksTest extends ShortcutTestBase {
     $this->clickLink('Add to Default shortcuts');
     $this->assertSession()->pageTextContains('Added a shortcut for Create Article.');
 
-    $this->config('system.theme')->set('default', 'seven')->save();
+    $this->config('system.theme')->set('default', 'claro')->save();
     $this->drupalGet('node/' . $this->node->id());
     $title = $this->node->getTitle();
 
@@ -218,8 +218,8 @@ class ShortcutLinksTest extends ShortcutTestBase {
       'revision' => FALSE,
     ])->save();
     // Test page with HTML tags in title.
-    $this->drupalGet('admin/structure/block/block-content/manage/basic');
-    $page_title = "Edit Basic block custom block type";
+    $this->drupalGet('admin/structure/block-content/manage/basic');
+    $page_title = "Edit Basic block block type";
     $this->assertSession()->pageTextContains($page_title);
     // Add shortcut to this page.
     $this->clickLink('Add to Default shortcuts');
@@ -315,9 +315,9 @@ class ShortcutLinksTest extends ShortcutTestBase {
    */
   public function testNoShortcutLink() {
     // Change to a theme that displays shortcuts.
-    \Drupal::service('theme_installer')->install(['seven']);
+    \Drupal::service('theme_installer')->install(['claro']);
     $this->config('system.theme')
-      ->set('default', 'seven')
+      ->set('default', 'claro')
       ->save();
 
     $this->drupalGet('page-that-does-not-exist');
@@ -343,9 +343,9 @@ class ShortcutLinksTest extends ShortcutTestBase {
    */
   public function testAccessShortcutsPermission() {
     // Change to a theme that displays shortcuts.
-    \Drupal::service('theme_installer')->install(['seven']);
+    \Drupal::service('theme_installer')->install(['claro']);
     $this->config('system.theme')
-      ->set('default', 'seven')
+      ->set('default', 'claro')
       ->save();
 
     // Add cron to the default shortcut set.
@@ -372,7 +372,7 @@ class ShortcutLinksTest extends ShortcutTestBase {
     $this->drupalLogin($this->drupalCreateUser([
       'access toolbar', 'access shortcuts', 'administer site configuration',
     ]));
-    $this->clickLink('Shortcuts', 0, 'Shortcut link found on page.');
+    $this->clickLink('Shortcuts');
     $this->assertSession()->linkExists('Cron', 0, 'Cron shortcut link found on page.');
 
     $this->verifyAccessShortcutsPermissionForEditPages();
@@ -403,8 +403,7 @@ class ShortcutLinksTest extends ShortcutTestBase {
   }
 
   /**
-   * Tests that the 'access shortcuts' permission is required for shortcut set
-   * administration page access.
+   * Tests the 'access shortcuts' permission for shortcut set administration.
    */
   private function verifyAccessShortcutsPermissionForEditPages() {
     // Create a user with customize links and switch sets permissions  but
@@ -427,8 +426,7 @@ class ShortcutLinksTest extends ShortcutTestBase {
   }
 
   /**
-   * Tests that the 'access shortcuts' permission is required to access the
-   * shortcut block.
+   * Tests the 'access shortcuts' permission with the shortcut block.
    */
   public function testShortcutBlockAccess() {
     // Creates a block instance and place in a region through api.

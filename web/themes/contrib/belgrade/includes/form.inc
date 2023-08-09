@@ -1,10 +1,13 @@
 <?php
 
+use Drupal\Core\Template\Attribute;
+use Drupal\Core\Form\FormStateInterface;
+use Drupal\Component\Utility\Xss;
+
 /**
  * @file
  * Theme and preprocess functions for forms.
  */
-use Drupal\Core\Form\FormStateInterface;
 
 /**
  * Implements hook_theme_suggestions_HOOK_alter().
@@ -56,10 +59,14 @@ function belgrade_preprocess_input(&$variables) {
     $variables['attributes']['class'][] = 'form-check-input';
   }
 
-
   if ($type == 'submit') {
 
-    $variables['attributes'] = new Drupal\Core\Template\Attribute($variables['attributes']);
+    $variables['attributes'] = new Attribute($variables['attributes']);
+
+    if (theme_get_setting('belgrade_submit_button')) {
+      $variables['submit_button'] = TRUE;
+      $variables['safe_value_label'] = Xss::filter($variables['attributes']['value']);
+    }
 
     // Get value.
     $string = $variables['attributes']->offsetGet('value')->value();
@@ -130,6 +137,9 @@ function belgrade_preprocess_input(&$variables) {
       ],
     ];
 
+    // Allow sub themes to alter the array.
+    \Drupal::service('theme.manager')->alter('belgrade_submit_button_class', $text_data);
+
     $icon_data = [
       // Text that match these specific strings are checked first.
       'matches' => [
@@ -156,14 +166,13 @@ function belgrade_preprocess_input(&$variables) {
     ];
 
     // Check if classes are already there
-    $add_white_icon = true;
+    $add_white_icon = TRUE;
 
     foreach ($classes as $class) {
       if ($variables['attributes']->hasClass($class)) {
-        $add_white_icon = false;
+        $add_white_icon = FALSE;
       }
     }
-
 
     //  Iterate over the array.
     foreach ($text_data as $pattern => $strings) {
@@ -171,32 +180,36 @@ function belgrade_preprocess_input(&$variables) {
         switch ($pattern) {
           case 'matches':
             if ($string === $text) {
-              $variables['attributes']->addClass(['btn','btn-'. $class]);
+              if (!$variables['attributes']->hasClass('btn-' . $class)) {
+                $variables['attributes']->addClass(['btn', 'btn-' . $class]);
+              }
             }
             break;
 
           case 'contains':
             if (strpos(mb_strtolower($string), mb_strtolower($text)) !== FALSE) {
-              $variables['attributes']->addClass(['btn','btn-'. $class]);
+              if (!$variables['attributes']->hasClass('btn-' . $class)) {
+                $variables['attributes']->addClass(['btn', 'btn-' . $class]);
+              }
             }
             break;
         }
       }
     }
 
-  if ($add_white_icon) {
+    if ($add_white_icon) {
       foreach ($icon_data as $pattern => $strings) {
         foreach ($strings as $text => $class) {
           switch ($pattern) {
             case 'matches':
               if ($string === $text) {
-                $variables['attributes']->addClass('bi-btn-'. $class);
+                $variables['attributes']->addClass('bi-btn-' . $class);
               }
               break;
 
             case 'contains':
               if (strpos(mb_strtolower($string), mb_strtolower($text)) !== FALSE) {
-                $variables['attributes']->addClass(['bi-btn-'. $class]);
+                $variables['attributes']->addClass(['bi-btn-' . $class]);
               }
               break;
           }
@@ -222,7 +235,7 @@ function belgrade_preprocess_form_element(&$variables) {
  * Implements hook_form_FORM_ID_alter().
  */
 function belgrade_form_alter(&$form, FormStateInterface $form_state, $form_id) {
-  switch($form_id) {
+  switch ($form_id) {
     case 'search_block_form':
       $form['keys']['#title'] = '';
       $form['keys']['#size'] = 20;
@@ -264,7 +277,6 @@ function belgrade_theme_suggestions_container_alter(array &$suggestions, array $
   }
 
   return $suggestions;
-
 }
 /**
  * Implements hook_theme_suggestions_fieldset().
@@ -274,7 +286,7 @@ function belgrade_theme_suggestions_fieldset_alter(array &$suggestions, &$variab
   $patterns = "/checkout/*\n/user\n/user/login\n/user/password";
   $match = \Drupal::service('path.matcher')->matchPath($current_path, $patterns);
 
-  if (isset($variables['element']['#theme']) && in_array($variables['element']['#theme'], array('bef_radios','bef_checkboxes'))) {
+  if (isset($variables['element']['#theme']) && in_array($variables['element']['#theme'], array('bef_radios', 'bef_checkboxes'))) {
     $suggestions[] = 'fieldset__accordion';
   }
 

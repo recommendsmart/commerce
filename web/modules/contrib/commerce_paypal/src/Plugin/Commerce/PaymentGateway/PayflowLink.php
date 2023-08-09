@@ -108,7 +108,8 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       'user' => '',
       'password' => '',
       'trxtype' => 'S',
-      'redirect_mode' => 'post',
+      'redirect_mode' => 'iframe',
+      'cancel_link' => TRUE,
       'reference_transactions' => FALSE,
       'emailcustomer' => FALSE,
       'log' => [
@@ -174,8 +175,19 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       '#default_value' => $this->configuration['redirect_mode'],
       '#required' => TRUE,
       '#options' => [
+        'iframe' => $this->t('Stay on this site using an iframe to embed the hosted checkout page'),
         'post' => $this->t('Redirect to the hosted checkout page via POST through an automatically submitted form'),
         'get' => $this->t('Redirect to the hosted checkout page immediately with a GET request'),
+      ],
+    ];
+    $form['cancel_link'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Display a cancel link beneath the iframe of an embedded hosted checkout page.'),
+      '#default_value' => $this->configuration['cancel_link'],
+      '#states' => [
+        'visible' => [
+          ':input[name="configuration[paypal_payflow_link][redirect_mode]"]' => ['value' => 'iframe'],
+        ],
       ],
     ];
     $form['reference_transactions'] = [
@@ -417,9 +429,14 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
   public function onReturn(OrderInterface $order, Request $request) {
     /** @var \Symfony\Component\HttpFoundation\ParameterBag $parameter_bag */
     $parameter_bag = $request->request;
-    $received_parameters = $parameter_bag->all();
     $configuration = $this->getConfiguration();
 
+    if ($configuration['redirect_mode'] === 'iframe') {
+      $received_parameters = $order->getData('commerce_payflow')['received_parameters'];
+    }
+    else {
+      $received_parameters = $parameter_bag->all();
+    }
     $payment_storage = $this->entityTypeManager->getStorage('commerce_payment');
 
     if (!empty($configuration['silent_post_logging']) &&
@@ -518,7 +535,8 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       'commerce_order' => $order->id(),
       'step' => 'payment',
     ], ['absolute' => TRUE])->toString();
-    $return_url = Url::fromRoute('commerce_payment.checkout.return', [
+    $return_route_name = $this->configuration['redirect_mode'] == 'iframe' ? 'commerce_paypal.checkout.payflowlink_iframe_return' : 'commerce_payment.checkout.return';
+    $return_url = Url::fromRoute($return_route_name, [
       'commerce_order' => $order->id(),
       'step' => 'payment',
     ], ['absolute' => TRUE])->toString();
@@ -541,7 +559,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
       'RETURNURL' => $return_url,
       'CANCELURL' => $cancel_url,
       'DISABLERECEIPT' => 'TRUE',
-      'TEMPLATE' => 'TEMPLATEA',
+      'TEMPLATE' => $this->configuration['redirect_mode'] == 'iframe' ? 'MINLAYOUT' : 'TEMPLATEA',
       'CSCREQUIRED' => 'TRUE',
       'CSCEDIT' => 'TRUE',
       'URLMETHOD' => 'POST',
@@ -627,7 +645,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
         break;
     }
 
-    if ($redirect_mode === 'get' && !empty($order)) {
+    if (in_array($redirect_mode, ['get', 'iframe']) && !empty($order)) {
       $commerce_payflow_data = $order->getData('commerce_payflow');
       if (empty($commerce_payflow_data['token']) || empty($commerce_payflow_data['tokenid'])) {
         return '';
@@ -891,7 +909,7 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
     $response = [];
 
     foreach (explode('&', $result) as $nvp) {
-      list($key, $value) = explode('=', $nvp);
+      [$key, $value] = explode('=', $nvp);
       $response[urldecode($key)] = urldecode($value);
     }
 
@@ -1080,6 +1098,13 @@ class PayflowLink extends OffsitePaymentGatewayBase implements PayflowLinkInterf
     }
 
     return TRUE;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function createHostedCheckoutIframe(OrderInterface $order) {
+    return '<iframe src="' . $this->getRedirectUrl($order) . '" name="embedded-payflow-link" scrolling="no" frameborder="0" width="490px" height="565px"></iframe>';
   }
 
 }

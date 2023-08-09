@@ -16,12 +16,10 @@ class LicenseSetExpiryTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
     'commerce_license_set_expiry_test',
-    'interval',
-    'recurring_period',
   ];
 
   /**
@@ -45,10 +43,11 @@ class LicenseSetExpiryTest extends OrderKernelTestBase {
   /**
    * Tests a license has its expiry date set from the expiry plugin.
    */
-  public function testLicenseSetExpiry() {
+  public function testLicenseSetExpiry(): void {
     $owner = $this->createUser();
 
-    // Create a license in the 'new' state, without an expiration timestamp.
+    // Create a license in the 'new' state,
+    // without an expiration timestamp.
     $license = $this->licenseStorage->create([
       'type' => 'simple',
       'state' => 'new',
@@ -69,7 +68,7 @@ class LicenseSetExpiryTest extends OrderKernelTestBase {
     $license->save();
 
     // Check the expiration timestamp is not yet set.
-    $this->assertEqual($license->expires->value, 0);
+    self::assertEquals(0, $license->expires->value);
 
     // Confirm the license: this puts it into the 'active' state.
     $transition = $license->getState()->getWorkflow()->getTransition('confirm');
@@ -77,7 +76,7 @@ class LicenseSetExpiryTest extends OrderKernelTestBase {
     $license->save();
 
     // Check the expiration timestamp is now set.
-    $this->assertEqual($license->expires->value, 12345);
+    self::assertEquals(12345, $license->expires->value);
   }
 
 }

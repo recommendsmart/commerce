@@ -7,6 +7,7 @@ use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_product\Entity\ProductVariation;
+use Drupal\commerce_product\Entity\ProductVariationType;
 
 /**
  * Tests the cart manager.
@@ -54,6 +55,10 @@ class CartManagerTest extends CartKernelTestBase {
 
     $this->installConfig(['extra_order_item_field']);
 
+    // Turn off title generation to allow explicit values to be used.
+    $variation_type = ProductVariationType::load('default');
+    $variation_type->setGenerateTitle(FALSE);
+    $variation_type->save();
     $this->variation1 = ProductVariation::create([
       'type' => 'default',
       'sku' => strtolower($this->randomMachineName()),

@@ -19,8 +19,8 @@
    */
   Drupal.behaviors.checkoutPaneOverview = {
     attach: function (context, settings) {
-      $(context).find('table#checkout-pane-overview').once('checkout-pane-overview').each(function () {
-        Drupal.checkoutPaneOverview.attach(this);
+     $(once('checkout-pane-overview', 'table#checkout-pane-overview', context)).each(function () {
+       Drupal.checkoutPaneOverview.attach(this);
       });
     }
   };

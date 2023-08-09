@@ -140,6 +140,15 @@ class CompletionRegister extends CheckoutPaneBase implements CheckoutPaneInterfa
    * {@inheritdoc}
    */
   public function isVisible() {
+    $configuration = $this->checkoutFlow->getConfiguration();
+    $guest_new_account = $configuration['guest_new_account'] ?? FALSE;
+    // If a guest account will be automatically created for them, do not show
+    // this pane as they do not need to register.
+    // @todo should we make this visible and allow it to set their created
+    // user password? UX would be weird.
+    if ($guest_new_account) {
+      return FALSE;
+    }
     // This pane can only be shown at the end of checkout.
     if ($this->order->getState()->value == 'draft') {
       return FALSE;
@@ -230,7 +239,7 @@ class CompletionRegister extends CheckoutPaneBase implements CheckoutPaneInterfa
     // @see \Drupal\user\AccountForm::flagViolations
     $violations = $account->validate();
     foreach ($violations->getByFields(['name', 'pass']) as $violation) {
-      list($field_name) = explode('.', $violation->getPropertyPath(), 2);
+      [$field_name] = explode('.', $violation->getPropertyPath(), 2);
       $form_state->setError($pane_form[$field_name], $violation->getMessage());
     }
   }

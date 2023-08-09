@@ -1,5 +1,0 @@
-services:
-  symfony_mailer_bc.overrider:
-    class: Drupal\symfony_mailer_bc\MailerBcConfigOverride
-    tags:
-      - {name: config.factory.override}

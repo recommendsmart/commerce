@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_shipping\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_shipping\Entity\ShipmentInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the event for filtering the available shipping methods.
  *
  * @see \Drupal\commerce_shipping\Event\ShippingEvents
  */
-class FilterShippingMethodsEvent extends Event {
+class FilterShippingMethodsEvent extends EventBase {
 
   /**
    * The shipping methods.

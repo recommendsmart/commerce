@@ -54,6 +54,7 @@ class TransportEmailAdjuster extends EmailAdjusterBase {
     if ($transport = MailerTransport::load($this->configuration['value'])) {
       return $transport->label();
     }
+    return NULL;
   }
 
 }

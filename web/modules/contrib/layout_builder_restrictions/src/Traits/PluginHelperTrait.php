@@ -50,7 +50,7 @@ trait PluginHelperTrait {
     }
 
     // Allow filtering of available blocks by other parts of the system.
-    $definitions = $this->contextHandler()->filterPluginDefinitionsByContexts($this->getAvailableContexts($section_storage), $definitions);
+    $definitions = $this->contextHandler()->filterPluginDefinitionsByContexts($this->getPopulatedContexts($section_storage), $definitions);
     $grouped_definitions = $this->getDefinitionsByUntranslatedCategory($definitions);
     // Create a new category of block_content blocks that meet the context.
     foreach ($grouped_definitions as $category => $data) {
@@ -176,13 +176,20 @@ trait PluginHelperTrait {
    *   A string representing the untranslated block category.
    */
   public function getUntranslatedCategory($category) {
+
     if ($category instanceof TranslatableMarkup) {
       $output = $category->getUntranslatedString();
       // Rename to match Layout Builder Restrictions naming.
       if ($output == '@entity fields') {
         $output = 'Content fields';
       }
-      if ($output == "Custom") {
+      if ($output === "Custom") {
+        $output = "Custom blocks";
+      }
+      // Add affordance for name change in Drupal 10.1. "Custom blocks" are now
+      // "Content block". We use the legacy name for compatibility reasons.
+      // See #3363076.
+      if ($output === "Content block") {
         $output = "Custom blocks";
       }
     }
@@ -207,8 +214,12 @@ trait PluginHelperTrait {
   protected function getSortedDefinitions(array $definitions = NULL, $label_key = 'label') {
     uasort($definitions, function ($a, $b) use ($label_key) {
       if ($a['category'] != $b['category']) {
+        $a['category'] = $a['category'] ?? '';
+        $b['category'] = $b['category'] ?? '';
         return strnatcasecmp($a['category'], $b['category']);
       }
+      $a[$label_key] = $a[$label_key] ?? '';
+      $b[$label_key] = $b[$label_key] ?? '';
       return strnatcasecmp($a[$label_key], $b[$label_key]);
     });
     return $definitions;

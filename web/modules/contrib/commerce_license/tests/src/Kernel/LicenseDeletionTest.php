@@ -16,9 +16,7 @@ class LicenseDeletionTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
-    'interval',
-    'recurring_period',
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
   ];
@@ -44,7 +42,7 @@ class LicenseDeletionTest extends OrderKernelTestBase {
   /**
    * Tests that exceptions thrown by workers are handled properly.
    */
-  public function testLicenseDeletion() {
+  public function testLicenseDeletion(): void {
     $owner = $this->createUser();
 
     // Create a license in the 'active' state.
@@ -68,7 +66,7 @@ class LicenseDeletionTest extends OrderKernelTestBase {
     $license->delete();
 
     // Deleting the license should cause the plugin to revoke the rights.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), 'revokeLicense', "The plugin's revokeLicense() method was called.");
+    self::assertEquals('revokeLicense', \Drupal::state()->get('commerce_license_state_change_test'), 'The plugin\'s revokeLicense() method was called.');
   }
 
 }

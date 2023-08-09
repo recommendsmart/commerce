@@ -14,6 +14,9 @@ pwa.config:
     start_url:
       type: text
       label: 'Start url'
+    scope:
+      type: text
+      label: 'Scope'
     lang:
       type: text
       label: 'Language'
@@ -49,3 +52,12 @@ pwa.config:
       type: boolean
       label: 'An updated SW immediately activates after installing'
       translatable: false
+    image:
+      type: text
+      label: 'Image path'
+    image_small:
+      type: text
+      label: 'Small image path'
+    image_very_small:
+      type: text
+      label: 'Very small image path'

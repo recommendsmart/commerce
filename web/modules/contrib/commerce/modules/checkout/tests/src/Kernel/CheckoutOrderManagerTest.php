@@ -4,9 +4,9 @@ namespace Drupal\Tests\commerce_checkout\Kernel;
 
 use Drupal\commerce_checkout\Entity\CheckoutFlow;
 use Drupal\commerce_order\Entity\Order;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Drupal\Core\Url;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**
@@ -37,6 +37,7 @@ class CheckoutOrderManagerTest extends OrderKernelTestBase {
    */
   protected static $modules = [
     'commerce_checkout',
+    'commerce_checkout_test',
   ];
 
   /**
@@ -121,6 +122,16 @@ class CheckoutOrderManagerTest extends OrderKernelTestBase {
     $this->order->state = 'validation';
     $step_id = $this->checkoutOrderManager->getCheckoutStepId($this->order, 'payment');
     $this->assertEquals('complete', $step_id);
+    $step_id = $this->checkoutOrderManager->getCheckoutStepId($this->order, 'review');
+    $this->assertEquals('complete', $step_id);
+
+    // Plugin may allow other steps on non-draft orders.
+    $this->order->state = 'validation';
+    $checkout_flow = $this->checkoutOrderManager->getCheckoutFlow($this->order);
+    $checkout_flow->setPluginId('commerce_checkout_test_post_completion_steps');
+    $step_id = $this->checkoutOrderManager->getCheckoutStepId($this->order, 'review');
+    $this->assertEquals('review', $step_id);
+
   }
 
 }

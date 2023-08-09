@@ -5,7 +5,7 @@ namespace Drupal\Tests\commerce_license\Kernel;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 
 /**
- * Tests the a field can be set on the license when granted and revoked.
+ * Tests that a field can be set on the license when granted and revoked.
  *
  * @group commerce_license
  */
@@ -16,11 +16,9 @@ class LicenseGrantSetFieldTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
-    'recurring_period',
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
-    'interval',
   ];
 
   /**
@@ -60,7 +58,7 @@ class LicenseGrantSetFieldTest extends OrderKernelTestBase {
   /**
    * Tests that the license type plugin can set field values on the license.
    */
-  public function testLicensePluginSetField() {
+  public function testLicensePluginSetField(): void {
     $license_owner = $this->createUser();
 
     // Create a license in the 'new' state, owned by the user.
@@ -77,25 +75,26 @@ class LicenseGrantSetFieldTest extends OrderKernelTestBase {
     ]);
 
     $license->save();
+    /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
     $license = $this->reloadEntity($license);
 
-    $this->assertEqual('', $license->test_field->value, 'The plugin-controlled field is not set.');
+    self::assertEquals('', $license->test_field->value, 'The plugin-controlled field is not set.');
 
-    // Change the state to 'active' and save the license. This should cause the
-    // plugin to react.
-    $license->state = 'active';
+    // Change the state to 'active' and save the license.
+    // This should cause the plugin to react.
+    $license->getState()->applyTransitionById('confirm');
     $license->save();
     $license = $this->reloadEntity($license);
 
-    $this->assertEqual('granted', $license->test_field->value, 'The plugin-controlled field has been set by grantLicense().');
+    self::assertEquals('granted', $license->test_field->value, 'The plugin-controlled field has been set by grantLicense().');
 
-    // Change the state to 'expired' and save the license. This should cause the
-    // plugin to react.
-    $license->state = 'expired';
+    // Change the state to 'expired' and save the license.
+    // This should cause the plugin to react.
+    $license->getState()->applyTransitionById('expire');
     $license->save();
     $license = $this->reloadEntity($license);
 
-    $this->assertEqual('revoked', $license->test_field->value, 'The plugin-controlled field has been set by revokeLicense().');
+    self::assertEquals('revoked', $license->test_field->value, 'The plugin-controlled field has been set by revokeLicense().');
   }
 
 }

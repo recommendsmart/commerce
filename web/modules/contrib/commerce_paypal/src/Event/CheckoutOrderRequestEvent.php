@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_paypal\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_order\Entity\OrderInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the Checkout order request event.
  *
  * @see \Drupal\commerce_paypal\Event\CommercePaypalEvents
  */
-class CheckoutOrderRequestEvent extends Event {
+class CheckoutOrderRequestEvent extends EventBase {
 
   /**
    * The order.

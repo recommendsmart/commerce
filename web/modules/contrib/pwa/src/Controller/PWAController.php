@@ -6,22 +6,48 @@
 
 namespace Drupal\pwa\Controller;
 
+use Drupal\Component\Serialization\Json;
+use Drupal\Core\Cache\CacheableResponse;
+use Drupal\Core\Cache\CacheableMetadata;
+use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Core\State\StateInterface;
+use Drupal\Core\Theme\ThemeManagerInterface;
+use Drupal\Core\Url;
 use Drupal\pwa\ManifestInterface;
+use GuzzleHttp\Client;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Drupal\Core\Cache\CacheableResponse;
-use Drupal\Core\Cache\CacheableMetadata;
-use Drupal\Component\Serialization\Json;
-use Drupal\Core\Url;
 
 /**
  * Default controller for the pwa module.
  */
 class PWAController implements ContainerInjectionInterface {
+
+  /**
+   * The configuration factory.
+   *
+   * @var \Drupal\Core\Config\ConfigFactoryInterface
+   */
+  private $configFactory;
+
+  /**
+   * The Guzzle HTTP client instance.
+   *
+   * @var \GuzzleHttp\Client
+   */
+  private $httpClient;
+
+  /**
+   * The language manager.
+   *
+   * @var \Drupal\Core\Language\LanguageManagerInterface
+   */
+  private $languageManager;
 
   /**
    * The manifest service.
@@ -31,6 +57,24 @@ class PWAController implements ContainerInjectionInterface {
   private $manifest;
 
   /**
+   * The module extension list.
+   *
+   * @var \Drupal\Core\Extension\ModuleExtensionList
+   *
+   * @see https://www.drupal.org/project/drupal/issues/2940481
+   *   This service is currently still marked as @internal as of Drupal core
+   *   9.2.x, but will hopefully be stablized and no longer be @internal soon.
+   */
+  private $moduleExtensionList;
+
+  /**
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   */
+  private $moduleHandler;
+
+  /**
    * The state.
    *
    * @var \Drupal\Core\State\StateInterface
@@ -38,25 +82,56 @@ class PWAController implements ContainerInjectionInterface {
   private $state;
 
   /**
-   * ModuleHandler.
+   * The theme manager.
    *
-   * @var \Drupal\Core\Extension\ModuleHandlerInterface
+   * @var \Drupal\Core\Theme\ThemeManagerInterface
    */
-  private $moduleHandler;
+  private $themeManager;
 
   /**
-   * Constructor.
+   * Constructor; saves dependencies.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The configuration factory.
+   *
+   * @param \GuzzleHttp\Client $httpClient
+   *   The Guzzle HTTP client instance.
+   *
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+   *   The language manager.
    *
    * @param \Drupal\pwa\ManifestInterface $manifest
    *   The manifest service.
+   *
+   * @param \Drupal\Core\Extension\ModuleExtensionList $moduleExtensionList
+   *   The module extension list.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
+   *
    * @param \Drupal\Core\State\StateInterface $state
    *   The system state.
-   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
+   *   The theme manager.
    */
-  public function __construct(ManifestInterface $manifest, StateInterface $state, ModuleHandlerInterface $moduleHandler) {
-    $this->manifest = $manifest;
-    $this->state = $state;
-    $this->moduleHandler = $moduleHandler;
+  public function __construct(
+    ConfigFactoryInterface    $configFactory,
+    Client                    $httpClient,
+    LanguageManagerInterface  $languageManager,
+    ManifestInterface         $manifest,
+    ModuleExtensionList       $moduleExtensionList,
+    ModuleHandlerInterface    $moduleHandler,
+    StateInterface            $state,
+    ThemeManagerInterface     $themeManager
+  ) {
+    $this->configFactory        = $configFactory;
+    $this->httpClient           = $httpClient;
+    $this->languageManager      = $languageManager;
+    $this->manifest             = $manifest;
+    $this->moduleExtensionList  = $moduleExtensionList;
+    $this->moduleHandler        = $moduleHandler;
+    $this->state                = $state;
+    $this->themeManager         = $themeManager;
   }
 
   /**
@@ -64,9 +139,14 @@ class PWAController implements ContainerInjectionInterface {
    */
   public static function create(ContainerInterface $container) {
     return new static(
+      $container->get('config.factory'),
+      $container->get('http_client'),
+      $container->get('language_manager'),
       $container->get('pwa.manifest'),
+      $container->get('extension.list.module'),
+      $container->get('module_handler'),
       $container->get('state'),
-      $container->get('module_handler')
+      $container->get('theme.manager')
     );
   }
 
@@ -112,7 +192,9 @@ class PWAController implements ContainerInjectionInterface {
         // URL is validated as internal in ConfigurationForm.php.
         $url = Url::fromUserInput($page, ['absolute' => TRUE])->toString(TRUE);
         $url_string = $url->getGeneratedUrl();
-        $response = \Drupal::httpClient()->get($url_string, array('headers' => array('Accept' => 'text/plain')));
+        $response = $this->httpClient->get(
+          $url_string, ['headers' => ['Accept' => 'text/plain']]
+        );
 
         $data = $response->getBody();
         if (empty($data)) {
@@ -148,8 +230,10 @@ class PWAController implements ContainerInjectionInterface {
         $page_resources[] = $image->getAttribute('src');
       }
 
-      // Allow other modules to alter cached asset URLs for this page.
+      // Allow other modules and themes to alter cached asset URLs for this
+      // page.
       $this->moduleHandler->alter('pwa_cache_urls_assets_page', $page_resources, $page, $xpath);
+      $this->themeManager->alter('pwa_cache_urls_assets_page', $page_resources, $page, $xpath);
 
       $resources = array_merge($resources, $page_resources);
     }
@@ -170,12 +254,12 @@ class PWAController implements ContainerInjectionInterface {
    * @return mixed
    */
   public function pwa_serviceworker_file_data(Request $request) {
-    $path = drupal_get_path('module', 'pwa');
+    $path = \Drupal::service('extension.list.module')->getPath('pwa');
 
     $sw = file_get_contents($path . '/js/serviceworker.js');
 
     // Get module configuration.
-    $config = \Drupal::config('pwa.config');
+    $config = $this->configFactory->get('pwa.config');
 
     // Get URLs from config.
     $cacheUrls = pwa_str_to_list($config->get('urls_to_cache'));
@@ -207,7 +291,7 @@ class PWAController implements ContainerInjectionInterface {
     $this->moduleHandler->alter('pwa_exclude_urls', $exclude_cache_url, $cacheable_metadata);
 
     // Active languages on the site.
-    $languages = \Drupal::languageManager()->getLanguages();
+    $languages = $this->languageManager->getLanguages();
 
     // Get the skip-waiting setting.
     $skip_waiting = $config->get('skip_waiting') ? 'true' : 'false';
@@ -218,7 +302,7 @@ class PWAController implements ContainerInjectionInterface {
       '[/*activeLanguages*/]' => Json::encode(array_keys($languages)),
       '[/*exclude_cache_url*/]' => Json::encode($exclude_cache_url),
       "'/offline'/*offlinePage*/" => "'" . $config->get('offline_page') . "'",
-      '[/*modulePath*/]' => '/' . drupal_get_path('module', 'pwa'),
+      '[/*modulePath*/]' => '/' . $this->moduleHandler->getModule('pwa')->getPath(),
       '1/*cacheVersion*/' => '\'' . $this->pwa_get_cache_version() . '\'',
       'false/*pwaSkipWaiting*/' => $skip_waiting,
     ];
@@ -233,7 +317,7 @@ class PWAController implements ContainerInjectionInterface {
 
     $response = new CacheableResponse($data, 200, [
       'Content-Type' => 'application/javascript',
-      'Service-Worker-Allowed' => '/',
+      'Service-Worker-Allowed' => $config->get('scope'),
     ]);
     $response->addCacheableDependency($cacheable_metadata);
 
@@ -246,12 +330,12 @@ class PWAController implements ContainerInjectionInterface {
    * @return string
    *   Cache version.
    */
-  public static function pwa_get_cache_version() {
+  public function pwa_get_cache_version() {
     // Get module configuration.
-    $config = \Drupal::config('pwa.config');
+    $config = $this->configFactory->get('pwa.config');
 
     // Look up module release from package info.
-    $pwa_module_info = \Drupal::service('extension.list.module')->getExtensionInfo('pwa');
+    $pwa_module_info = $this->moduleExtensionList->getExtensionInfo('pwa');
     $pwa_module_version = $pwa_module_info['version'];
 
     // Packaging script will always provide the published module version. Checking

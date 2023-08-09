@@ -26,8 +26,7 @@
   "homepage": "https://github.com/ibuisic/source#readme",
   "devDependencies": {
     "@popperjs/core": "^2.9.2",
-    "@twbs/svg-sprite": "^1.6.2",
-    "bootstrap": "^5.1.0",
+    "bootstrap": "^5.2.1",
     "bootstrap-icons": "^1.8.1",
     "cross-env": "^7.0.3",
     "fs-extra": "^10.0.0",
@@ -39,5 +38,9 @@
     "sass": "^1.32.12",
     "sass-loader": "^12.6.0",
     "vue-template-compiler": "^2.6.12"
+  },
+  "dependencies": {
+    "laravel-mix-copy-watched": "^3.0.0",
+    "svg-sprite": "^2.0.2"
   }
 }

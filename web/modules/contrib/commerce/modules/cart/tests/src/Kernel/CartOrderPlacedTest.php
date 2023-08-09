@@ -2,7 +2,9 @@
 
 namespace Drupal\Tests\commerce_cart\Kernel;
 
+use Drupal\commerce_product\Entity\ProductVariationInterface;
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\user\UserInterface;
 
 /**
  * Tests the unsetting of the cart flag when order is placed.
@@ -15,9 +17,16 @@ class CartOrderPlacedTest extends CartKernelTestBase {
   /**
    * The variation to test against.
    *
-   * @var \Drupal\commerce_product\Entity\ProductVariation
+   * @var \Drupal\commerce_product\Entity\ProductVariationInterface
    */
-  protected $variation;
+  protected ProductVariationInterface $variation;
+
+  /**
+   * A sample user.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected UserInterface $user;
 
   /**
    * {@inheritdoc}
@@ -57,11 +66,13 @@ class CartOrderPlacedTest extends CartKernelTestBase {
    */
   public function testCartOrderPlaced() {
     $this->store = $this->createStore();
+    /** @var \Drupal\commerce_order\Entity\OrderInterface $cart_order */
     $cart_order = $this->container->get('commerce_cart.cart_provider')->createCart('default', $this->store, $this->user);
     $this->cartManager = $this->container->get('commerce_cart.cart_manager');
     $this->cartManager->addEntity($cart_order, $this->variation);
 
     $this->assertNotEmpty($cart_order->cart->value);
+    $this->assertEquals('Cart 1', $cart_order->label());
 
     $cart_order->getState()->applyTransitionById('place');
     $cart_order->save();

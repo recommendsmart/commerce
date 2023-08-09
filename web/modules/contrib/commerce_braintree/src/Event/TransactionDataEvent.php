@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_braintree\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_payment\Entity\PaymentInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the transaction data event.
@@ -13,7 +13,7 @@ use Symfony\Component\EventDispatcher\Event;
  *
  * @see \Drupal\commerce_braintree\Event\BraintreeEvents
  */
-class TransactionDataEvent extends Event {
+class TransactionDataEvent extends EventBase {
 
   /**
    * The payment.

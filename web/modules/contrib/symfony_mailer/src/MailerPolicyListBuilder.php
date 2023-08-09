@@ -21,8 +21,18 @@ class MailerPolicyListBuilder extends ConfigEntityListBuilder implements MailerP
    */
   protected $overrideEntities;
 
+  /**
+   * The type to filter results by.
+   *
+   * @var string
+   */
   protected $filterType;
 
+  /**
+   * The columns to hide.
+   *
+   * @var string[]
+   */
   protected $hideColumns = [];
 
   /**
@@ -65,7 +75,7 @@ class MailerPolicyListBuilder extends ConfigEntityListBuilder implements MailerP
   public function getDefaultOperations(EntityInterface $entity) {
     if ($entity->isNew()) {
       $operations['create'] = [
-        'title' => t('Create'),
+        'title' => $this->t('Create'),
         'weight' => -10,
         'url' => $this->ensureDestination(Url::fromRoute('entity.mailer_policy.add_id_form', ['policy_id' => $entity->id()])),
       ];
@@ -81,7 +91,7 @@ class MailerPolicyListBuilder extends ConfigEntityListBuilder implements MailerP
    * {@inheritdoc}
    */
   protected function getEntityIds() {
-    $query = $this->getStorage()->getQuery();
+    $query = $this->getStorage()->getQuery()->accessCheck(FALSE);
 
     if ($this->filterType) {
       $query->condition('id', "$this->filterType.", 'STARTS_WITH');

@@ -4,3 +4,5 @@ section_library:
       css/section-library.css: { }
   js:
     js/section-library.js: { }
+  dependencies:
+    - core/once

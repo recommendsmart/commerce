@@ -35,8 +35,8 @@ abstract class EasyEmailTestBase extends BrowserTestBase {
     'file',
     'options',
     'token',
-    'symfony_mailer',
-    'symfony_mailer_bc',
+    'mailsystem',
+    'symfony_mailer_lite',
     'easy_email',
   ];
 
@@ -50,18 +50,12 @@ abstract class EasyEmailTestBase extends BrowserTestBase {
    */
   protected $defaultTheme = 'stark';
 
-  protected function setUp() {
+  protected function setUp(): void{
     parent::setUp();
-
-    // Redirect all emails to the test_mail_collector.
-    // This is normally done in testing automatically, but we have MailSystem
-    // installed.
-    $this->config('mailsystem.settings')->set('defaults', [
-      'sender' => 'test_mail_collector',
-    ])->save();
 
     $this->adminUser = $this->drupalCreateUser($this->getAdministratorPermissions());
     $this->drupalLogin($this->adminUser);
+    $this->drupalGet('admin/modules');
     $this->createHtmlTextFormat();
     $this->drupalLogout();
     $this->adminUser = $this->drupalCreateUser($this->getAdministratorPermissions());
@@ -88,6 +82,7 @@ abstract class EasyEmailTestBase extends BrowserTestBase {
       'edit email entities',
       'view all email entities',
       'administer filters',
+      'administer modules',
     ];
     if (!empty($this->htmlFormat)) {
       $permissions[] = $this->htmlFormat->getPermissionName();

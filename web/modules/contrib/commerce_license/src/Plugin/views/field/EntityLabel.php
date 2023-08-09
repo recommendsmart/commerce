@@ -41,13 +41,7 @@ class EntityLabel extends CoreEntityLabel {
     }
 
     foreach ($entity_ids_per_type as $type => $ids) {
-      // Need to use ->entityTypeManager for Drupal >= 8.8.
-      if (property_exists($this, 'entityTypeManager')) {
-        $this->loadedReferencers[$type] = $this->entityTypeManager->getStorage($type)->loadMultiple($ids);
-      }
-      else {
-        $this->loadedReferencers[$type] = $this->entityManager->getStorage($type)->loadMultiple($ids);
-      }
+      $this->loadedReferencers[$type] = $this->entityTypeManager->getStorage($type)->loadMultiple($ids);
     }
   }
 
@@ -59,17 +53,17 @@ class EntityLabel extends CoreEntityLabel {
    *
    * @return string
    *   The entity type to use for a given result row.
+   *
+   * @throws \Exception
    */
-  protected function getEntityTypeFromValues(ResultRow $row) {
+  protected function getEntityTypeFromValues(ResultRow $row): string {
     // Support a dynamically defined entity type.
     if (!empty($this->definition['entity type field'])) {
-      $entity_type_id = $this->getValue($row, $this->definition['entity type field']);
-      return $entity_type_id;
+      return $this->getValue($row, $this->definition['entity type field']);
     }
-    else {
-      // Fall back to the entity type of the table.
-      return parent::getEntityType();
-    }
+
+    // Fall back to the entity type of the table.
+    return $this->getEntityType();
   }
 
   /**
@@ -84,7 +78,7 @@ class EntityLabel extends CoreEntityLabel {
       return;
     }
 
-    /** @var $entity \Drupal\Core\Entity\EntityInterface */
+    /** @var \Drupal\Core\Entity\EntityInterface $entity */
     $entity = $this->loadedReferencers[$entity_type_id][$value];
 
     if (!empty($this->options['link_to_entity'])) {
@@ -92,10 +86,7 @@ class EntityLabel extends CoreEntityLabel {
         $this->options['alter']['url'] = $entity->toUrl();
         $this->options['alter']['make_link'] = TRUE;
       }
-      catch (UndefinedLinkTemplateException $e) {
-        $this->options['alter']['make_link'] = FALSE;
-      }
-      catch (EntityMalformedException $e) {
+      catch (UndefinedLinkTemplateException | EntityMalformedException $e) {
         $this->options['alter']['make_link'] = FALSE;
       }
     }

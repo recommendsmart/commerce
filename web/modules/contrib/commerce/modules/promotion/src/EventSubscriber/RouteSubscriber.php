@@ -15,7 +15,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * {@inheritdoc}
    */
-  public static function getSubscribedEvents() {
+  public static function getSubscribedEvents(): array {
     $events = parent::getSubscribedEvents();
     // Ensure to run after the Views route subscriber.
     // @see \Drupal\views\EventSubscriber\RouteSubscriber.

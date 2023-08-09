@@ -33,12 +33,12 @@ class IntervalItemTest extends FieldKernelTestBase {
    *
    * @var array
    */
-  public static $modules = ['interval'];
+  protected static $modules = ['interval'];
 
   /**
    * @inheritDoc
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Create a field with settings to validate.
@@ -71,16 +71,17 @@ class IntervalItemTest extends FieldKernelTestBase {
     $this->entityValidateAndSave($entity);
 
     // Verify initial field value
-    $this->assertEqual($entity->field_interval->interval, $value['interval']);
-    $this->assertEqual($entity->field_interval->period, $value['period']);
-    $this->assertEqual($entity->get('field_interval')->first()->buildPHPString(), '30 minutes');
+    $this->assertEquals($entity->field_interval->interval, $value['interval']);
+    $this->assertEquals($entity->field_interval->period, $value['period']);
+    $this->assertEquals($entity->get('field_interval')->first()->buildPHPString(), '30 minutes');
+    $this->assertEquals([$value], $entity->get('field_interval')->getValue());
 
     // Verify changing the date value.
     $new_value = ['interval' => 2, 'period' => 'hour'];
     $entity->field_interval = $new_value;
-    $this->assertEqual($entity->field_interval->interval, $new_value['interval']);
-    $this->assertEqual($entity->field_interval->period, $new_value['period']);
-    $this->assertEqual($entity->get('field_interval')->first()->buildPHPString(), '2 hours');
+    $this->assertEquals($entity->field_interval->interval, $new_value['interval']);
+    $this->assertEquals($entity->field_interval->period, $new_value['period']);
+    $this->assertEquals($entity->get('field_interval')->first()->buildPHPString(), '2 hours');
   }
 
 }

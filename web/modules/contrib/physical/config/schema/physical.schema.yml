@@ -44,6 +44,12 @@ field.widget.settings.physical_dimensions_default:
     allow_unit_change:
       type: boolean
       label: 'Allow unit change'
+    available_units:
+      type: sequence
+      label: 'Available Units'
+      sequence:
+        type: string
+        label: 'Unit'
 
 field.widget.settings.physical_measurement_default:
   type: mapping
@@ -55,3 +61,9 @@ field.widget.settings.physical_measurement_default:
     allow_unit_change:
       type: boolean
       label: 'Allow unit change'
+    available_units:
+      type: sequence
+      label: 'Available Units'
+      sequence:
+        type: string
+        label: 'Unit'

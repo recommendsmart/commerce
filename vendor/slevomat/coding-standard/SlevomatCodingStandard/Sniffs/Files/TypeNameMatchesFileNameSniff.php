@@ -20,10 +20,7 @@ use function substr;
 use function ucfirst;
 use function uksort;
 use const DIRECTORY_SEPARATOR;
-use const T_CLASS;
-use const T_INTERFACE;
 use const T_STRING;
-use const T_TRAIT;
 
 class TypeNameMatchesFileNameSniff implements Sniff
 {
@@ -33,25 +30,25 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	/** @var array<string, string> */
 	public $rootNamespaces = [];
 
-	/** @var string[] */
+	/** @var list<string> */
 	public $skipDirs = [];
 
-	/** @var string[] */
+	/** @var list<string> */
 	public $ignoredNamespaces = [];
 
-	/** @var string[] */
+	/** @var list<string> */
 	public $extensions = ['php'];
 
 	/** @var array<string, string>|null */
 	private $normalizedRootNamespaces;
 
-	/** @var string[]|null */
+	/** @var list<string>|null */
 	private $normalizedSkipDirs;
 
-	/** @var string[]|null */
+	/** @var list<string>|null */
 	private $normalizedIgnoredNamespaces;
 
-	/** @var string[]|null */
+	/** @var list<string>|null */
 	private $normalizedExtensions;
 
 	/** @var FilepathNamespaceExtractor */
@@ -62,11 +59,7 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	 */
 	public function register(): array
 	{
-		return [
-			T_CLASS,
-			T_INTERFACE,
-			T_TRAIT,
-		];
+		return TokenHelper::$typeKeywordTokenCodes;
 	}
 
 	/**
@@ -114,7 +107,7 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	}
 
 	/**
-	 * @return string[] path(string) => namespace
+	 * @return array<string, string> path(string) => namespace
 	 */
 	private function getRootNamespaces(): array
 	{
@@ -144,7 +137,7 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	private function getSkipDirs(): array
 	{
@@ -156,7 +149,7 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	private function getIgnoredNamespaces(): array
 	{
@@ -168,7 +161,7 @@ class TypeNameMatchesFileNameSniff implements Sniff
 	}
 
 	/**
-	 * @return string[]
+	 * @return list<string>
 	 */
 	private function getExtensions(): array
 	{

@@ -1,22 +1,68 @@
 {#
 /**
- * @file commerce_license.html.twig
- * Default theme implementation to present License data.
- *
- * This template is used when viewing License pages.
- *
+ * @file
+ * License template.
  *
  * Available variables:
- * - content: A list of content items. Use 'content' to print all content, or
- * - attributes: HTML attributes for the container element.
- *
- * @see template_preprocess_commerce_license()
+ * - attributes: HTML attributes for the wrapper.
+ * - license: The rendered license fields.
+ *   Use 'license' to print them all, or print a subset such as
+ *   'license.title'. Use the following code to exclude the
+ *   printing of a given field:
+ *   @code
+ *   {{ license|without('title') }}
+ *   @endcode
+ * - license_entity: The license entity.
  *
  * @ingroup themeable
  */
 #}
-<div{{ attributes.addClass('commerce_license') }}>
-  {% if content %}
-    {{- content -}}
-  {% endif %}
+
+{{ attach_library('commerce_license/form') }}
+{% set license_state = license_entity.getState.getLabel %}
+
+<div class="layout-license-form clearfix">
+  <div class="layout-region layout-region-license-main">
+    {% if additional_license_fields %}
+      {{ additional_license_fields }}
+    {% endif %}
+    {% if license.activity %}
+      <h2>{% trans %}License activity{% endtrans %}</h2>
+      {{ license.activity }}
+    {% endif %}
+  </div>
+  <div class="layout-region layout-region-license-secondary">
+    <div class="entity-meta">
+      <div class="entity-meta__header">
+        <h3 class="entity-meta__title">
+          {{ license_state }}
+        </h3>
+        {% for key in ['expires', 'renewed', 'granted', 'changed', 'created'] %}
+          {% if license[key] %}
+            <div class="form-item">
+              {{ license[key] }}
+            </div>
+          {% endif %}
+        {% endfor %}
+        {# If the license has possible transitions, render the field for transition buttons. #}
+        {% if license_entity.getState.getTransitions is not empty %}
+          {{ license.state }}
+        {% endif %}
+      </div>
+      <details open class="seven-details">
+        <summary role="button" class="seven-details__summary">
+          {{ 'Owner Information'|t }}
+        </summary>
+        <div class="details-wrapper seven-details__wrapper">
+          {% for key in ['uid'] %}
+            {% if license[key] %}
+              <div class="form-item">
+                {{ license[key] }}
+              </div>
+            {% endif %}
+          {% endfor %}
+        </div>
+      </details>
+    </div>
+  </div>
 </div>

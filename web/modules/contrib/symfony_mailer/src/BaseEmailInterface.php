@@ -207,7 +207,7 @@ interface BaseEmailInterface {
   public function getHtmlBody(): ?string;
 
   /**
-   * Adds an attachment.
+   * Adds an attachment from a path.
    *
    * @param string $path
    *   The path to the file.
@@ -218,7 +218,25 @@ interface BaseEmailInterface {
    *
    * @return $this
    */
-  public function attachFromPath(string $path, ?string $name = NULL, ?string $mimeType = NULL);
+  public function attachFromPath(string $path, string $name = NULL, string $mimeType = NULL);
+
+  /**
+   * Adds an attachment from temporary content that's not related to a path.
+   *
+   * If the content comes from a path (such as a local file, or web resource)
+   * then use attachFromPath(). This is important to ensure security checking
+   * runs based on the correct path.
+   *
+   * @param string $body
+   *   The content of the attachment.
+   * @param string|null $name
+   *   (optional) The file name.
+   * @param string|null $mimeType
+   *   (optional) The mime type. If omitted, the type will be guessed.
+   *
+   * @return $this
+   */
+  public function attachNoPath(string $body, string $name = NULL, string $mimeType = NULL);
 
   // @codingStandardsIgnoreStart
   /**

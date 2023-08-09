@@ -29,9 +29,6 @@
 	"MWK": {
 		"name": "ควาชามาลาวี"
 	},
-	"HRK": {
-		"name": "คูนาโครเอเชีย"
-	},
 	"GTQ": {
 		"name": "เควตซัลกัวเตมาลา"
 	},
@@ -490,8 +487,5 @@
 	},
 	"UAH": {
 		"name": "ฮรีฟเนียยูเครน"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	}
 }

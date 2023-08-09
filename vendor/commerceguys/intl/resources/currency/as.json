@@ -128,9 +128,6 @@
 	"CRC": {
 		"name": "কোষ্টা ৰিকান কোলন"
 	},
-	"HRK": {
-		"name": "ক্ৰোৱেছিয়ান কুনা"
-	},
 	"GMD": {
 		"name": "গাম্বিয়া ডালাছি"
 	},
@@ -483,14 +480,5 @@
 	"XPF": {
 		"name": "CFP ফ্ৰেংক",
 		"symbol": "CFPF"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

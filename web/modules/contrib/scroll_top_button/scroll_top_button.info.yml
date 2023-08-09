@@ -5,7 +5,7 @@ package: User interface
 core_version_requirement: ^8 || ^9 || ^10
 configure: scroll_top_button.settings
 
-# Information added by Drupal.org packaging script on 2022-08-02
-version: '2.0.0'
+# Information added by Drupal.org packaging script on 2022-09-30
+version: '2.0.1'
 project: 'scroll_top_button'
-datestamp: 1659428473
+datestamp: 1664538593

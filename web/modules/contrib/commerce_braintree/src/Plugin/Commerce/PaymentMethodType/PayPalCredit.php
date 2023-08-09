@@ -2,7 +2,11 @@
 
 namespace Drupal\commerce_braintree\Plugin\Commerce\PaymentMethodType;
 
-use Drupal\commerce\BundleFieldDefinition;
+if (!class_exists('Drupal\commerce\BundleFieldDefinition')) {
+  class_alias('Drupal\entity\BundleFieldDefinition', 'Drupal\commerce\BundleFieldDefinition', TRUE);
+}
+
+use Drupal\entity\BundleFieldDefinition;
 use Drupal\commerce_payment\Entity\PaymentMethodInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentMethodType\PaymentMethodTypeBase;
 

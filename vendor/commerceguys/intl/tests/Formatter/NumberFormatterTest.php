@@ -54,12 +54,11 @@ final class NumberFormatterTest extends TestCase
 
     /**
      * @covers ::format
-     *
-     * @expectedException \CommerceGuys\Intl\Exception\InvalidArgumentException
-     * @expectedExceptionMessage The provided value "a12.34" is not a valid number or numeric string.
      */
     public function testFormatWithInvalidNumber()
     {
+        $this->expectExceptionMessage('The provided value "a12.34" is not a valid number or numeric string.');
+        $this->expectException(InvalidArgumentException::class);
         $formatter = new NumberFormatter(new NumberFormatRepository());
         $formatter->format('a12.34');
     }
@@ -155,7 +154,7 @@ final class NumberFormatterTest extends TestCase
     /**
      * Provides the locale, number style, value and expected formatted value.
      */
-    public function numberValueProvider()
+    public static function numberValueProvider()
     {
         return [
             ['en', 'decimal', '-50.00', '-50'],
@@ -171,7 +170,7 @@ final class NumberFormatterTest extends TestCase
     /**
      * Provides values for the formatted value parser.
      */
-    public function formattedValueProvider()
+    public static function formattedValueProvider()
     {
         return [
             ['en', '500,100.05', '500100.05'],

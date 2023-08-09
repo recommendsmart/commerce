@@ -10,9 +10,7 @@ use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
- * Class PaymentReferenceForm.
- *
- * @package Drupal\commerce_paypal\PluginForm
+ * Provides a form for the payment transaction reference.
  */
 class PaymentReferenceForm extends PaymentGatewayFormBase implements ContainerInjectionInterface {
 

@@ -163,9 +163,6 @@
 		"name": "hongkonški dolar",
 		"symbol": "HK$"
 	},
-	"HRK": {
-		"name": "hrvatska kuna"
-	},
 	"INR": {
 		"name": "indijska rupija",
 		"symbol": "₹"
@@ -458,9 +455,6 @@
 	},
 	"UAH": {
 		"name": "ukrajinska grivna"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "urugvajski pezos"

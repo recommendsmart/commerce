@@ -26,10 +26,8 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
     'config_translation',
     'telephone',
     'book',
-    'forum',
     'statistics',
     'syslog',
-    'tracker',
     'update',
     // Test migrations states.
     'migrate_state_finished_test',
@@ -64,8 +62,6 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
       'Book',
       'CCK translation',
       'Calendar Signup',
-      // @todo Remove Color in https://www.drupal.org/project/drupal/issues/3270899
-      'Color',
       'Comment',
       'Contact',
       'Content',
@@ -91,7 +87,6 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
       'FileField',
       'FileField Meta',
       'Filter',
-      'Forum',
       'Help',
       'ImageAPI',
       'ImageAPI GD2',
@@ -106,6 +101,7 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
       'Menu translation',
       'Node',
       'Node Reference',
+      'Node Reference URL Widget',
       'Nodeaccess',
       'Number',
       'OpenID',
@@ -127,6 +123,7 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
       'Taxonomy',
       'Text',
       'Throttle',
+      // @todo Remove Tracker in https://www.drupal.org/project/drupal/issues/3261452
       'Tracker',
       'Trigger',
       'Update status',
@@ -149,9 +146,11 @@ class MultilingualReviewPageTest extends MultilingualReviewPageTestBase {
       'Aggregator',
       // Block is set not_finished in migrate_state_not_finished_test.
       'Block',
+      'Color',
       'Devel',
       'Devel generate',
       'Devel node access',
+      'Forum',
       // Option Widgets is set not_finished in migrate_state_not_finished_test.
       'Option Widgets',
       'Views',

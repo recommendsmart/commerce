@@ -28,7 +28,7 @@ class ActiveFiltersTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installConfig(['system', 'facets_pretty_paths_test']);

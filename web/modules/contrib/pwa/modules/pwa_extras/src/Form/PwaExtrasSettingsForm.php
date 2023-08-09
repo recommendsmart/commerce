@@ -29,17 +29,34 @@ class PwaExtrasSettingsForm extends ConfigFormBase {
       '#open' => TRUE,
     ];
 
+    $mask_color = $config->get('mask_color') ?: '#0678be';
+
     $form['apple']['touch_icons'] = [
       "#type" => 'checkboxes',
       "#title" => $this->t('Touch Icons'),
-      "#options" => str_replace('<', '&lt;', pwa_extras_apple_touch_icons()),
+      "#options" => str_replace('<', '&lt;', pwa_extras_apple_touch_icons($mask_color)),
       '#default_value' => $config->get('touch_icons'),
     ];
+
+    $form['apple']['mask_color'] = [
+      "#type" => 'color',
+      "#title" => $this->t('Mask icon color'),
+      "#description" => $this->t('The color scheme of OS pinned tab mask icon.'),
+      '#default_value' => $mask_color,
+        '#states' => [
+        'invisible' => [
+          ':input[value="touch-icon-mask"]' => ['checked' => FALSE],
+         ],
+      ],
+    ];
+
+    $site_name = $this->config('pwa.config')->get('site_name') ?: $this->config('system.site')->get('name');
+    $color_select = $config->get('color_select') ?: 'default';
 
     $form['apple']['meta_tags'] = [
       "#type" => 'checkboxes',
       "#title" => $this->t('Meta Tags'),
-      "#options" => str_replace('<', '&lt;', pwa_extras_apple_meta_tags()),
+      "#options" => str_replace('<', '&lt;', pwa_extras_apple_meta_tags($site_name, $color_select)),
       '#default_value' => $config->get('meta_tags'),
     ];
 
@@ -56,7 +73,7 @@ class PwaExtrasSettingsForm extends ConfigFormBase {
           ':input[value="meta-status-bar-style"]' => ['checked' => FALSE],
         ],
       ],
-      '#default_value' => $config->get('color_select'),
+      '#default_value' => $color_select,
     ];
 
     $form['apple']['home_screen_icons'] = [
@@ -81,7 +98,9 @@ class PwaExtrasSettingsForm extends ConfigFormBase {
     $config = $this->config('pwa_extras.settings.apple');
 
     $values = $form_state->getValues();
-    $config->set('touch_icons', $values['touch_icons'])
+    $config
+      ->set('touch_icons', $values['touch_icons'])
+      ->set('mask_color', $values['mask_color'])
       ->set('meta_tags', $values['meta_tags'])
       ->set('color_select', $values['color_select'])
       ->set('home_screen_icons', $values['home_screen_icons'])

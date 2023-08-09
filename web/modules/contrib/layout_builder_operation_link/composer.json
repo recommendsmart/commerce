@@ -26,6 +26,9 @@
     "license": "GPL-2.0-or-later",
     "minimum-stability": "dev",
     "require": {
-      "drupal/core": "^8.8.4 || ^9"
+        "drupal/core": "^9 || ^10"
+    },
+    "require-dev": {
+        "drupal/layout_builder_at": "^2.12"
     }
 }

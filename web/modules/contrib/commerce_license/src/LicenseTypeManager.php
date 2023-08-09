@@ -2,12 +2,14 @@
 
 namespace Drupal\commerce_license;
 
+use Drupal\commerce_license\Annotation\CommerceLicenseType;
+use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
 use Drupal\Component\Plugin\Exception\PluginException;
+use Drupal\Component\Plugin\FallbackPluginManagerInterface;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
-use Drupal\commerce_license\Annotation\CommerceLicenseType;
-use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * Manages discovery and instantiation of license type plugins.
@@ -15,7 +17,7 @@ use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
  * @see \Drupal\commerce_license\Annotation\CommerceLicenseType
  * @see plugin_api
  */
-class LicenseTypeManager extends DefaultPluginManager {
+class LicenseTypeManager extends DefaultPluginManager implements FallbackPluginManagerInterface {
 
   /**
    * Constructs a new LicenseTypeManager object.
@@ -52,6 +54,13 @@ class LicenseTypeManager extends DefaultPluginManager {
         throw new PluginException(sprintf('The license type %s must define the %s property.', $plugin_id, $required_property));
       }
     }
+  }
+
+  /**
+   * {@inheritDoc}
+   */
+  public function getFallbackPluginId($plugin_id, array $configuration = []) {
+    throw new NotFoundHttpException();
   }
 
 }

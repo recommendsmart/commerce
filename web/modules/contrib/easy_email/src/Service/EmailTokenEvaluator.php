@@ -37,31 +37,31 @@ class EmailTokenEvaluator implements EmailTokenEvaluatorInterface {
   /**
    * @inheritDoc
    */
-  public function evaluateTokens(EasyEmailInterface $email) {
+  public function evaluateTokens(EasyEmailInterface $email, bool $clear = TRUE) {
     $this->eventDispatcher->dispatch(new EasyEmailEvent($email), EasyEmailEvents::EMAIL_PRETOKENEVAL);
 
     if ($email->hasField('key')) {
-      $email->setKey($this->replaceTokens($email, $email->getKey()));
+      $email->setKey($this->replaceTokens($email, $email->getKey(), TRUE, $clear));
     }
-    $email->setRecipientAddresses($this->replaceTokens($email, $email->getRecipientAddresses(), TRUE));
-    $email->setCCAddresses($this->replaceTokens($email, $email->getCCAddresses(), TRUE));
-    $email->setBCCAddresses($this->replaceTokens($email, $email->getBCCAddresses(), TRUE));
-    $email->setFromName($this->replaceTokens($email, $email->getFromName()));
-    $email->setFromAddress($this->replaceTokens($email, $email->getFromAddress()));
-    $email->setReplyToAddress($this->replaceTokens($email, $email->getReplyToAddress()));
-    $email->setSubject($this->replaceTokens($email, $email->getSubject()));
+    $email->setRecipientAddresses($this->replaceTokens($email, $email->getRecipientAddresses(), TRUE, $clear));
+    $email->setCCAddresses($this->replaceTokens($email, $email->getCCAddresses(), TRUE, $clear));
+    $email->setBCCAddresses($this->replaceTokens($email, $email->getBCCAddresses(), TRUE, $clear));
+    $email->setFromName($this->replaceTokens($email, $email->getFromName(), TRUE, $clear));
+    $email->setFromAddress($this->replaceTokens($email, $email->getFromAddress(), TRUE, $clear));
+    $email->setReplyToAddress($this->replaceTokens($email, $email->getReplyToAddress(), TRUE, $clear));
+    $email->setSubject($this->replaceTokens($email, $email->getSubject(), TRUE, $clear));
     if ($email->hasField('body_html')) {
       $html_body = $email->getHtmlBody();
-      $email->setHtmlBody($this->replaceTokens($email, $html_body['value']), $html_body['format']);
+      $email->setHtmlBody($this->replaceTokens($email, $html_body['value'], TRUE, $clear), $html_body['format']);
     }
     if ($email->hasField('body_plain')) {
-      $email->setPlainBody($this->replaceTokens($email, $email->getPlainBody()));
+      $email->setPlainBody($this->replaceTokens($email, $email->getPlainBody(), TRUE, $clear));
     }
     if ($email->hasField('inbox_preview')) {
-      $email->setInboxPreview($this->replaceTokens($email, $email->getInboxPreview()));
+      $email->setInboxPreview($this->replaceTokens($email, $email->getInboxPreview(), TRUE, $clear));
     }
     if ($email->hasField('attachment_path')) {
-      $email->setAttachmentPaths($this->replaceTokens($email, $email->getAttachmentPaths()));
+      $email->setAttachmentPaths($this->replaceTokens($email, $email->getAttachmentPaths(), TRUE, $clear));
     }
 
     $this->eventDispatcher->dispatch(new EasyEmailEvent($email), EasyEmailEvents::EMAIL_TOKENEVAL);
@@ -103,7 +103,7 @@ class EmailTokenEvaluator implements EmailTokenEvaluatorInterface {
   /**
    * @inheritDoc
    */
-  public function replaceTokens(EasyEmailInterface $email, $values, $unique = FALSE) {
+  public function replaceTokens(EasyEmailInterface $email, $values, $unique = FALSE, $clear = TRUE) {
     // @todo Add strict type hinting on array|string and don't do this work in
     //   the NULL $values case.
     if ($values === NULL) {
@@ -112,14 +112,14 @@ class EmailTokenEvaluator implements EmailTokenEvaluatorInterface {
     if (is_array($values)) {
       $replaced = [];
       foreach ($values as $key => $value) {
-        $replaced[$key] = $this->token->replace($value, ['easy_email' => $email]);
+        $replaced[$key] = $this->token->replace($value, ['easy_email' => $email], ['clear' => $clear]);
       }
       if ($unique) {
         $replaced = array_unique($replaced);
       }
       return $replaced;
     }
-    return $this->token->replace($values, ['easy_email' => $email]);
+    return $this->token->replace($values, ['easy_email' => $email], ['clear' => $clear]);
   }
 
 

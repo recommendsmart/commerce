@@ -18,6 +18,9 @@ class ManualPaymentAddForm extends PaymentGatewayFormBase {
     }
     // The payment amount should not exceed the remaining order balance.
     $balance = $order->getBalance();
+    if (!$balance) {
+      throw new \InvalidArgumentException('The payment amount cannot be determined due to a NULL order balance.');
+    }
     $amount = $balance->isPositive() ? $balance : $balance->multiply(0);
 
     $form['amount'] = [

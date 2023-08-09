@@ -6,6 +6,7 @@ namespace Drupal\config_split\Config;
 
 use Drupal\Core\Config\Schema\ArrayElement;
 use Drupal\Core\Config\Schema\Element;
+use Drupal\Core\Config\Schema\Mapping;
 use Drupal\Core\Config\Schema\Sequence;
 use Drupal\Core\Config\TypedConfigManagerInterface;
 
@@ -62,8 +63,8 @@ class ConfigPatchMerge {
     /** @var \Drupal\Core\Config\Schema\Element $newElement */
     $newElement = $this->typedConfigManager->createFromNameAndData($name, $new);
     return ConfigPatch::fromArray([
-      'added' => self::diffArray($new, $original, $newElement),
-      'removed' => self::diffArray($original, $new, $originalElement),
+      'added' => self::diffArray($new, $original, $newElement, FALSE),
+      'removed' => self::diffArray($original, $new, $originalElement, FALSE),
     ]);
   }
 
@@ -87,14 +88,9 @@ class ConfigPatchMerge {
     /** @var \Drupal\Core\Config\Schema\Element $element */
     $element = $this->typedConfigManager->createFromNameAndData($name, $config);
 
-    $changed = self::diffArray($config, $patch->getRemoved(), $element);
+    $changed = self::diffArray($config, $patch->getRemoved(), $element, TRUE);
     $changed = self::mergeArray($changed, $patch->getAdded(), $element);
     $changed = self::removeSequenceKeys($changed);
-
-    // Make sure not to remove the dependencies key from config entities.
-    if (isset($config['dependencies']) && !isset($changed['dependencies'])) {
-      $changed['dependencies'] = [];
-    }
 
     // Use the sorter to make sure the patch is applied correctly.
     $changed = $this->configSorter->sort($name, $changed);
@@ -105,7 +101,7 @@ class ConfigPatchMerge {
   /**
    * Recursively computes the difference of arrays.
    *
-   * This method transforms the sequence keys and then calls the utility method.
+   * This method transforms the sequence keys and then acts like the utility.
    *
    * @param array $array1
    *   The array to compare from.
@@ -113,6 +109,8 @@ class ConfigPatchMerge {
    *   The array to compare to.
    * @param \Drupal\Core\Config\Schema\Element $element
    *   The typed config element.
+   * @param bool $merging
+   *   True while merging, false while creating a patch.
    * @param string $path
    *   The path into the config.
    *
@@ -120,9 +118,9 @@ class ConfigPatchMerge {
    *   Returns an array containing all the values from array1 that are not
    *   present in array2.
    *
-   * @see self::utilityDiffAssocRecursive()
+   * @see \Drupal\Component\Utility\DiffArray::diffAssocRecursive()
    */
-  private static function diffArray(array $array1, array $array2, Element $element, string $path = ''): array {
+  private static function diffArray(array $array1, array $array2, Element $element, bool $merging, string $path = ''): array {
     // This should not be necessary, but somehow objects have been part of it.
     self::handleStrayObjects($array1);
     self::handleStrayObjects($array2);
@@ -147,9 +145,21 @@ class ConfigPatchMerge {
           // Fix the lookup key and recurse.
           $lookup_key = strpos((string) $key, 'config_split_sequence') === 0 ? $i : $key;
           $lookup_key = empty($path) ? $lookup_key : $path . '.' . $lookup_key;
-          $new_diff = self::diffArray($value, $array2[$key], $element, $lookup_key);
+          $new_diff = self::diffArray($value, $array2[$key], $element, $merging, $lookup_key);
           if (!empty($new_diff)) {
             $diff[$key] = $new_diff;
+          }
+          elseif ($merging) {
+            // When we are merging the patch we check if the type is a mapping.
+            if ($type instanceof Mapping) {
+              // For mappings, we keep the element with an empty array.
+              $diff[$key] = [];
+              // @todo find a better way to know which elements are required.
+              if ($type->getDataDefinition()->getDataType() === 'config_dependencies') {
+                // Except for sub keys of dependencies.
+                unset($diff[$key]);
+              }
+            }
           }
         }
       }
@@ -183,7 +193,7 @@ class ConfigPatchMerge {
    * @return array
    *   The merged array.
    *
-   * @see self::utilityMergeDeepArray()
+   * @see \Drupal\Component\Utility\NestedArray::mergeDeepArray()
    */
   private static function mergeArray(array $array1, array $array2, Element $element, string $path = ''): array {
     $type = self::getType($element, $path);
@@ -243,6 +253,9 @@ class ConfigPatchMerge {
    *   The typed data.
    */
   private static function getType(Element $element, string $path) {
+    if ($path === '') {
+      return $element;
+    }
     if ($element instanceof ArrayElement && !empty($path)) {
       try {
         return $element->get($path);

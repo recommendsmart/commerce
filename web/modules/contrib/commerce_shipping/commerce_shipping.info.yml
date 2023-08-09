@@ -17,7 +17,7 @@ config_devel:
   optional:
     - commerce_checkout.commerce_checkout_flow.shipping
 
-# Information added by Drupal.org packaging script on 2022-05-11
-version: '8.x-2.4'
+# Information added by Drupal.org packaging script on 2023-03-10
+version: '8.x-2.6'
 project: 'commerce_shipping'
-datestamp: 1652265614
+datestamp: 1678443622

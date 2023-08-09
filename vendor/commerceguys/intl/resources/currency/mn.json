@@ -439,9 +439,6 @@
 		"name": "Хонг Конгийн доллар",
 		"symbol": "HK$"
 	},
-	"HRK": {
-		"name": "Хорватын куна"
-	},
 	"CNY": {
 		"name": "Хятадын юань",
 		"symbol": "CN¥"
@@ -485,14 +482,5 @@
 	"JPY": {
 		"name": "Японы иен",
 		"symbol": "JP¥"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

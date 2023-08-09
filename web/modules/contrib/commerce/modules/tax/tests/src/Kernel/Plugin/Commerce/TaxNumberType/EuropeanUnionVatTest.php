@@ -100,7 +100,7 @@ class EuropeanUnionVatTest extends OrderKernelTestBase {
    */
   public function testVerify() {
     $request_time = $this->container->get('datetime.time')->getRequestTime();
-    $wsdl = drupal_get_path('module', 'commerce_tax') . '/tests/fixtures/checkVatService.wsdl';
+    $wsdl = \Drupal::service('extension.list.module')->getPath('commerce_tax') . '/tests/fixtures/checkVatService.wsdl';
     $soap_client = $this->getMockFromWsdl($wsdl);
     // Modify the plugin's protected property to use the mock.
     $property = new \ReflectionProperty(EuropeanUnionVat::class, 'soapClient');

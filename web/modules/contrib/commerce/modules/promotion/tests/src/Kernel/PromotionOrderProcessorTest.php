@@ -3,12 +3,14 @@
 namespace Drupal\Tests\commerce_promotion\Kernel;
 
 use Drupal\commerce_order\Entity\Order;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_promotion\Entity\Coupon;
 use Drupal\commerce_promotion\Entity\Promotion;
 use Drupal\language\Entity\ConfigurableLanguage;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
+use Drupal\user\UserInterface;
 
 /**
  * Tests the promotion order processor.
@@ -22,7 +24,14 @@ class PromotionOrderProcessorTest extends OrderKernelTestBase {
    *
    * @var \Drupal\commerce_order\Entity\OrderInterface
    */
-  protected $order;
+  protected OrderInterface $order;
+
+  /**
+   * A sample user.
+   *
+   * @var \Drupal\user\UserInterface
+   */
+  protected UserInterface $user;
 
   /**
    * Modules to enable.
@@ -332,6 +341,32 @@ class PromotionOrderProcessorTest extends OrderKernelTestBase {
     $adjustments = $this->order->collectAdjustments();
     $this->assertEquals(1, count($adjustments));
     $this->assertEquals('Promotion EN', $adjustments[0]->getLabel());
+  }
+
+  /**
+   * Tests that the promotion order processor cleans up auto added order items.
+   */
+  public function testOrderItemRemoval() {
+    // We simulate an order item automatically added by the BuyXGetY offer.
+    $order_item = OrderItem::create([
+      'type' => 'test',
+      'quantity' => 0,
+      'unit_price' => [
+        'number' => '20.00',
+        'currency_code' => 'USD',
+      ],
+      'data' => [
+        'owned_by_promotion' => TRUE,
+      ],
+    ]);
+    $order_item->save();
+    $this->order->setRefreshState(Order::REFRESH_SKIP);
+    $this->order->addItem($order_item);
+    $this->order->save();
+
+    $this->assertCount(1, $this->order->getItems());
+    $this->container->get('commerce_promotion.promotion_order_processor')->process($this->order);
+    $this->assertCount(0, $this->order->getItems());
   }
 
   /**

@@ -1,13 +1,24 @@
-Easy Email is an HTML email system designed to be as simple as possible to configure, with a robust set of features.
+Easy Email is an HTML email system designed to be as simple as possible to configure,
+with a robust set of features.
 
 ## Requirements
 
+This module requires one of the following HTML mailer modules:
+
+* [Symfony Mailer Lite](https://www.drupal.org/project/symfony_mailer_lite)
 * [Symfony Mailer](https://www.drupal.org/project/symfony_mailer)
-* Symfony Mailer Back-compatibility (included with Symfony Mailer module)
+
+Either of these modules can be used, and you only need one of them.
 
 ## How Is Easy Email Different From Other Modules?
 
-There are a lot of HTML email contrib modules, and some of them are functionally similar to Easy Email. But, they all require a significant amount of work to configure. Many of them also require an in-depth knowledge of how Drupal and email mime processing work. Easy Email tries to take care of all that for you out of the box with sensible defaults, so you can just enable the module, create a template, and then start sending HTML emails without a lot of other configuration. That's the dream, anyway.
+There are a lot of HTML email contrib modules, and some of them are functionally
+similar to Easy Email. But, they all require a significant amount of work to configure.
+Many of them also require an in-depth knowledge of how Drupal and email mime
+processing work. Easy Email tries to take care of all that for you out of the box
+with sensible defaults, so you can just enable the module, create a template, and
+then start sending HTML emails without a lot of other configuration. That's the
+dream, anyway.
 
 ## Features
 
@@ -28,8 +39,6 @@ Dynamic attachments field: use tokens or relative paths to specify attachments.
 
 On the roadmap for Easy Email:
 
-* Email template preview: be able to render a template and edit it before actually sending an email.
 * Disable email logging per template. For some sites, it may be too much data to store every email’s content in the database, so make the storage of sent emails optional.
 * Purge email log: Add the ability to save only emails in the log newer than XX days to help manage the growth of the data.
-* Drupal mail override system: Make it easy to override emails sent by Drupal core and other modules with HTML-emails from Easy Email.
-* Inline images: This is already supported by Swiftmailer but we need to make it easy to add them to templates.
+* Inline images: This is already supported by Symfony Mailer but we need to make it easy to add them to templates.

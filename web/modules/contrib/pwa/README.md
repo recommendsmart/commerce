@@ -85,7 +85,7 @@ By default, the manifest has the following properties:
  * start_url: /
  * orientation: portrait
  * display: standalone
- * icons: Druplicons in 144, 192 and 512
+ * icons: Drupal icons in 144, 192 and 512
 
  For PWA extras make sure to generate and upload your own launch screen icons.
  see https://www.drupal.org/project/pwa/issues/3066848#comment-13246853

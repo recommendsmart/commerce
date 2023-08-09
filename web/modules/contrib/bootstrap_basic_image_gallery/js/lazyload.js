@@ -10,7 +10,7 @@
     attach: function attach(context, settings) {
 
       // Find each lazy modal.
-      $.each($(context).find('.bootstrap-basic-image-gallery .modal.lazy').once('lazyload'), function (index, item) {
+      once('modal-lazyload', '.bootstrap-basic-image-gallery .modal.lazy' , context).forEach((item, index) => {
         // When the modal is shown, lazy load the active image.
         $(item).on('show.bs.modal', function(ev) {
           var slideToDelta = $(ev.relatedTarget).data('slide-to');
@@ -21,7 +21,7 @@
       });
 
       // Find each lazy carousel.
-      $.each($(context).find('.bootstrap-basic-image-gallery .carousel.lazy').once('lazyload'), function (index, item) {
+      once('carousel-lazyload', '.bootstrap-basic-image-gallery .carousel.lazy', context). forEach((item, index) =>{
         // When the carousel slides, lazy load the image.
         $(item).on('slide.bs.carousel', function(ev) {
           var lazyElement = $(ev.relatedTarget).find("img[data-src]");

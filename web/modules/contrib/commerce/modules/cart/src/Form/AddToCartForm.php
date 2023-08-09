@@ -203,7 +203,7 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
     // If the product references variations of a different type, fallback
     // to using the title widget as the attributes widget cannot properly
     // work.
-    if ($component['type'] === 'commerce_product_variation_attributes') {
+    if ($component && $component['type'] === 'commerce_product_variation_attributes') {
       $product = $form_state->get('product');
       /** @var \Drupal\commerce_product\ProductVariationStorageInterface $product_variation_storage */
       $product_variation_storage = $this->entityTypeManager->getStorage('commerce_product_variation');
@@ -256,7 +256,14 @@ class AddToCartForm extends ContentEntityForm implements AddToCartFormInterface 
       $store = $this->selectStore($purchased_entity);
       $cart = $this->cartProvider->createCart($order_type_id, $store);
     }
-    $this->entity = $this->cartManager->addOrderItem($cart, $order_item, $form_state->get(['settings', 'combine']));
+    // Ensure we're adding an order_item, not amending one loaded from cache.
+    if (!$order_item->isNew()) {
+      $order_item = $order_item->createDuplicate();
+    }
+    $this->entity = $this->cartManager->addOrderItem($cart, $order_item, $form_state->get([
+      'settings',
+      'combine',
+    ]));
     // Other submit handlers might need the cart ID.
     $form_state->set('cart_id', $cart->id());
   }

@@ -41,6 +41,18 @@ class PersistentLoginSettingsForm extends ConfigFormBase {
       '#default_value' => $config->get('lifetime'),
     ];
 
+    $form['extend_lifetime'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Extend lifetime when used'),
+      '#description' => $this->t('If enabled, the persistent login session will be valid for <em>lifetime</em> days since last used, instead of since created on login.'),
+      '#default_value' => $config->get('extend_lifetime'),
+      '#states' => [
+        'visible' => [
+          ':input[name="lifetime"]' => ['!value' => '0'],
+        ],
+      ],
+    ];
+
     $form['max_tokens'] = [
       '#type' => 'number',
       '#min' => 0,
@@ -93,8 +105,14 @@ class PersistentLoginSettingsForm extends ConfigFormBase {
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
+    $extend_lifetime = FALSE;
+    if ($form_state->getValue('lifetime') > 0 && $form_state->getValue('extend_lifetime')) {
+      $extend_lifetime = TRUE;
+    }
+
     $this->config('persistent_login.settings')
       ->set('lifetime', $form_state->getValue('lifetime'))
+      ->set('extend_lifetime', $extend_lifetime)
       ->set('max_tokens', $form_state->getValue('max_tokens'))
       ->set('login_form.field_label', $form_state->getValue('field_label'))
       ->set('cookie_prefix', $form_state->getValue('cookie_prefix'))

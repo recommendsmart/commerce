@@ -68,6 +68,11 @@ class SmartPaymentButtonsBuilder implements SmartPaymentButtonsBuilderInterface 
     if ($this->configFactory->get('commerce_paypal.credit_messaging_settings')->get('client_id')) {
       $options['query']['components'] = 'buttons,messages';
     }
+    // Enable Venmo funding if it is not disabled.
+    if (($key = array_search('venmo', $config['disable_funding'])) === FALSE) {
+      $options['query']['enable-funding'] = 'venmo';
+      unset($config['disable_funding'][$key]);
+    }
     if (!empty($config['disable_funding'])) {
       $options['query']['disable-funding'] = implode(',', $config['disable_funding']);
     }

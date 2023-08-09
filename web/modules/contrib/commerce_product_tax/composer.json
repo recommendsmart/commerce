@@ -2,8 +2,8 @@
   "name": "drupal/commerce_product_tax",
   "type": "drupal-module",
   "description": "Provides a user interface for selecting applicable tax rates on the product variation.",
-  "homepage": "http://drupal.org/project/commerce_product_tax",
-  "license": "GPL-2.0+",
+  "homepage": "https://drupal.org/project/commerce_product_tax",
+  "license": "GPL-2.0-or-later",
   "require": {
     "drupal/commerce": "^2.16 || ^3"
   },

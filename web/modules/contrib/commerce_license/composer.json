@@ -8,14 +8,18 @@
   "minimum-stability": "dev",
   "support": {
     "issues": "https://www.drupal.org/project/issues/commerce_license",
-    "source": "http://cgit.drupalcode.org/commerce_license"
+    "source": "https://cgit.drupalcode.org/commerce_license"
   },
   "require": {
     "drupal/advancedqueue": "^1.0",
-    "drupal/commerce": "^2.19 || ^3"
+    "drupal/commerce": "^2.19 || ^3",
+    "drupal/interval": "^1.11"
   },
   "require-dev": {
     "drupal/commerce_recurring": "^1.0@beta",
-    "drupal/recurring_period": "^1.0"
-  }
+    "dms/phpunit-arraysubset-asserts": "^0.3"
+  },
+    "conflict": {
+        "drupal/recurring_period": "1.*"
+    }
 }

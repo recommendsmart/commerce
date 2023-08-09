@@ -7,7 +7,7 @@ use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Logger\LoggerChannelInterface;
 use Symfony\Component\Yaml\Yaml;
-use Drupal\Core\File\FileSystem;
+use Drupal\Core\File\FileSystemInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\config_rewrite\Exception\NonexistentInitialConfigException;
 
@@ -47,7 +47,7 @@ class ConfigRewriter implements ConfigRewriterInterface {
   /**
    * The file system.
    *
-   * @var \Drupal\Core\File\FileSystem
+   * @var \Drupal\Core\File\FileSystemInterface
    */
   protected $fileSystem;
 
@@ -60,12 +60,12 @@ class ConfigRewriter implements ConfigRewriterInterface {
    *   The module handler.
    * @param \Drupal\Core\Logger\LoggerChannelInterface $logger
    *   A logger channel.
-   * @param \Drupal\Core\File\FileSystem $file_system
+   * @param \Drupal\Core\File\FileSystemInterface $file_system
    *   The file system.
    * @param \Drupal\language\Config\LanguageConfigFactoryOverrideInterface|NULL $language_config_factory_override
    *   (Optional) The language config factory override service.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, LoggerChannelInterface $logger, FileSystem $file_system, $language_config_factory_override) {
+  public function __construct(ConfigFactoryInterface $config_factory, ModuleHandlerInterface $module_handler, LoggerChannelInterface $logger, FileSystemInterface $file_system, $language_config_factory_override) {
     $this->configFactory = $config_factory;
     $this->moduleHandler = $module_handler;
     $this->logger = $logger;

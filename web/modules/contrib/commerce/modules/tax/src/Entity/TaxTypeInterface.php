@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_tax\Entity;
 
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 use Drupal\Core\Entity\EntityWithPluginCollectionInterface;
 
@@ -55,5 +56,44 @@ interface TaxTypeInterface extends ConfigEntityInterface, EntityWithPluginCollec
    * @return $this
    */
   public function setPluginConfiguration(array $configuration);
+
+  /**
+   * Gets the conditions.
+   *
+   * @return \Drupal\commerce\Plugin\Commerce\Condition\ConditionInterface[]
+   *   The conditions.
+   */
+  public function getConditions();
+
+  /**
+   * Gets the tax type condition operator.
+   *
+   * @return string
+   *   The condition operator. Possible values: AND, OR.
+   */
+  public function getConditionOperator();
+
+  /**
+   * Sets the tax type condition operator.
+   *
+   * @param string $condition_operator
+   *   The condition operator.
+   *
+   * @return $this
+   */
+  public function setConditionOperator($condition_operator);
+
+  /**
+   * Checks whether the tax type applies to the given order.
+   *
+   * Ensures that the conditions pass.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   *
+   * @return bool
+   *   TRUE if the tax type applies, FALSE otherwise.
+   */
+  public function applies(OrderInterface $order);
 
 }

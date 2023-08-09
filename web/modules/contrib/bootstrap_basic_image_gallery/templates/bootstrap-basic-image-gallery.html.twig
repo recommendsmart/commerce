@@ -41,19 +41,19 @@
 
             <div class="carousel-inner" role="listbox">
               {% for key,carousel_image in carousel.images %}
-                <div class="item slide-{{key}} {% if loop.first %}active{% endif %}">
+                <div class="carousel-item item slide-{{key}} {% if loop.first %}active{% endif %}">
                   {{ carousel_image }}
                   <div class="carousel-caption">{{ attribute(carousel_image, '#caption') }}</div>
                 </div>
               {% endfor %}
 
               {% if thumbnails.images|length > 1 %}
-              <a class="left carousel-control" href="#{{ carousel.id }}" role="button" data-slide="prev">
-                <span class="icon-prev"></span>
+              <a class="carousel-control-prev left carousel-control" href="#{{ carousel.id }}" role="button" data-slide="prev">
+                <span class="carousel-control-prev-icon icon-prev"></span>
                 <span class="sr-only">{% trans %}Previous{% endtrans %}</span>
               </a>
-              <a class="right carousel-control" href="#{{ carousel.id }}" role="button" data-slide="next">
-                <span class="icon-next"></span>
+              <a class="carousel-control-next right carousel-control" href="#{{ carousel.id }}" role="button" data-slide="next">
+                <span class="carousel-control-next-icon icon-next"></span>
                 <span class="sr-only">{% trans %}Next{% endtrans %}</span>
               </a>
               {% endif %}

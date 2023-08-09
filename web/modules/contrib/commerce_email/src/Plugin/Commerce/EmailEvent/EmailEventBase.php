@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_email\Plugin\Commerce\EmailEvent;
 
+use Drupal\Component\EventDispatcher\Event;
 use Drupal\Core\Plugin\PluginBase;
 
 /**
@@ -28,6 +29,20 @@ abstract class EmailEventBase extends PluginBase implements EmailEventInterface 
    */
   public function getEntityTypeId() {
     return $this->pluginDefinition['entity_type'];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRelatedEntityTypeIds() {
+    return [];
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function extractRelatedEntitiesFromEvent(Event $event) {
+    return [];
   }
 
 }

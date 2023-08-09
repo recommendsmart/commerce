@@ -2,12 +2,13 @@
 
 namespace Drupal\commerce_license\EventSubscriber;
 
+use Drupal\commerce_license\Entity\LicenseInterface;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\commerce_order\Event\OrderAssignEvent;
 use Drupal\commerce_order\Event\OrderEvent;
 use Drupal\commerce_order\Event\OrderEvents;
-use Drupal\commerce_order\Event\OrderAssignEvent;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
-use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\state_machine\Event\WorkflowTransitionEvent;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
@@ -40,7 +41,8 @@ class OrderSubscriber implements EventSubscriberInterface {
     return [
       OrderEvents::ORDER_PAID => 'onPaid',
       'commerce_order.place.pre_transition' => ['onPlace', 100],
-      // Handle assignment of license owner to the correct user after anonymous checkout
+      // Handle assignment of license owner to the correct user after
+      // anonymous checkout.
       OrderEvents::ORDER_ASSIGN => ['onAssign', 0],
       // Event for reaching the 'canceled' order state.
       'commerce_order.cancel.post_transition' => ['onCancel', -100],
@@ -52,16 +54,20 @@ class OrderSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\commerce_order\Event\OrderEvent $event
    *   The order event.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function onPaid(OrderEvent $event) {
+  public function onPaid(OrderEvent $event): void {
     $order = $event->getOrder();
     $licensable_order_items = $this->getLicensableOrderItems($order);
 
     foreach ($licensable_order_items as $order_item) {
       /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
       $license = $order_item->get('license')->entity;
-      // We don't need to do anything if there is already an active license
-      // referenced by this order item.
+      // We don't need to do anything if there is already an
+      // 'active' license referenced by this order item.
       if ($license && $license->getState()->getId() === 'active') {
         continue;
       }
@@ -82,6 +88,10 @@ class OrderSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\state_machine\Event\WorkflowTransitionEvent $event
    *   The event we subscribed to.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
   public function onPlace(WorkflowTransitionEvent $event) {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
@@ -91,8 +101,8 @@ class OrderSubscriber implements EventSubscriberInterface {
 
     foreach ($licensable_order_items as $order_item) {
       $license = $order_item->get('license')->entity;
-      // We don't need to do anything if there is already an active license
-      // referenced by this order item.
+      // We don't need to do anything if there is already an
+      // 'active' license referenced by this order item.
       if ($license && $license->getState()->getId() === 'active') {
         continue;
       }
@@ -122,8 +132,7 @@ class OrderSubscriber implements EventSubscriberInterface {
    * @param \Drupal\commerce_order\Event\OrderAssignEvent $event
    *   The event we subscribed to.
    */
-  public function onAssign(OrderAssignEvent $event) {
-    /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
+  public function onAssign(OrderAssignEvent $event): void {
     $order = $event->getOrder();
     $new_owner = $event->getCustomer();
 
@@ -143,23 +152,27 @@ class OrderSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\state_machine\Event\WorkflowTransitionEvent $event
    *   The event we subscribed to.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function onCancel(WorkflowTransitionEvent $event) {
+  public function onCancel(WorkflowTransitionEvent $event): void {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $event->getEntity();
     $license_order_items = $this->getLicensableOrderItems($order);
 
     foreach ($license_order_items as $order_item) {
       // Get the license from the order item.
+      /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
       $license = $order_item->get('license')->entity;
       if (!$license) {
         continue;
       }
 
       // Cancel the license.
-      $transition = $license->getState()->getWorkflow()->getTransition('cancel');
-      $license->getState()->applyTransition($transition);
-      $license->save();
+      if ($license->getState()->isTransitionAllowed('cancel')) {
+        $license->getState()->applyTransitionById('cancel');
+        $license->save();
+      }
     }
   }
 
@@ -172,7 +185,7 @@ class OrderSubscriber implements EventSubscriberInterface {
    * @return \Drupal\commerce_order\Entity\OrderItemInterface[]
    *   An array of the order items whose purchased products are for licenses.
    */
-  protected function getLicensableOrderItems(OrderInterface $order) {
+  protected function getLicensableOrderItems(OrderInterface $order): array {
     $order_items = [];
 
     foreach ($order->getItems() as $order_item) {
@@ -216,8 +229,12 @@ class OrderSubscriber implements EventSubscriberInterface {
    *
    * @return \Drupal\commerce_license\Entity\LicenseInterface
    *   The created license.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createLicenseFromOrderItem(OrderItemInterface $order_item) {
+  protected function createLicenseFromOrderItem(OrderItemInterface $order_item): LicenseInterface {
     /** @var \Drupal\commerce_license\LicenseStorageInterface $license_storage */
     $license_storage = $this->entityTypeManager->getStorage('commerce_license');
     $license = $license_storage->createFromOrderItem($order_item);

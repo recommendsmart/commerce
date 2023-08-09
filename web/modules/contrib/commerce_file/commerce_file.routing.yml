@@ -17,4 +17,4 @@ commerce_file.download:
       file:
         type: 'entity:file'
   requirements:
-    _entity_access: 'file.download'
+    _custom_access: '\Drupal\commerce_file\Controller\FileDownloadController::access'

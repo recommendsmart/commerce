@@ -274,7 +274,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
     }
     $query = $this->entityTypeManager()->getStorage('commerce_pricelist_item')->getQuery();
     $query
-      ->accessCheck(TRUE)
+      ->accessCheck(FALSE)
       ->condition('price_list_id', $this->id());
     $result = $query->execute();
 
@@ -421,7 +421,7 @@ class PriceList extends CommerceContentEntityBase implements PriceListInterface 
    */
   public static function getDefaultStartDate() {
     $timestamp = \Drupal::time()->getRequestTime();
-    return gmdate(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $timestamp);
+    return date(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $timestamp);
   }
 
   /**

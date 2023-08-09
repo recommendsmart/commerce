@@ -36,3 +36,21 @@ function commerce_braintree_update_8001() {
     $gateway->save();
   }
 }
+
+/**
+ * Disables credit card icon settings on existing payment gateways.
+ */
+function commerce_braintree_update_8002() {
+  $payment_gateways = \Drupal::entityTypeManager()
+    ->getStorage('commerce_payment_gateway')
+    ->loadMultiple();
+
+  foreach ($payment_gateways as $payment_gateway) {
+    if ($payment_gateway->getPluginId() == 'braintree_hostedfields') {
+      $configuration = $payment_gateway->getPluginConfiguration();
+      $configuration['enable_credit_card_icons'] = FALSE;
+      $payment_gateway->setPluginConfiguration($configuration);
+      $payment_gateway->save();
+    }
+  }
+}

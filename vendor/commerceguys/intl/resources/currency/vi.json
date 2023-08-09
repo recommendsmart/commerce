@@ -265,9 +265,6 @@
 	"NOK": {
 		"name": "Krone Na Uy"
 	},
-	"HRK": {
-		"name": "Kuna Croatia"
-	},
 	"MWK": {
 		"name": "Kwacha Malawi"
 	},
@@ -473,9 +470,6 @@
 	},
 	"MNT": {
 		"name": "Tugrik Mông Cổ"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"VUV": {
 		"name": "Vatu Vanuatu"

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\InvalidIntervalException.
- */
-
 namespace Drupal\interval;
 
 /**

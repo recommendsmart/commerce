@@ -232,9 +232,6 @@
 	"CDF": {
 		"name": "Kongon frangi"
 	},
-	"HRK": {
-		"name": "Kroatian kuna"
-	},
 	"CUP": {
 		"name": "Kuuban peso"
 	},
@@ -376,8 +373,11 @@
 	"SCR": {
 		"name": "Seychellien rupia"
 	},
-	"SLL": {
+	"SLE": {
 		"name": "Sierra Leonen leone"
+	},
+	"SLL": {
+		"name": "Sierra Leonen leone (1964—2022)"
 	},
 	"SGD": {
 		"name": "Singaporen dollari"

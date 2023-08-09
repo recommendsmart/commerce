@@ -69,9 +69,6 @@
 	"KMF": {
 		"name": "ໂຄ​ໂມ​ຣຽນ ຟຣັງ"
 	},
-	"HRK": {
-		"name": "ໂຄຣ​ເອ​ທຽນ ຄູ​ນາ"
-	},
 	"COP": {
 		"name": "ໂຄ​ລົມ​ບຽນ ເປ​ໂຊ"
 	},
@@ -491,8 +488,5 @@
 	},
 	"HTG": {
 		"name": "ໄຮ​ຕຽນ ກົວ​ເດ"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	}
 }

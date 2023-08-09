@@ -2,10 +2,10 @@
 
 namespace Drupal\commerce_license_test\Plugin\Commerce\LicenseType;
 
-use Drupal\user\UserInterface;
-use Drupal\commerce_license\ExistingRights\ExistingRightsResult;
 use Drupal\commerce_license\Entity\LicenseInterface;
+use Drupal\commerce_license\ExistingRights\ExistingRightsResult;
 use Drupal\commerce_license\Plugin\Commerce\LicenseType\ExistingRightsFromConfigurationCheckingInterface;
+use Drupal\user\UserInterface;
 
 /**
  * Reports whether it has been granted and has a rights check.
@@ -44,9 +44,9 @@ class StateChangeWithRightsCheck extends TestLicenseBase implements ExistingRigh
     // rights.
     // This assumes that there is only one user involved in the test!
     return ExistingRightsResult::rightsExistIf(
-      $license_status == 'grantLicense',
-      $this->t("You already have the rights."),
-      $this->t("The user already has the rights.")
+      $license_status === 'grantLicense',
+      $this->t('You already have the rights.'),
+      $this->t('The user already has the rights.')
     );
   }
 

@@ -51,4 +51,15 @@ interface PayflowLinkInterface extends OffsitePaymentGatewayInterface, SupportsA
    */
   public function referencePayment(PaymentInterface $payment, Price $amount = NULL);
 
+  /**
+   * Returns an iframe embedding the Payflow Link Hosted Checkout page.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   *
+   * @return string
+   *   The iframe HTML to use to embed Payflow's Hosted Checkout page on-site.
+   */
+  public function createHostedCheckoutIframe(OrderInterface $order);
+
 }

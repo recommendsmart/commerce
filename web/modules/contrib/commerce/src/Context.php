@@ -104,7 +104,7 @@ final class Context {
    *   The value.
    */
   public function getData(string $key, $default = NULL) {
-    return isset($this->data[$key]) ? $this->data[$key] : $default;
+    return $this->data[$key] ?? $default;
   }
 
 }

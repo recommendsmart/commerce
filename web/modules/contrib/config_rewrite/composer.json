@@ -17,8 +17,7 @@
     "source": "http://cgit.drupalcode.org/config_rewrite"
   },
   "require": {
-    "drupal/core": "^8.6 || ^9",
-    "php": ">=7.1"
+    "php": ">=7.1",
+    "drupal/core": "^8.6 || ^9 || ^10"
   }
 }
-

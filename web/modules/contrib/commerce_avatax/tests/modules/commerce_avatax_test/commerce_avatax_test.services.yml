@@ -4,3 +4,5 @@ services:
     parent: commerce_avatax.avatax_lib
     decorates: commerce_avatax.avatax_lib
     public: false
+    calls:
+      - [setExtensionPathResolver, ['@extension.path.resolver']]

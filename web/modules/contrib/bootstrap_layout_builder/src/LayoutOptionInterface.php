@@ -109,4 +109,20 @@ interface LayoutOptionInterface extends ConfigEntityInterface {
    */
   public function getLayoutById($layout_id);
 
+  /**
+   * Returns array of enabled default breakpoints ids.
+   *
+   * @return array
+   *   The default breakpoints ids.
+   */
+  public function getDefaultBreakpointsIds();
+
+  /**
+   * Returns array of enabled default breakpoints labels.
+   *
+   * @return array
+   *   The breakpoints labels.
+   */
+  public function getDefaultBreakpointsLabels();
+
 }

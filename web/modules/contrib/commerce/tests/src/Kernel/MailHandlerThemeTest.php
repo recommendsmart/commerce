@@ -74,7 +74,7 @@ class MailHandlerThemeTest extends CommerceKernelTestBase {
     $this->assertEquals('commerce_mail', $email['id']);
     $this->assertEquals($this->user->getEmail(), $email['to']);
     $this->assertFalse(isset($email['headers']['Bcc']));
-    $this->assertEquals($this->store->getEmail(), $email['from']);
+    $this->assertEquals($this->store->getEmailFromHeader(), $email['from']);
     $this->assertEquals('Hello, customer!', $email['subject']);
     $this->assertStringNotContainsString('Commerce test theme', $email['body']);
   }
@@ -103,7 +103,7 @@ class MailHandlerThemeTest extends CommerceKernelTestBase {
     $this->assertEquals('commerce_mail', $email['id']);
     $this->assertEquals($this->user->getEmail(), $email['to']);
     $this->assertFalse(isset($email['headers']['Bcc']));
-    $this->assertEquals($this->store->getEmail(), $email['from']);
+    $this->assertEquals($this->store->getEmailFromHeader(), $email['from']);
     $this->assertEquals('Hello, customer!', $email['subject']);
     $this->assertStringContainsString('Commerce test theme', $email['body']);
   }

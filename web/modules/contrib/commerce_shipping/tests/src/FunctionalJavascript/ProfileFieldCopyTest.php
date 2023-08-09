@@ -288,7 +288,7 @@ class ProfileFieldCopyTest extends CommerceWebDriverTestBase {
 
     // Confirm that submitting the form populates the billing profile.
     $this->submitForm([], 'Save');
-    $this->assertSession()->pageTextContains('The order 2020/01 has been successfully saved.');
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
     $this->order = $this->reloadEntity($this->order);
     $billing_profile = $this->order->getBillingProfile();
     /** @var \Drupal\address\AddressInterface $address */
@@ -312,7 +312,7 @@ class ProfileFieldCopyTest extends CommerceWebDriverTestBase {
       $billing_prefix . '[address][0][address][address_line1]' => '37 Rue du Sentier',
       $billing_prefix . '[copy_to_address_book]' => TRUE,
     ], 'Save');
-    $this->assertSession()->pageTextContains('The order 2020/01 has been successfully saved.');
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
 
     $expected_address = [
       'address_line1' => '37 Rue du Sentier',
@@ -372,7 +372,7 @@ class ProfileFieldCopyTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       $billing_prefix . '[copy_fields][tax_number][0][value]' => 'FR40303265045',
     ], 'Save');
-    $this->assertSession()->pageTextContains('The order 2020/01 has been successfully saved.');
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
     $this->order = $this->reloadEntity($this->order);
     $billing_profile = $this->order->getBillingProfile();
     /** @var \Drupal\address\AddressInterface $address */
@@ -399,7 +399,7 @@ class ProfileFieldCopyTest extends CommerceWebDriverTestBase {
     $this->submitForm([
       $billing_prefix . '[tax_number][0][value]' => 'FRK7399859412',
     ], 'Save');
-    $this->assertSession()->pageTextContains('The order 2020/01 has been successfully saved.');
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
     /** @var \Drupal\profile\Entity\ProfileInterface $billing_profile */
     $billing_profile = $this->reloadEntity($billing_profile);
     /** @var \Drupal\address\AddressInterface $address */

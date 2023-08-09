@@ -44,6 +44,11 @@
             </div>
           {% endif %}
         {% endfor %}
+        {% if stores_count > 1 and order.store_id %}
+          <div class="form-item">
+            {{ order.store_id }}
+          </div>
+        {% endif %}
         {% if order.balance %}
           <div class="form-item">
             {{ order.balance }}

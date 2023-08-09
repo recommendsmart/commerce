@@ -93,7 +93,7 @@ class IPNHandler implements IPNHandlerInterface {
    *   The request data array.
    */
   protected function getRequestDataArray($request_content) {
-    parse_str(html_entity_decode($request_content), $ipn_data);
+    parse_str(html_entity_decode(trim($request_content)), $ipn_data);
     return $ipn_data;
   }
 

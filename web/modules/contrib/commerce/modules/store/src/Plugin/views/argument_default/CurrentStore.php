@@ -79,11 +79,4 @@ class CurrentStore extends ArgumentDefaultPluginBase implements CacheableDepende
     return ['store'];
   }
 
-  /**
-   * {@inheritdoc}
-   */
-  public function getCacheTags() {
-    return $this->currentStore->getStore()->getCacheTags();
-  }
-
 }

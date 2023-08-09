@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_cart\Functional;
 
 use Drupal\commerce_order\Entity\OrderInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Tests\commerce_order\Functional\OrderBrowserTestBase;
 
 /**
@@ -11,6 +12,8 @@ use Drupal\Tests\commerce_order\Functional\OrderBrowserTestBase;
  * @group commerce
  */
 class CartTest extends OrderBrowserTestBase {
+
+  use StringTranslationTrait;
 
   /**
    * The cart order to test against.
@@ -120,14 +123,14 @@ class CartTest extends OrderBrowserTestBase {
       'edit_quantity[1]' => 3,
       'edit_quantity[2]' => 3,
     ];
-    $this->submitForm($values, t('Update cart'));
+    $this->submitForm($values, $this->t('Update cart'));
     $this->assertSession()->pageTextContains(sprintf('%s is not available with a quantity of %s.', $this->variations[2]->label(), 3));
     $this->getSession()->getPage()->findButton('edit-remove-button-2')->press();
     $values = [
       'edit_quantity[0]' => 2,
       'edit_quantity[1]' => 3,
     ];
-    $this->submitForm($values, t('Update cart'));
+    $this->submitForm($values, $this->t('Update cart'));
     $this->assertSession()->fieldValueEquals('edit-edit-quantity-0', 2);
     $this->assertSession()->fieldValueEquals('edit-edit-quantity-1', 3);
     $this->assertSession()->elementTextContains('css', '.order-total-line', 'Total');
@@ -138,16 +141,16 @@ class CartTest extends OrderBrowserTestBase {
       'edit_quantity[0]' => 0,
       'edit_quantity[1]' => 3,
     ];
-    $this->submitForm($values, t('Update cart'));
-    $this->assertSession()->pageTextContains(t('Your shopping cart has been updated.'));
+    $this->submitForm($values, $this->t('Update cart'));
+    $this->assertSession()->pageTextContains($this->t('Your shopping cart has been updated.'));
     $this->assertSession()->fieldExists('edit-edit-quantity-0');
     $this->assertSession()->fieldNotExists('edit-edit-quantity-1');
     $this->assertSession()->pageTextContains('$1,050.00');
 
     // Confirm the presence and functioning of the Remove button.
     $this->assertSession()->buttonExists('Remove');
-    $this->submitForm([], t('Remove'));
-    $this->assertSession()->pageTextContains(t('Your shopping cart is empty.'));
+    $this->submitForm([], $this->t('Remove'));
+    $this->assertSession()->pageTextContains($this->t('Your shopping cart is empty.'));
   }
 
   /**
@@ -161,9 +164,9 @@ class CartTest extends OrderBrowserTestBase {
       'edit_quantity[0]' => 2,
       'edit_quantity[1]' => 3,
     ];
-    $this->submitForm($values, t('Checkout'));
+    $this->submitForm($values, $this->t('Checkout'));
     $this->assertSession()->addressEquals('checkout/1/order_information');
-    $this->assertSession()->pageTextNotContains(t('Your shopping cart has been updated.'));
+    $this->assertSession()->pageTextNotContains($this->t('Your shopping cart has been updated.'));
 
     $this->drupalGet('cart');
     $this->assertSession()->fieldValueEquals('edit-edit-quantity-0', 2);

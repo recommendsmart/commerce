@@ -3,7 +3,7 @@
  * Javascript to handle authorize.net forms.
  */
 
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings, once) {
 
   'use strict';
 
@@ -12,10 +12,11 @@
    */
   Drupal.behaviors.commerceAuthorizeNetForm = {
     attach: function (context) {
-      var $form = $('.authorize-net-accept-js-form', context).closest('form').once('authorize-net-accept-js-processed');
+      var $form = once('authorize-net-accept-js-processed', ".authorize-net-accept-js-form", context);
       if ($form.length === 0) {
         return;
       }
+      $form = $($form[0]).closest('form');
       $form.find('.button--primary').prop('disabled', false);
       var settings = drupalSettings.commerceAuthorizeNet;
       if (settings.paymentMethodType === 'credit_card') {
@@ -30,8 +31,12 @@
     },
     detach: function (context) {
       var $form = $('.authorize-net-accept-js-form', context).closest('form');
-      $form.removeOnce('authorize-net-accept-js-processed');
-      $form.off('submit.authnet');
+      if ($form.length) {
+        if ($form.find('.authorize-net-accept-js-form').length) {
+          once.remove('authorize-net-accept-js-processed', $form.find('.authorize-net-accept-js-form')[0]);
+        }
+        $form.off('submit.authnet');
+      }
     },
     errorDisplay: function (code, error_message) {
       console.log(code + ': ' + error_message);
@@ -52,4 +57,4 @@
     }
   });
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings, once);

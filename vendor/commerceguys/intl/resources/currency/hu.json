@@ -173,9 +173,6 @@
 	"HKD": {
 		"name": "hongkongi dollár"
 	},
-	"HRK": {
-		"name": "horvát kuna"
-	},
 	"INR": {
 		"name": "indiai rúpia"
 	},
@@ -450,9 +447,6 @@
 	},
 	"UYU": {
 		"name": "uruguay-i peso"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"USD": {
 		"name": "USA-dollár"

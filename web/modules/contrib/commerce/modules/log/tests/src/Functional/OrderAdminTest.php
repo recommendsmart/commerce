@@ -81,7 +81,7 @@ class OrderAdminTest extends OrderBrowserTestBase {
       'customer_type' => 'existing',
       'uid' => $user,
     ];
-    $this->submitForm($edit, t('Create'));
+    $this->submitForm($edit, $this->t('Create'));
     $order = Order::load(1);
     $this->drupalGet($order->toUrl('canonical'));
     $this->assertSession()->pageTextContains('Order created through the order add form.');

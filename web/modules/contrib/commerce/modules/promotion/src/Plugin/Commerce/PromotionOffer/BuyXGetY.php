@@ -143,6 +143,7 @@ class BuyXGetY extends OrderPromotionOfferBase {
       '#title' => $this->t('Quantity'),
       '#default_value' => $this->configuration['buy_quantity'],
       '#min' => 1,
+      '#required' => TRUE,
     ];
     $form['buy']['conditions'] = [
       '#type' => 'commerce_conditions',
@@ -162,6 +163,7 @@ class BuyXGetY extends OrderPromotionOfferBase {
       '#title' => $this->t('Quantity'),
       '#default_value' => $this->configuration['get_quantity'],
       '#min' => 1,
+      '#required' => TRUE,
     ];
     $form['get']['conditions'] = [
       '#type' => 'commerce_conditions',
@@ -355,12 +357,10 @@ class BuyXGetY extends OrderPromotionOfferBase {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $entity;
     $order_items = $order->getItems();
-
     $buy_conditions = $this->buildConditionGroup($this->configuration['buy_conditions']);
     $buy_order_items = $this->selectOrderItems($order_items, $buy_conditions, 'DESC');
-    $buy_quantities = array_map(function (OrderItemInterface $order_item) {
-      return $order_item->getQuantity();
-    }, $buy_order_items);
+    $buy_quantities = $this->getOrderItemsQuantities($buy_order_items);
+
     if (array_sum($buy_quantities) < $this->configuration['buy_quantity']) {
       return;
     }
@@ -369,23 +369,19 @@ class BuyXGetY extends OrderPromotionOfferBase {
     if ($this->configuration['get_auto_add'] && ($get_purchasable_entity = $this->findSinglePurchasableEntity($get_conditions))) {
       $order_item = $this->findOrCreateOrderItem($get_purchasable_entity, $order_items);
       $expected_get_quantity = $this->calculateExpectedGetQuantity($buy_quantities, $order_item);
-
       // If the expected get quantity is non-zero, we need to update the
       // quantity of the 'get' order item accordingly.
       if (Calculator::compare($expected_get_quantity, '0') !== 0) {
-        if (Calculator::compare($order_item->getQuantity(), $expected_get_quantity) === -1) {
-          $order_item->setQuantity($expected_get_quantity);
-
-          // Ensure that order items which are 'touched' by this promotion can
-          // not be edited by the customer, either by changing their quantity or
-          // removing them from the cart.
-          $order_item->lock();
-        }
-
+        // Add the expected get quantity to the current quantity.
+        // Multiple promotions can target the same "get" order item, so we
+        // need to ensure the existing quantity is taken into account.
+        $order_item->setQuantity(Calculator::add($order_item->getQuantity(), $expected_get_quantity));
         // Keep track of the quantity that was auto-added to this order item so
         // we can subtract it (or remove the order item completely) if the buy
         // conditions are no longer satisfied on the next order refresh.
         $order_item->setData("promotion:{$promotion->id()}:auto_add_quantity", $expected_get_quantity);
+        // Ensure "auto-added" order items are locked.
+        $order_item->lock();
 
         $time = $order->getCalculationDate()->format('U');
         $context = new Context($order->getCustomer(), $order->getStore(), $time);
@@ -397,14 +393,19 @@ class BuyXGetY extends OrderPromotionOfferBase {
           $order_item->save();
           $order->addItem($order_item);
           $order_items = $order->getItems();
+          $order_item = $this->entityTypeManager->getStorage('commerce_order_item')->load($order_item->id());
         }
+        // When the get order item is automatically added, we shouldn't have to
+        // look for it via selectOrderItems().
+        // For some reason, we have to reload the order item here, otherwise
+        // changes are not detected by the order refresh when the promotion
+        // adjustment is added later on.
+        $get_order_items[$order_item->id()] = $order_item;
       }
     }
 
-    $get_order_items = $this->selectOrderItems($order_items, $get_conditions, 'ASC');
-    $get_quantities = array_map(function (OrderItemInterface $order_item) {
-      return $order_item->getQuantity();
-    }, $get_order_items);
+    $get_order_items = $get_order_items ?? $this->selectOrderItems($order_items, $get_conditions, 'ASC');
+    $get_quantities = $this->getOrderItemsQuantities($get_order_items);
     if (empty($get_quantities)) {
       return;
     }
@@ -482,16 +483,15 @@ class BuyXGetY extends OrderPromotionOfferBase {
     // necessary quantity will be added back in ::apply(). Order items that will
     // end up with a quantity of 0 will be removed from the order by
     // \Drupal\commerce_order\OrderRefresh::refresh().
-    if ($this->configuration['get_auto_add']) {
-      $promotion_data_key = "promotion:{$promotion->id()}:auto_add_quantity";
-      $auto_add_order_items = array_filter($order->getItems(), function (OrderItemInterface $order_item) use ($promotion_data_key) {
-        return $order_item->getData($promotion_data_key);
-      });
-      foreach ($auto_add_order_items as $order_item) {
-        $new_quantity = Calculator::subtract($order_item->getQuantity(), $order_item->getData($promotion_data_key));
-        $order_item->setQuantity($new_quantity);
-        $order_item->unsetData($promotion_data_key);
-      }
+    $promotion_data_key = "promotion:{$promotion->id()}:auto_add_quantity";
+    $auto_add_order_items = array_filter($order->getItems(), function (OrderItemInterface $order_item) use ($promotion_data_key) {
+      return $order_item->getData($promotion_data_key);
+    });
+    foreach ($auto_add_order_items as $order_item) {
+      $new_quantity = Calculator::subtract($order_item->getQuantity(), $order_item->getData($promotion_data_key));
+      $order_item->setQuantity($new_quantity);
+      $order_item->unlock();
+      $order_item->unsetData($promotion_data_key);
     }
   }
 
@@ -557,6 +557,21 @@ class BuyXGetY extends OrderPromotionOfferBase {
   }
 
   /**
+   * Gets an array of order items quantities.
+   *
+   * @param array $order_items
+   *   The order items.
+   *
+   * @return array
+   *   The order items quantities.
+   */
+  protected function getOrderItemsQuantities(array $order_items) {
+    return array_map(function (OrderItemInterface $order_item) {
+      return $order_item->getQuantity();
+    }, $order_items);
+  }
+
+  /**
    * Finds the configured purchasable entity amongst the given conditions.
    *
    * @param \Drupal\commerce\ConditionGroup $conditions
@@ -599,8 +614,15 @@ class BuyXGetY extends OrderPromotionOfferBase {
       if (!$purchased_entity) {
         continue;
       }
+      // We skip order items that are not auto-added here, note that the same
+      // order item across different "BuyXGetY" promotions.
+      // For sake of simplicity and clarity, we do not attempt to reuse an order item
+      // already added by the customer.
+      if (!$this->isAutoAddedOrderItem($order_item)) {
+        continue;
+      }
       if ($purchased_entity->getEntityTypeId() == $get_purchasable_entity->getEntityTypeId()
-          && $purchased_entity->id() == $get_purchasable_entity->id()) {
+        && $purchased_entity->id() == $get_purchasable_entity->id()) {
         return $order_item;
       }
     }
@@ -609,8 +631,36 @@ class BuyXGetY extends OrderPromotionOfferBase {
     $storage = $this->entityTypeManager->getStorage('commerce_order_item');
     $order_item = $storage->createFromPurchasableEntity($get_purchasable_entity, [
       'quantity' => 0,
+      'data' => [
+        'owned_by_promotion' => TRUE,
+      ],
     ]);
+
     return $order_item;
+  }
+
+  /**
+   * Checks whether the given order item was auto added.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
+   *   The order item.
+   *
+   * @return bool
+   *   Whether the given order item was auto added.
+   */
+  protected function isAutoAddedOrderItem(OrderItemInterface $order_item): bool {
+    if ($order_item->get('data')->isEmpty()) {
+      return FALSE;
+    }
+    if ($order_item->getData('owned_by_promotion')) {
+      return TRUE;
+    }
+    $order_item_data_keys = array_keys($order_item->get('data')->first()->getValue());
+    if (!preg_grep('/promotion:\d*:auto_add_quantity/', $order_item_data_keys)) {
+      return FALSE;
+    }
+
+    return TRUE;
   }
 
   /**
@@ -649,8 +699,9 @@ class BuyXGetY extends OrderPromotionOfferBase {
 
       // If the "get" purchasable entity is already in the order, we need to
       // ensure that the already discounted quantity is not counted towards the
-      // buy quantities.
-      if (!$order_item->isNew()) {
+      // buy quantities, note that we only do that if the "get" purchasable
+      // entity is different than the "buy" purchasable entity.
+      if (!$order_item->isNew() && !isset($buy_quantities[$order_item->id()])) {
         $buy_quantities = $this->removeQuantities($buy_quantities, [$order_item->id() => $this->configuration['get_quantity']]);
       }
 
@@ -802,51 +853,33 @@ class BuyXGetY extends OrderPromotionOfferBase {
   protected function buildAdjustmentAmount(OrderItemInterface $order_item, $quantity) {
     if ($this->configuration['offer_type'] == 'percentage') {
       $percentage = (string) $this->configuration['offer_percentage'];
+      $adjusted_total_price = $order_item->getAdjustedTotalPrice(['promotion']);
+      $adjustment_amount = $order_item->getUnitPrice()->multiply($quantity);
+      $adjustment_amount = $adjustment_amount->multiply($percentage);
+      // Don't reduce the unit price past 0.
+      if ($adjustment_amount->greaterThan($adjusted_total_price)) {
+        $adjustment_amount = $adjusted_total_price;
+      }
       if (!empty($this->configuration['display_inclusive'])) {
-        $adjusted_unit_price = $order_item->getAdjustedUnitPrice(['promotion']);
-        // Display-inclusive promotions must first be applied to the unit price.
-        $amount = $adjusted_unit_price->multiply($percentage);
-        $amount = $this->rounder->round($amount);
-        $new_unit_price = $order_item->getUnitPrice()->subtract($amount);
+        $new_unit_price = $order_item->getTotalPrice()->subtract($adjustment_amount)->divide($order_item->getQuantity());
+        $new_unit_price = $this->rounder->round($new_unit_price);
         $order_item->setUnitPrice($new_unit_price);
-        $adjustment_amount = $amount->multiply($quantity);
       }
-      else {
-        $total_price = $order_item->getTotalPrice();
-        if ($order_item->getQuantity() != $quantity) {
-          // Calculate a new total for just the quantity that will be discounted.
-          $total_price = $order_item->getUnitPrice()->multiply($quantity);
-          $total_price = $this->rounder->round($total_price);
-        }
-        $adjustment_amount = $total_price->multiply($percentage);
-      }
+      $adjustment_amount = $this->rounder->round($adjustment_amount);
     }
     else {
       $amount = Price::fromArray($this->configuration['offer_amount']);
+      $unit_price = $order_item->getAdjustedUnitPrice(['promotion']);
+      if ($amount->greaterThan($unit_price)) {
+        $amount = $unit_price;
+      }
+      $adjustment_amount = $amount->multiply($quantity);
       if (!empty($this->configuration['display_inclusive'])) {
-        // First, get the adjusted unit price to ensure the order item is not
-        // already fully discounted.
-        $adjusted_unit_price = $order_item->getAdjustedUnitPrice(['promotion']);
-        // Display-inclusive promotions must first be applied to the unit price.
-        if ($amount->greaterThan($adjusted_unit_price)) {
-          // Don't reduce the unit price past zero.
-          $amount = $adjusted_unit_price;
-        }
-        $unit_price = $order_item->getUnitPrice();
-        $new_unit_price = $unit_price->subtract($amount);
+        $new_unit_price = $order_item->getTotalPrice()->subtract($adjustment_amount)->divide($order_item->getQuantity());
+        $new_unit_price = $this->rounder->round($new_unit_price);
         $order_item->setUnitPrice($new_unit_price);
-        $adjustment_amount = $amount->multiply($quantity);
-        $adjustment_amount = $this->rounder->round($adjustment_amount);
       }
-      else {
-        $adjusted_total_price = $order_item->getAdjustedTotalPrice(['promotion']);
-        $adjustment_amount = $amount->multiply($quantity);
-        $adjustment_amount = $this->rounder->round($adjustment_amount);
-        if ($adjustment_amount->greaterThan($adjusted_total_price)) {
-          // Don't reduce the order item total price past zero.
-          $adjustment_amount = $adjusted_total_price;
-        }
-      }
+      $adjustment_amount = $this->rounder->round($adjustment_amount);
     }
 
     return $adjustment_amount;

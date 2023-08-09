@@ -172,7 +172,7 @@ class CouponRedemption extends InlineFormBase {
     // Runs if the 'Apply coupon' button was clicked, or the main form
     // was submitted by the user clicking the primary submit button.
     $triggering_element = $form_state->getTriggeringElement();
-    $button_type = isset($triggering_element['#button_type']) ? $triggering_element['#button_type'] : NULL;
+    $button_type = $triggering_element['#button_type'] ?? NULL;
     if ($triggering_element['#name'] != 'apply_coupon' && $button_type != 'primary') {
       return;
     }
@@ -182,7 +182,7 @@ class CouponRedemption extends InlineFormBase {
     $coupon_code_path = implode('][', $coupon_code_parents);
     if (empty($coupon_code)) {
       if ($triggering_element['#name'] == 'apply_coupon') {
-        $form_state->setErrorByName($coupon_code_path, t('Please provide a coupon code.'));
+        $form_state->setErrorByName($coupon_code_path, $this->t('Please provide a coupon code.'));
       }
       return;
     }
@@ -190,7 +190,7 @@ class CouponRedemption extends InlineFormBase {
     $coupon_storage = $this->entityTypeManager->getStorage('commerce_promotion_coupon');
     $coupon = $coupon_storage->loadEnabledByCode($coupon_code);
     if (empty($coupon)) {
-      $form_state->setErrorByName($coupon_code_path, t('The provided coupon code is invalid.'));
+      $form_state->setErrorByName($coupon_code_path, $this->t('The provided coupon code is invalid.'));
       return;
     }
 
@@ -204,11 +204,11 @@ class CouponRedemption extends InlineFormBase {
       }
     }
     if (!$coupon->available($order)) {
-      $form_state->setErrorByName($coupon_code_path, t('The provided coupon code is not available. It may have expired or already been used.'));
+      $form_state->setErrorByName($coupon_code_path, $this->t('The provided coupon code is not available. It may have expired or already been used.'));
       return;
     }
     if (!$coupon->getPromotion()->applies($order)) {
-      $form_state->setErrorByName($coupon_code_path, t('The provided coupon code cannot be applied to your order.'));
+      $form_state->setErrorByName($coupon_code_path, $this->t('The provided coupon code cannot be applied to your order.'));
       return;
     }
 

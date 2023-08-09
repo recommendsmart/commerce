@@ -5,9 +5,9 @@ address:
   dependencies:
       - core/jquery
       - core/drupal
-      - core/jquery.once
+      - core/drupalSettings
+      - core/once
       - core/drupal.dialog.ajax
-      - core/jquery.form
   css:
     theme:
       css/commerce_avatax.theme.css: {}

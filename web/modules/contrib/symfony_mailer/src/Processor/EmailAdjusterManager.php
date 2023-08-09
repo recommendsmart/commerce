@@ -11,7 +11,7 @@ use Drupal\symfony_mailer\EmailInterface;
 /**
  * Provides the email adjuster plugin manager.
  */
-class EmailAdjusterManager extends DefaultPluginManager {
+class EmailAdjusterManager extends DefaultPluginManager implements EmailAdjusterManagerInterface {
 
   /**
    * Constructs the EmailAdjusterManager object.
@@ -31,14 +31,18 @@ class EmailAdjusterManager extends DefaultPluginManager {
   }
 
   /**
-   * Applies email policy to an email message.
-   *
-   * @param \Drupal\symfony_mailer\EmailInterface $email
-   *   The email.
+   * {@inheritdoc}
    */
   public function applyPolicy(EmailInterface $email) {
     $suggestions = $email->getSuggestions('', '.');
     $policy_config = MailerPolicy::loadInheritedConfig(end($suggestions));
+
+    // Include automatic adjusters.
+    foreach ($this->getDefinitions() as $id => $definition) {
+      if ($definition['automatic']) {
+        $policy_config[$id] = [];
+      }
+    }
 
     // Add adjusters.
     foreach ($policy_config as $plugin_id => $config) {

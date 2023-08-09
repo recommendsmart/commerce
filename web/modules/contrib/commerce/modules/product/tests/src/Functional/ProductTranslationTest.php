@@ -50,9 +50,9 @@ class ProductTranslationTest extends ProductBrowserTestBase {
 
     // Add the French and German languages.
     $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'fr'], t('Add language'));
+    $this->submitForm(['predefined_langcode' => 'fr'], $this->t('Add language'));
     $this->drupalGet('admin/config/regional/language/add');
-    $this->submitForm(['predefined_langcode' => 'de'], t('Add language'));
+    $this->submitForm(['predefined_langcode' => 'de'], $this->t('Add language'));
 
     // Enable content translation on products and variations.
     $this->drupalGet('admin/config/regional/content-language');
@@ -62,7 +62,7 @@ class ProductTranslationTest extends ProductBrowserTestBase {
       'entity_types[commerce_product_variation]' => TRUE,
       'settings[commerce_product_variation][default][translatable]' => TRUE,
     ];
-    $this->submitForm($edit, t('Save configuration'));
+    $this->submitForm($edit, $this->t('Save configuration'));
     // Adding languages requires a container rebuild in the test running
     // environment so that multilingual services are used.
     $this->resetAll();
@@ -114,13 +114,13 @@ class ProductTranslationTest extends ProductBrowserTestBase {
       'multipleVariations' => FALSE,
       'language_configuration[language_alterable]' => TRUE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
 
     $this->drupalGet('admin/commerce/config/product-variation-types/default/edit');
     $edit = [
       'generateTitle' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
 
     $product = $this->createEntity('commerce_product', [
       'type' => 'default',

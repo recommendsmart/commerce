@@ -8,6 +8,7 @@
 namespace Drupal\Tests\Core\Config\Entity;
 
 use Drupal\Component\Plugin\PluginManagerInterface;
+use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Schema\SchemaIncompleteException;
 use Drupal\Core\DependencyInjection\ContainerBuilder;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -15,9 +16,11 @@ use Drupal\Core\Extension\ModuleHandlerInterface;
 use Drupal\Core\Extension\ThemeHandlerInterface;
 use Drupal\Core\Language\Language;
 use Drupal\Core\Plugin\DefaultLazyPluginCollection;
+use Drupal\Core\Test\TestKernel;
 use Drupal\Tests\Core\Config\Entity\Fixtures\ConfigEntityBaseWithPluginCollections;
 use Drupal\Tests\Core\Plugin\Fixtures\TestConfigurablePlugin;
 use Drupal\Tests\UnitTestCase;
+use Drupal\TestTools\Random;
 
 /**
  * @coversDefaultClass \Drupal\Core\Config\Entity\ConfigEntityBase
@@ -113,6 +116,8 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->id = $this->randomMachineName();
     $values = [
       'id' => $this->id,
@@ -123,7 +128,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->entityType = $this->createMock('\Drupal\Core\Config\Entity\ConfigEntityTypeInterface');
     $this->entityType->expects($this->any())
       ->method('getProvider')
-      ->will($this->returnValue($this->provider));
+      ->willReturn($this->provider);
     $this->entityType->expects($this->any())
       ->method('getConfigPrefix')
       ->willReturn('test_provider.' . $this->entityTypeId);
@@ -132,7 +137,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->entityTypeManager->expects($this->any())
       ->method('getDefinition')
       ->with($this->entityTypeId)
-      ->will($this->returnValue($this->entityType));
+      ->willReturn($this->entityType);
 
     $this->uuid = $this->createMock('\Drupal\Component\Uuid\UuidInterface');
 
@@ -140,7 +145,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->languageManager->expects($this->any())
       ->method('getLanguage')
       ->with('en')
-      ->will($this->returnValue(new Language(['id' => 'en'])));
+      ->willReturn(new Language(['id' => 'en']));
 
     $this->cacheTagsInvalidator = $this->createMock('Drupal\Core\Cache\CacheTagsInvalidatorInterface');
 
@@ -190,16 +195,16 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
 
     $query->expects($this->any())
       ->method('execute')
-      ->will($this->returnValue([]));
+      ->willReturn([]);
     $query->expects($this->any())
       ->method('condition')
-      ->will($this->returnValue($query));
+      ->willReturn($query);
     $storage->expects($this->any())
       ->method('getQuery')
-      ->will($this->returnValue($query));
+      ->willReturn($query);
     $storage->expects($this->any())
       ->method('loadUnchanged')
-      ->will($this->returnValue($this->entity));
+      ->willReturn($this->entity);
 
     // Saving an entity will not reset the dependencies array during config
     // synchronization.
@@ -219,7 +224,6 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
    */
   public function testAddDependency() {
     $method = new \ReflectionMethod('\Drupal\Core\Config\Entity\ConfigEntityBase', 'addDependency');
-    $method->setAccessible(TRUE);
     $method->invoke($this->entity, 'module', $this->provider);
     $method->invoke($this->entity, 'module', 'core');
     $method->invoke($this->entity, 'module', 'node');
@@ -270,13 +274,13 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $pluginCollection->expects($this->atLeastOnce())
       ->method('get')
       ->with($instance_id)
-      ->will($this->returnValue($instance));
+      ->willReturn($instance);
     $pluginCollection->addInstanceId($instance_id);
 
     // Return the mocked plugin collection.
     $this->entity->expects($this->once())
       ->method('getPluginCollections')
-      ->will($this->returnValue([$pluginCollection]));
+      ->willReturn([$pluginCollection]);
 
     $this->assertEquals($expected_dependencies, $this->entity->calculateDependencies()->getDependencies());
   }
@@ -288,8 +292,8 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
    */
   public function providerCalculateDependenciesWithPluginCollections() {
     // Start with 'a' so that order of the dependency array is fixed.
-    $instance_dependency_1 = 'a' . $this->randomMachineName(10);
-    $instance_dependency_2 = 'a' . $this->randomMachineName(11);
+    $instance_dependency_1 = 'a' . Random::machineName(10);
+    $instance_dependency_2 = 'a' . Random::machineName(11);
 
     return [
       // Tests that the plugin provider is a module dependency.
@@ -357,9 +361,8 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
 
     // Also set up a container with the plugin manager so that we can assert
     // that the plugin manager itself is also not serialized.
-    $container = new ContainerBuilder();
-    $container->set('plugin.manager.foo', $plugin_manager);
-    \Drupal::setContainer($container);
+    $container = TestKernel::setContainerWithKernel();
+    $container->set('plugin.manager.foo', $plugin_manager->reveal());
 
     $entity_values = ['the_plugin_collection_config' => [$instance_id => ['foo' => 'original_value']]];
     $entity = new TestConfigEntityWithPluginCollections($entity_values, $this->entityTypeId);
@@ -486,12 +489,12 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->entityType->expects($this->once())
       ->method('hasKey')
       ->with('uuid')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
 
     $new_uuid = '8607ef21-42bc-4913-978f-8c06207b0395';
     $this->uuid->expects($this->once())
       ->method('generate')
-      ->will($this->returnValue($new_uuid));
+      ->willReturn($new_uuid);
 
     $duplicate = $this->entity->createDuplicate();
     $this->assertInstanceOf('\Drupal\Core\Entity\EntityBase', $duplicate);
@@ -511,17 +514,17 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     $this->entityTypeManager->expects($this->any())
       ->method('getDefinition')
       ->with($this->entityTypeId)
-      ->will($this->returnValue([
+      ->willReturn([
         'entity_keys' => [
           'label' => 'label',
         ],
-      ]));
+      ]);
 
-    $entity_a = $this->createMock('\Drupal\Core\Config\Entity\ConfigEntityInterface');
+    $entity_a = $this->createMock(ConfigEntityBase::class);
     $entity_a->expects($this->atLeastOnce())
       ->method('label')
       ->willReturn('foo');
-    $entity_b = $this->createMock('\Drupal\Core\Config\Entity\ConfigEntityInterface');
+    $entity_b = $this->createMock(ConfigEntityBase::class);
     $entity_b->expects($this->atLeastOnce())
       ->method('label')
       ->willReturn('bar');
@@ -610,7 +613,7 @@ class ConfigEntityBaseUnitTest extends UnitTestCase {
     // Test setThirdPartySetting().
     $this->entity->setThirdPartySetting($third_party, $key, $value);
     $this->assertEquals($value, $this->entity->getThirdPartySetting($third_party, $key));
-    $this->assertEquals($value, $this->entity->getThirdPartySetting($third_party, $key, $this->randomGenerator->string()));
+    $this->assertEquals($value, $this->entity->getThirdPartySetting($third_party, $key, $this->getRandomGenerator()->string()));
 
     // Test getThirdPartySettings().
     $this->entity->setThirdPartySetting($third_party, 'test2', 'value2');
@@ -647,6 +650,8 @@ class TestConfigEntityWithPluginCollections extends ConfigEntityBaseWithPluginCo
   protected $pluginCollection;
 
   protected $pluginManager;
+
+  protected $the_plugin_collection_config;
 
   public function setPluginManager(PluginManagerInterface $plugin_manager) {
     $this->pluginManager = $plugin_manager;

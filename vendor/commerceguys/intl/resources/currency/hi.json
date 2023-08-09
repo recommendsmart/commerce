@@ -115,9 +115,6 @@
 	"CUP": {
 		"name": "क्यूबाई पेसो"
 	},
-	"HRK": {
-		"name": "क्रोएशियाई कुना"
-	},
 	"GYD": {
 		"name": "गयानीज़ डॉलर"
 	},
@@ -484,14 +481,5 @@
 	},
 	"HNL": {
 		"name": "होंडुरन लेम्पिरा"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

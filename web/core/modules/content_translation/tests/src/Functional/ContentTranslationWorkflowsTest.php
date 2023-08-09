@@ -69,6 +69,9 @@ class ContentTranslationWorkflowsTest extends ContentTranslationTestBase {
    */
   protected $defaultTheme = 'stark';
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 
@@ -148,7 +151,7 @@ class ContentTranslationWorkflowsTest extends ContentTranslationTestBase {
   /**
    * Creates a test entity and translate it.
    *
-   * @param Drupal\User\UserInterface|null $user
+   * @param \Drupal\User\UserInterface|null $user
    *   (optional) The entity owner.
    */
   protected function setupEntity(UserInterface $user = NULL) {

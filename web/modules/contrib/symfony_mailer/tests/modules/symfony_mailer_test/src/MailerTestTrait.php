@@ -2,28 +2,51 @@
 
 namespace Drupal\symfony_mailer_test;
 
-use Drupal\Core\DestructableInterface;
-use Drupal\symfony_mailer\EmailInterface;
-use Drupal\symfony_mailer_test\MailerTestServiceInterface;
+use Drupal\KernelTests\KernelTestBase;
 
 /**
  * Tracks sent emails for testing.
  */
 trait MailerTestTrait {
 
+  /**
+   * The test service.
+   *
+   * @var \Drupal\symfony_mailer_test\MailerTestServiceInterface
+   */
+  protected $testService;
+
+  /**
+   * The emails that have been sent and not yet checked.
+   *
+   * @var \Drupal\symfony_mailer\EmailInterface[]
+   */
   protected $emails;
+
+  /**
+   * The most recently sent email.
+   *
+   * @var \Drupal\symfony_mailer\EmailInterface
+   */
   protected $email;
 
   /**
    * Gets the next email, removing it from the list.
    *
+   * @param bool $last
+   *   (optional)TRUE if this is the last email.
+   *
    * @return \Symfony\Component\Mime\Email
    *   The email.
    */
-  public function readMail() {
+  public function readMail(bool $last = TRUE) {
     $this->init();
     $this->email = array_shift($this->emails);
     $this->assertNotNull($this->email);
+    if ($last) {
+      $this->noMail();
+    }
+    return $this->email;
   }
 
   /**
@@ -89,20 +112,54 @@ trait MailerTestTrait {
   }
 
   /**
-   * Checks there are no more emails.
+   * Checks the error of the most recently sent email.
+   *
+   * @param string $error
+   *   The error.
    *
    * @return $this
+   */
+  public function assertError(string $error) {
+    $this->assertEquals($error, $this->email->getError());
+    return $this;
+  }
+
+  /**
+   * Checks the most recently sent email was successful.
+   *
+   * @return $this
+   */
+  public function assertNoError() {
+    $this->assertNull($this->email->getError());
+    return $this;
+  }
+
+  /**
+   * Checks there are no more emails.
    */
   protected function noMail() {
     $this->init();
     $this->assertCount(0, $this->emails, 'All emails have been checked.');
     \Drupal::state()->delete(MailerTestServiceInterface::STATE_KEY);
-    unset($this->emails);
+    $this->emails = NULL;
   }
 
+  /**
+   * Initializes the list of emails.
+   */
   protected function init() {
     if (is_null($this->emails)) {
-      $this->emails = \Drupal::state()->get(MailerTestServiceInterface::STATE_KEY, []);
+      if ($this instanceof KernelTestBase) {
+        // Kernel test.
+        if (!$this->testService) {
+          $this->testService = $this->container->get('symfony_mailer.test');
+        }
+        $this->emails = $this->testService->getEmails();
+      }
+      else {
+        // Functional test.
+        $this->emails = \Drupal::state()->get(MailerTestServiceInterface::STATE_KEY, []);
+      }
     }
   }
 

@@ -88,9 +88,17 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
 
   $form['#attached']['library'][] = 'layout_builder_lock/configure';
 
-  $form['layout_builder_lock'] = [
+  $form['layout_builder_lock_wrapper'] = [
+    '#type' => 'details',
     '#title' => t('Lock settings'),
+    '#weight' => 0,
+  ];
+
+  $form['layout_builder_lock_wrapper']['layout_builder_lock'] = [
+    '#title' => t('Lock settings'),
+    '#title_display' => 'invisible',
     '#type' => 'checkboxes',
+    '#parents' => ['layout_builder_lock'],
     '#weight' => 0,
     '#options' => [
       LayoutBuilderLock::LOCKED_BLOCK_UPDATE => t('Do not allow updating default blocks'),
@@ -107,7 +115,8 @@ function layout_builder_lock_form_layout_builder_configure_section_alter(&$form,
     '#description' => t('New blocks, when allowing to add them, will be placed under any default blocks. Users will be able to update, move and delete these blocks. Blocks from other sections can be moved into this section then, so the \'Move blocks from other sections into this section\' lock setting will not apply anymore.'),
   ];
 
-  $form['layout_builder_lock_delta'] = [
+  $form['layout_builder_lock_wrapper']['layout_builder_lock_delta'] = [
+    '#parents' => ['layout_builder_lock_delta'],
     '#type' => 'value',
     '#value' => $delta,
   ];

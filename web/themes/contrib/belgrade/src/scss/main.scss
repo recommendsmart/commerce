@@ -53,10 +53,10 @@
 @import "components/toolbar";
 
 // Commerce
-@import "commerce/commerce";
-@import "commerce/commerce_cart-flyout";
-@import "commerce/commerce_product-attributes";
-@import "commerce/commerce_address-book";
+@import "components/commerce/commerce";
+@import "components/commerce/commerce_address-book";
+@import "components/commerce/commerce_cart-flyout";
+@import "components/commerce/commerce_product-attributes";
 
 // Regions
 @import "regions/top-bar";

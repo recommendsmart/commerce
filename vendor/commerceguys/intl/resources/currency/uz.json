@@ -335,9 +335,6 @@
 	"RON": {
 		"name": "Ruminiya leyi"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"WST": {
 		"name": "Samoa talasi"
 	},
@@ -410,9 +407,6 @@
 	"OMR": {
 		"name": "Ummon riyoli"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"UYU": {
 		"name": "Urugvay pesosi"
 	},
@@ -432,9 +426,6 @@
 	"CNY": {
 		"name": "Xitoy yuani",
 		"symbol": "CN¥"
-	},
-	"HRK": {
-		"name": "Xorvatiya kunasi"
 	},
 	"YER": {
 		"name": "Yaman riyoli"
@@ -460,9 +451,6 @@
 	},
 	"ZMW": {
 		"name": "Zambiya kvachasi"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	},
 	"UZS": {
 		"name": "O‘zbekiston so‘mi",

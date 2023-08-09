@@ -155,19 +155,29 @@ function commerce_pricelist_local_tasks_alter(&$local_tasks) {
  */
 function commerce_pricelist_entity_operation(EntityInterface $entity) {
   $current_user = \Drupal::currentUser();
-  if ($entity->getEntityTypeId() !== 'commerce_product_variation' ||
-    !$current_user->hasPermission('administer commerce_pricelist')) {
-    return;
-  }
   $operations = [];
-  $operations['prices'] = [
-    'title' => t('Prices'),
-    'url' => Url::fromRoute('view.commerce_product_variation_prices.page', [
-      'commerce_product_variation' => $entity->id(),
-      'commerce_product' => $entity->getProduct()->id(),
-    ]),
-    'weight' => 50,
-  ];
+  if ($entity->getEntityTypeId() === 'commerce_product_variation' &&
+    $current_user->hasPermission('administer commerce_pricelist')) {
+    $operations['prices'] = [
+      'title' => t('Prices'),
+      'url' => Url::fromRoute('view.commerce_product_variation_prices.page', [
+        'commerce_product_variation' => $entity->id(),
+        'commerce_product' => $entity->getProduct()->id(),
+      ]),
+      'weight' => 50,
+    ];
+  }
+  if ($entity->getEntityTypeId() === 'commerce_product' &&
+    $current_user->hasPermission('administer commerce_pricelist')) {
+    $operations['prices'] = [
+      'title' => t('Prices'),
+      'url' => Url::fromRoute('view.commerce_pricelist_product_prices.page', [
+        'commerce_product' => $entity->id(),
+      ]),
+      'weight' => 50,
+    ];
+  }
+
   return $operations;
 }
 

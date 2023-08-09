@@ -21,12 +21,11 @@ class TranslationormalizerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'user',
     'field',
     'serialization',
-    'hal',
     'default_content',
     'content_translation',
     'language',

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Element\Interval.
- */
-
 namespace Drupal\interval\Element;
 
 use Drupal\Core\Form\FormStateInterface;
@@ -25,7 +20,7 @@ class Interval extends FormElement {
       '#input' => TRUE,
       '#process' => [[get_class($this), 'process']],
       '#theme' => 'interval',
-      '#theme_wrappers' => array('form_element'),
+      '#theme_wrappers' => ['form_element'],
     ];
   }
 
@@ -37,7 +32,7 @@ class Interval extends FormElement {
 
     $element['interval'] = [
       '#title' => t('@title count', [
-        '@title' => $element['#title']
+        '@title' => $element['#title'],
       ]),
       '#title_display' => 'invisible',
       '#type' => 'number',
@@ -48,7 +43,7 @@ class Interval extends FormElement {
 
     $intervals = \Drupal::service('plugin.manager.interval.intervals')->getDefinitions();
     $periods = !empty($element['#periods']) ? $element['#periods'] : array_keys($intervals);
-    $period_options = array();
+    $period_options = [];
     foreach ($intervals as $key => $detail) {
       if (in_array($key, $periods) && isset($detail['plural'])) {
         $period_options[$key] = $detail['plural'];
@@ -56,7 +51,7 @@ class Interval extends FormElement {
     }
     $element['period'] = [
       '#title' => t('@title period', [
-        '@title' => $element['#title']
+        '@title' => $element['#title'],
       ]),
       '#title_display' => 'invisible',
       '#type' => 'select',
@@ -67,4 +62,5 @@ class Interval extends FormElement {
 
     return $element;
   }
+
 }

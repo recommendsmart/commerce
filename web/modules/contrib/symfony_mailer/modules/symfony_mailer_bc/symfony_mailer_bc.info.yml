@@ -1,7 +1,7 @@
-name: Symfony Mailer Back-compatibility
+name: Drupal Symfony Mailer Override
 type: module
-description: Back-compatibility mapper for Symfony Mailer.
-core_version_requirement: ^9.1
+description: 'Overrides email building for key core and contrib modules, improving features and integration with Symfony Mailer.'
+core_version_requirement: ^9.4 || ^10
 package: Mail
-dependencies:
-  - symfony_mailer:symfony_mailer
+lifecycle: obsolete
+lifecycle_link: 'https://www.drupal.org/project/symfony_mailer/issues/3355626'

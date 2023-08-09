@@ -1,0 +1,9 @@
+license_state_updated:
+  category: commerce_license
+  label: 'License state updated'
+  template: '<p>License moved from <em>{{ from_state }}</em> to <em>{{ to_state }}</em> by the <em>{{ transition_label }}</em> transition.</p>'
+
+commerce_license_admin_comment:
+  category: commerce_license
+  label: 'Admin comment'
+  template: '<p><strong>Admin comment:</strong><br /> {{ comment }}</p>'

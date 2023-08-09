@@ -16,7 +16,8 @@
 
   Drupal.behaviors.MediaLibraryFormElementEditItem = {
     attach: function attach(context) {
-      $(".media-library-form-element .js-media-library-item a[href]", context).once("media-library-edit").each(function () {
+      var itemSelector = '.media-library-form-element .js-media-library-item a[href]';
+      $(once('media-library-edit', itemSelector, context)).each(function (index) {
         var elementSettings = {
           progress: {
             type: "throbber"
@@ -51,7 +52,8 @@
       // more items, the button needs to be disabled. Since we can't shift the
       // focus to disabled elements, the focus is set back to the open button
       // via JavaScript by adding the 'data-disabled-focus' attribute.
-      $('.js-media-library-open-button[data-disabled-focus="true"]', context).once("media-library-disable").each(function () {
+      var itemSelector = '.js-media-library-open-button[data-disabled-focus="true"]';
+      $(once('media-library-disable', itemSelector, context)).each(function (index) {
         var _this = this;
 
         $(this).focus(); // There is a small delay between the focus set by the browser and the
@@ -79,11 +81,15 @@
         show: Drupal.t("Show media item weights"),
         hide: Drupal.t("Hide media item weights")
       };
-      $(".js-media-library-widget-toggle-weight", context).once("media-library-toggle").on("click", function (e) {
-        e.preventDefault();
-        $(e.currentTarget).toggleClass("active").text($(e.currentTarget).hasClass("active") ? strings.hide : strings.show).closest(".js-media-library-widget").find(".js-media-library-item-weight").parent().toggle();
-      }).text(strings.show);
-      $(".js-media-library-item-weight", context).once("media-library-toggle").parent().hide();
+      $(once('media-library-toggle', '.js-media-library-widget-toggle-weight', context)).each(function (index) {
+        $(this).on('click', function (e) {
+          e.preventDefault();
+          $(e.currentTarget).toggleClass('active').text($(e.currentTarget).hasClass('active') ? strings.hide : strings.show).closest('.js-media-library-widget').find('.js-media-library-item-weight').parent().toggle();
+        }).text(strings.show);
+      });
+      $(once('media-library-toggle', '.js-media-library-item-weight', context)).each(function (index) {
+        $(this).parent().hide();
+      });
     }
   };
   /**
@@ -113,9 +119,12 @@
     }
   };
   /**
+   * Updates the selected media items field with the provided data.
    *
-   * @param data
-   * @param element
+   * @param {string} data
+   *  The data to append to the selection.
+   * @param {string} element
+   *  The element which contains the media items ids.
    */
 
   $.fn.setMediaUploadFieldValue = function (data, element) {

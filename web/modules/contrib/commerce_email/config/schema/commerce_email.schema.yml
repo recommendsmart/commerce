@@ -11,9 +11,15 @@ commerce_email.commerce_email.*:
     from:
       type: string
       label: 'From'
+    toType:
+      type: string
+      label: 'Send this email to'
     to:
       type: string
-      label: 'To'
+      label: 'Email'
+    toRole:
+      type: string
+      label: 'Role'
     cc:
       type: string
       label: 'Cc'
@@ -27,6 +33,9 @@ commerce_email.commerce_email.*:
       type: text
       label: 'Body'
       translatable: true
+    queue:
+      type: boolean
+      label: 'Use queue'
     conditions:
       type: sequence
       sequence:

@@ -4,6 +4,7 @@ namespace Drupal\commerce_order\Entity;
 
 use Drupal\commerce\Entity\CommerceContentEntityBase;
 use Drupal\commerce_order\Adjustment;
+use Drupal\commerce_order\Event\OrderLabelEvent;
 use Drupal\commerce_order\Exception\OrderVersionMismatchException;
 use Drupal\commerce_order\Event\OrderEvents;
 use Drupal\commerce_order\Event\OrderProfilesEvent;
@@ -15,6 +16,7 @@ use Drupal\Core\Entity\EntityChangedTrait;
 use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\user\Entity\User;
 use Drupal\user\UserInterface;
 use Drupal\profile\Entity\ProfileInterface;
@@ -47,7 +49,7 @@ use Drupal\profile\Entity\ProfileInterface;
  *       "default" = "Drupal\commerce_order\Form\OrderForm",
  *       "add" = "Drupal\commerce_order\Form\OrderForm",
  *       "edit" = "Drupal\commerce_order\Form\OrderForm",
- *       "delete" = "Drupal\Core\Entity\ContentEntityDeleteForm",
+ *       "delete" = "Drupal\commerce_order\Form\OrderDeleteForm",
  *       "unlock" = "Drupal\commerce_order\Form\OrderUnlockForm",
  *       "resend-receipt" = "Drupal\commerce_order\Form\OrderReceiptResendForm",
  *     },
@@ -96,6 +98,27 @@ use Drupal\profile\Entity\ProfileInterface;
 class Order extends CommerceContentEntityBase implements OrderInterface {
 
   use EntityChangedTrait;
+  use StringTranslationTrait;
+
+  /**
+   * {@inheritdoc}
+   */
+  public function label() {
+    $label = NULL;
+    $order_number = $this->getOrderNumber();
+    if ($order_number) {
+      $label = $this->t('Order @order_number', ['@order_number' => $order_number]);
+    }
+    elseif ($this->getState()->getId() === 'draft' && !$this->isNew()) {
+      $label = $this->t('Draft @id', ['@id' => $this->id()]);
+    }
+    // Allow the label to be overridden.
+    $event = new OrderLabelEvent($this, $label);
+    $event_dispatcher = \Drupal::service('event_dispatcher');
+    $event_dispatcher->dispatch($event, OrderEvents::ORDER_LABEL);
+
+    return $event->getLabel();
+  }
 
   /**
    * {@inheritdoc}
@@ -442,17 +465,15 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
         $total_price = $total_price ? $total_price->add($order_item_total) : $order_item_total;
       }
     }
-    if ($total_price) {
-      $adjustments = $this->collectAdjustments();
-      if ($adjustments) {
-        /** @var \Drupal\commerce_order\AdjustmentTransformerInterface $adjustment_transformer */
-        $adjustment_transformer = \Drupal::service('commerce_order.adjustment_transformer');
-        $adjustments = $adjustment_transformer->combineAdjustments($adjustments);
-        $adjustments = $adjustment_transformer->roundAdjustments($adjustments);
-        foreach ($adjustments as $adjustment) {
-          if (!$adjustment->isIncluded()) {
-            $total_price = $total_price->add($adjustment->getAmount());
-          }
+    $adjustments = $this->collectAdjustments();
+    if ($adjustments) {
+      /** @var \Drupal\commerce_order\AdjustmentTransformerInterface $adjustment_transformer */
+      $adjustment_transformer = \Drupal::service('commerce_order.adjustment_transformer');
+      $adjustments = $adjustment_transformer->combineAdjustments($adjustments);
+      $adjustments = $adjustment_transformer->roundAdjustments($adjustments);
+      foreach ($adjustments as $adjustment) {
+        if (!$adjustment->isIncluded()) {
+          $total_price = $total_price ? $total_price->add($adjustment->getAmount()) : $adjustment->getAmount();
         }
       }
     }
@@ -548,7 +569,7 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
     if (!$this->get('data')->isEmpty()) {
       $data = $this->get('data')->first()->getValue();
     }
-    return isset($data[$key]) ? $data[$key] : $default;
+    return $data[$key] ?? $default;
   }
 
   /**
@@ -677,7 +698,7 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
       $this->setCustomerId(0);
     }
     // Maintain the order email.
-    if (!$this->getEmail() && $customer->isAuthenticated()) {
+    if (!$this->getEmail() && !$customer->isAnonymous()) {
       $this->setEmail($customer->getEmail());
     }
     // Make sure the billing profile is owned by the order, not the customer.
@@ -830,7 +851,6 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
     $fields['order_items'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Order items'))
       ->setDescription(t('The order items.'))
-      ->setRequired(TRUE)
       ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
       ->setSetting('target_type', 'commerce_order_item')
       ->setSetting('handler', 'default')
@@ -841,6 +861,7 @@ class Order extends CommerceContentEntityBase implements OrderInterface {
           'override_labels' => TRUE,
           'label_singular' => t('order item'),
           'label_plural' => t('order items'),
+          'removed_reference' => 'delete',
         ],
       ])
       ->setDisplayOptions('view', [

@@ -154,9 +154,6 @@
 	"HKD": {
 		"name": "hongkonský dolár"
 	},
-	"HRK": {
-		"name": "chorvátska kuna"
-	},
 	"INR": {
 		"name": "indická rupia"
 	},
@@ -285,7 +282,7 @@
 		"name": "maurícijská rupia"
 	},
 	"MRU": {
-		"name": "mauritánska ukija"
+		"name": "mauritánska ouguiya"
 	},
 	"MXN": {
 		"name": "mexické peso",
@@ -398,7 +395,7 @@
 		"name": "surinamský dolár"
 	},
 	"SZL": {
-		"name": "svazijské lilangeni"
+		"name": "svazijský lilangeni"
 	},
 	"SHP": {
 		"name": "svätohelenská libra"
@@ -450,9 +447,6 @@
 	},
 	"UYU": {
 		"name": "uruguajské peso"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UZS": {
 		"name": "uzbecký sum"

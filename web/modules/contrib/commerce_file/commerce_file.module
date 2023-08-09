@@ -5,10 +5,14 @@
  * Extends Commerce License with the ability to sell access to files.
  */
 
+use Drupal\commerce_file\ComputedLicensedFiles;
 use Drupal\commerce_license\Entity\LicenseInterface;
+use Drupal\commerce_product\Entity\ProductVariationTypeInterface;
 use Drupal\Core\Access\AccessResult;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
 use Drupal\Core\Link;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Session\AccountInterface;
@@ -34,7 +38,11 @@ function commerce_file_file_access(EntityInterface $entity, $operation, AccountI
   if (!in_array($operation, ['download', 'view'])) {
     return AccessResult::neutral();
   }
-  if ($account->hasPermission('bypass license control') || $account->hasPermission('administer commerce_license')) {
+  if ($account->hasPermission('bypass license control') ||
+    $account->hasPermission('administer commerce_license')) {
+    return AccessResult::neutral();
+  }
+  if ($account->id() === $entity->getOwnerId()) {
     return AccessResult::neutral();
   }
   assert($entity instanceof FileInterface);
@@ -257,4 +265,42 @@ function template_preprocess_commerce_file_download_link(array &$variables) {
   $route_parameters = ['file' => $file->id()];
 
   $variables['link'] = Link::fromTextAndUrl($link_text, Url::fromRoute('commerce_file.download', $route_parameters, $options))->toRenderable();
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function commerce_file_form_commerce_license_form_alter(&$form, FormStateInterface $form_state) {
+  // Restrict the "product_variation" autocomplete to product variation types
+  // having the "commerce_file" trait enabled.
+  if (isset($form['product_variation'], $form['product_variation']['widget'][0]['target_id']['#selection_settings'])) {
+    /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
+    $license = $form_state->getFormObject()->getEntity();
+    if ($license->bundle() === 'commerce_file') {
+      $product_variation_type_storage = \Drupal::entityTypeManager()->getStorage('commerce_product_variation_type');
+      $eligible_variation_types = array_filter($product_variation_type_storage->loadMultiple(), function (ProductVariationTypeInterface $variation_type) {
+        return $variation_type->hasTrait('commerce_file');
+      });
+      $eligible_variation_types = array_keys($eligible_variation_types);
+      $form['product_variation']['widget'][0]['target_id']['#selection_settings']['target_bundles'] = array_combine($eligible_variation_types, $eligible_variation_types);
+    }
+  }
+}
+
+/**
+ * Implements hook_entity_bundle_field_info().
+ */
+function commerce_file_entity_bundle_field_info(EntityTypeInterface $entity_type, $bundle, array $base_field_definitions) {
+  if ($entity_type->id() === 'commerce_license' && $bundle === 'commerce_file') {
+    $fields['licensed_files'] = BaseFieldDefinition::create('file')
+      ->setLabel(t('Licensed files'))
+      ->setDescription(t('Product applications referencing the product categories that are referenced by the product'))
+      ->setSetting('target_type', 'file')
+      ->setComputed(TRUE)
+      ->setCardinality(BaseFieldDefinition::CARDINALITY_UNLIMITED)
+      ->setDisplayConfigurable('view', TRUE)
+      ->setClass(ComputedLicensedFiles::class);
+
+    return $fields;
+  }
 }

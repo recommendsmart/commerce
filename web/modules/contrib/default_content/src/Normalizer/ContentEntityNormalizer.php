@@ -3,6 +3,7 @@
 namespace Drupal\default_content\Normalizer;
 
 use Drupal\Component\Plugin\PluginBase;
+use Drupal\Component\Plugin\PluginInspectionInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityRepositoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
@@ -29,7 +30,6 @@ use Drupal\layout_builder\Plugin\DataType\SectionData;
  * Normalizes and denormalizes content entities.
  */
 class ContentEntityNormalizer implements ContentEntityNormalizerInterface {
-  use SerializedColumnNormalizerTrait;
 
   /**
    * The entity type manager.
@@ -553,6 +553,38 @@ class ContentEntityNormalizer implements ContentEntityNormalizerInterface {
       }
     }
     return $data;
+  }
+
+  /**
+   * Gets the names of all properties the plugin treats as serialized data.
+   *
+   * This allows the field storage definition or entity type to provide a
+   * setting for serialized properties. This can be used for fields that
+   * handle serialized data themselves and do not rely on the serialized schema
+   * flag.
+   *
+   *
+   * @param \Drupal\Core\Field\FieldItemInterface $field_item
+   *   The field item.
+   *
+   * @return string[]
+   *   The property names for serialized properties.
+   *
+   * @see \Drupal\serialization\Normalizer\SerializedColumnNormalizerTrait::getCustomSerializedPropertyNames
+   */
+  protected function getCustomSerializedPropertyNames(FieldItemInterface $field_item) {
+    if ($field_item instanceof PluginInspectionInterface) {
+      $definition = $field_item->getPluginDefinition();
+      $serialized_fields = $field_item->getEntity()->getEntityType()->get('serialized_field_property_names');
+      $field_name = $field_item->getFieldDefinition()->getName();
+      if (is_array($serialized_fields) && isset($serialized_fields[$field_name]) && is_array($serialized_fields[$field_name])) {
+        return $serialized_fields[$field_name];
+      }
+      if (isset($definition['serialized_property_names']) && is_array($definition['serialized_property_names'])) {
+        return $definition['serialized_property_names'];
+      }
+    }
+    return [];
   }
 
 }

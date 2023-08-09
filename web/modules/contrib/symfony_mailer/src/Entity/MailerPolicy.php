@@ -39,7 +39,7 @@ use Drupal\symfony_mailer\Processor\EmailAdjusterInterface;
  *   }
  * )
  */
-class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectionInterface {
+class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectionInterface, MailerPolicyInterface {
 
   use StringTranslationTrait;
 
@@ -60,16 +60,57 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   /**
    * The email adjuster manager.
    *
-   * @var \Drupal\symfony_mailer\Processor\EmailAdjusterManager
+   * @var \Drupal\symfony_mailer\Processor\EmailAdjusterManagerInterface
    */
   protected $emailAdjusterManager;
 
+  /**
+   * The label for an unknown value.
+   *
+   * @var string
+   */
   protected $labelUnknown;
+
+  /**
+   * The label for all values.
+   *
+   * @var string
+   */
   protected $labelAll;
+
+  /**
+   * The type.
+   *
+   * @var string
+   */
   protected $type;
+
+  /**
+   * The subtype.
+   *
+   * @var string
+   */
   protected $subType;
+
+  /**
+   * The entity id.
+   *
+   * @var string
+   */
   protected $entityId;
+
+  /**
+   * The entity.
+   *
+   * @var \Drupal\Core\Config\Entity\ConfigEntityInterface
+   */
   protected $entity;
+
+  /**
+   * The builder definition.
+   *
+   * @var array
+   */
   protected $builderDefinition;
 
   /**
@@ -108,62 +149,47 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
     [$this->type, $this->subType, $this->entityId] = array_pad(explode('.', $this->id), 3, NULL);
     $this->builderDefinition = $this->emailBuilderManager->getDefinition($this->type, FALSE);
     if (!$this->builderDefinition) {
-      $this->builderDefinition = ['label' => $this->labelUnknown];
+      $this->builderDefinition = (new EmailBuilder(['label' => $this->labelUnknown]))->get();
     }
-    if ($this->entityId && !empty($this->builderDefinition['has_entity'])) {
+    if ($this->entityId && $this->builderDefinition['has_entity']) {
       $this->entity = $this->entityTypeManager()->getStorage($this->type)->load($this->entityId);
     }
   }
 
   /**
-   * Gets the email type this policy applies to.
-   *
-   * @return string
-   *   Email type, or NULL if the policy applies to all types.
+   * {@inheritdoc}
    */
   public function getType() {
     return $this->type;
   }
 
   /**
-   * Gets the email sub-type this policy applies to.
-   *
-   * @return string
-   *   Email sub-type, or NULL if the policy applies to all sub-types.
+   * {@inheritdoc}
    */
   public function getSubType() {
     return $this->subType;
   }
 
   /**
-   * Gets the config entity this policy applies to.
-   *
-   * @return \Drupal\Core\Config\Entity\ConfigEntityInterface
-   *   Entity, or NULL if the policy applies to all entities.
+   * {@inheritdoc}
    */
   public function getEntity() {
     return $this->entity;
   }
 
   /**
-   * Gets a human-readable label for the email type this policy applies to.
-   *
-   * @return string
-   *   Email type label.
+   * {@inheritdoc}
    */
   public function getTypeLabel() {
     return $this->builderDefinition['label'];
   }
 
   /**
-   * Gets a human-readable label for the the email sub-type.
-   *
-   * @return string
-   *   Email sub-type label.
+   * {@inheritdoc}
    */
   public function getSubTypeLabel() {
     if ($this->subType) {
-      if ($sub_types = $this->builderDefinition['sub_types'] ?? []) {
+      if ($sub_types = $this->builderDefinition['sub_types']) {
         return $sub_types[$this->subType] ?? $this->labelUnknown;
       }
       return $this->subType;
@@ -172,15 +198,11 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   }
 
   /**
-   * Gets a human-readable label for the config entity this policy applies to.
-   *
-   * @return string
-   *   Email config entity label, or NULL if the builder doesn't support
-   *   entities.
+   * {@inheritdoc}
    */
   public function getEntityLabel() {
-    if (empty($this->builderDefinition['has_entity'])) {
-      return NULL;
+    if (!$this->builderDefinition['has_entity']) {
+      return '';
     }
     if ($this->entity) {
       return $this->entity->label();
@@ -201,13 +223,7 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   }
 
   /**
-   * Sets the email adjuster configuration for this policy record.
-   *
-   * @param array $configuration
-   *   An associative array of adjuster configuration, keyed by the plug-in ID
-   *   with value as an array of configured settings.
-   *
-   * @return $this
+   * {@inheritdoc}
    */
   public function setConfiguration(array $configuration) {
     $this->configuration = $configuration;
@@ -218,21 +234,14 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   }
 
   /**
-   * Gets the email adjuster configuration for this policy record.
-   *
-   * @return array
-   *   An associative array of adjuster configuration, keyed by the plug-in ID
-   *   with value as an array of configured settings.
+   * {@inheritdoc}
    */
   public function getConfiguration() {
     return $this->configuration;
   }
 
   /**
-   * Returns the ordered collection of configured adjuster plugin instances.
-   *
-   * @return \Drupal\symfony_mailer\Processor\AdjusterPluginCollection
-   *   The adjuster collection.
+   * {@inheritdoc}
    */
   public function adjusters() {
     if (!isset($this->pluginCollection)) {
@@ -242,24 +251,14 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   }
 
   /**
-   * Returns all available adjuster plugin definitions.
-   *
-   * @return array
-   *   An associative array of plugin definitions, keyed by the plug-in ID.
+   * {@inheritdoc}
    */
   public function adjusterDefinitions() {
     return $this->emailAdjusterManager->getDefinitions();
   }
 
   /**
-   * Gets a short human-readable summary of the configured policy.
-   *
-   * @param bool $expanded
-   *   (Optional) If FALSE return just the labels. If TRUE include a short
-   *   summary of each element.
-   *
-   * @return string
-   *   Summary text.
+   * {@inheritdoc}
    */
   public function getSummary($expanded = FALSE) {
     $summary = [];
@@ -282,13 +281,10 @@ class MailerPolicy extends ConfigEntityBase implements EntityWithPluginCollectio
   }
 
   /**
-   * Returns the common adjusters for this policy.
-   *
-   * @return array
-   *   An array of common adjuster IDs.
+   * {@inheritdoc}
    */
   public function getCommonAdjusters() {
-    return $this->builderDefinition ? $this->builderDefinition['common_adjusters'] : [];
+    return $this->builderDefinition['common_adjusters'];
   }
 
   /**

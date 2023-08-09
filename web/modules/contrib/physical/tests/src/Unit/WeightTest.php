@@ -18,12 +18,12 @@ class WeightTest extends UnitTestCase {
    *
    * @var \Drupal\physical\Weight
    */
-  protected $weight;
+  protected Weight $weight;
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->weight = new Weight('5', 'kg');

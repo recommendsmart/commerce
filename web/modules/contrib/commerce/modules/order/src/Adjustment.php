@@ -97,7 +97,7 @@ final class Adjustment {
     $this->type = $definition['type'];
     $this->label = (string) $definition['label'];
     $this->amount = $definition['amount'];
-    $this->percentage = isset($definition['percentage']) ? $definition['percentage'] : NULL;
+    $this->percentage = $definition['percentage'] ?? NULL;
     $this->sourceId = !empty($definition['source_id']) ? $definition['source_id'] : NULL;
     $this->included = !empty($definition['included']);
     $this->locked = !empty($definition['locked']);

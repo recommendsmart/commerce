@@ -8,6 +8,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\DefaultPluginManager;
 use Drupal\entity\Form\EntityDuplicateFormTrait;
+use Drupal\user\RoleInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class EmailForm extends EntityForm {
@@ -97,6 +98,7 @@ class EmailForm extends EntityForm {
     /** @var \Drupal\commerce_email\Plugin\Commerce\EmailEvent\EmailEventInterface $event */
     $event = $this->emailEventManager->createInstance($selected_event_id);
     $target_entity_type_id = $event->getEntityTypeId();
+    $token_types = array_merge([$target_entity_type_id], $event->getRelatedEntityTypeIds());
 
     // These addresses can't use the "email" element type because they
     // might contain tokens (which wouldn't pass validation).
@@ -107,16 +109,58 @@ class EmailForm extends EntityForm {
       '#default_value' => $email->getFrom(),
       '#required' => TRUE,
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
+    ];
+    $form['toType'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Send this email to'),
+      '#default_value' => $email->getToType() ?? 'email',
+      '#options' => [
+        'email' => $this->t('Send this email to'),
+        'role' => $this->t('Users with a role'),
+      ],
+      '#required' => TRUE,
     ];
     $form['to'] = [
       '#type' => 'textfield',
-      '#title' => $this->t('To'),
+      '#title' => $this->t('Email'),
       '#maxlength' => 255,
       '#default_value' => $email->getTo(),
       '#required' => TRUE,
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
+      '#states' => [
+        'visible' => [
+          ':input[name="toType"]' => ['value' => 'email'],
+        ],
+        'enabled' => [
+          ':input[name="toType"]' => ['value' => 'email'],
+        ],
+        'required' => [
+          ':input[name="toType"]' => ['value' => 'email'],
+        ],
+      ],
+    ];
+    $roles = array_map(function ($role) {
+      return $role->label();
+    }, $this->entityTypeManager->getStorage('user_role')->loadMultiple());
+    unset($roles[RoleInterface::AUTHENTICATED_ID], $roles[RoleInterface::ANONYMOUS_ID]);
+    $form['toRole'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Role'),
+      '#options' => $roles,
+      '#default_value' => $email->getToRole(),
+      '#states' => [
+        'visible' => [
+          ':input[name="toType"]' => ['value' => 'role'],
+        ],
+        'enabled' => [
+          ':input[name="toType"]' => ['value' => 'role'],
+        ],
+        'required' => [
+          ':input[name="toType"]' => ['value' => 'role'],
+        ],
+      ],
     ];
     $form['cc'] = [
       '#type' => 'textfield',
@@ -124,7 +168,7 @@ class EmailForm extends EntityForm {
       '#maxlength' => 255,
       '#default_value' => $email->getCc(),
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
     ];
     $form['bcc'] = [
       '#type' => 'textfield',
@@ -132,7 +176,7 @@ class EmailForm extends EntityForm {
       '#maxlength' => 255,
       '#default_value' => $email->getBcc(),
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
     ];
     $form['subject'] = [
       '#type' => 'textfield',
@@ -141,7 +185,7 @@ class EmailForm extends EntityForm {
       '#default_value' => $email->getSubject(),
       '#required' => TRUE,
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
     ];
     $form['body'] = [
       '#type' => 'textarea',
@@ -150,13 +194,18 @@ class EmailForm extends EntityForm {
       '#rows' => 10,
       '#required' => TRUE,
       '#element_validate' => ['token_element_validate'],
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
+    ];
+    $form['queue'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Use queue'),
+      '#description' => $this->t('Queue these emails instead of sending them immediately.'),
+      '#default_value' => $email->shouldQueue(),
     ];
     $form['token_help'] = [
       '#theme' => 'token_tree_link',
-      '#token_types' => [$target_entity_type_id],
+      '#token_types' => $token_types,
     ];
-
     $form['conditions'] = [
       '#type' => 'commerce_conditions',
       '#title' => $this->t('Conditions'),

@@ -44,6 +44,14 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
   protected $parentEntity;
 
   /**
+   * The ID of the parent entity (used for serialization).
+   *
+   * @var string|int|null
+   */
+  // phpcs:ignore Drupal.Classes.PropertyDeclaration
+  protected $_parentEntityId;
+
+  /**
    * The ID of the parent config entity.
    *
    * @deprecated in commerce:8.x-2.16 and is removed from commerce:3.x.
@@ -242,6 +250,9 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
    */
   protected function resolveCustomerProfile(OrderItemInterface $order_item) {
     $order = $order_item->getOrder();
+    if (!$order) {
+      return NULL;
+    }
     $customer_profile = $this->buildCustomerProfile($order);
     // Allow the customer profile to be altered, per order item.
     $event = new CustomerProfileEvent($customer_profile, $order_item);
@@ -268,8 +279,8 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
    *   The customer profile, or NULL if not available yet.
    */
   protected function buildCustomerProfile(OrderInterface $order) {
-    $order_id = $order->id();
-    if (!isset($this->profiles[$order_id])) {
+    $order_uuid = $order->uuid();
+    if (!isset($this->profiles[$order_uuid])) {
       $order_profiles = $order->collectProfiles();
       $address = NULL;
       foreach (['shipping', 'billing'] as $scope) {
@@ -296,7 +307,7 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
         $tax_number = $order_profiles['billing']->get('tax_number')->getValue();
       }
       $profile_storage = $this->entityTypeManager->getStorage('profile');
-      $this->profiles[$order_id] = $profile_storage->create([
+      $this->profiles[$order_uuid] = $profile_storage->create([
         'type' => 'customer',
         'uid' => 0,
         'address' => $address,
@@ -304,7 +315,7 @@ abstract class TaxTypeBase extends PluginBase implements TaxTypeInterface, Conta
       ]);
     }
 
-    return $this->profiles[$order_id];
+    return $this->profiles[$order_uuid];
   }
 
 }

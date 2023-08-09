@@ -91,6 +91,11 @@ class ProductVariationAttributesWidget extends ProductVariationWidgetBase implem
       '#wrapper_id' => $wrapper_id,
       '#prefix' => '<div id="' . $wrapper_id . '">',
       '#suffix' => '</div>',
+      '#attached' => [
+        'library' => [
+          'commerce_product/update_product_url',
+        ],
+      ],
     ];
 
     // If an operation caused the form to rebuild, select the variation from
@@ -174,8 +179,7 @@ class ProductVariationAttributesWidget extends ProductVariationWidgetBase implem
     $variations = $this->variationStorage->loadEnabled($product);
 
     foreach ($values as &$value) {
-      $attribute_values = isset($value['attributes']) ? $value['attributes'] : [];
-      $selected_variation = $this->variationAttributeMapper->selectVariation($variations, $attribute_values);
+      $selected_variation = $this->variationAttributeMapper->selectVariation($variations, $value['attributes'] ?? []);
       if ($selected_variation) {
         $value['variation'] = $selected_variation->id();
       }

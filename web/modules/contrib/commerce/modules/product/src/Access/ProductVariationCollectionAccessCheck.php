@@ -50,12 +50,18 @@ class ProductVariationCollectionAccessCheck implements AccessInterface {
   public function access(Route $route, RouteMatchInterface $route_match, AccountInterface $account) {
     /** @var \Drupal\commerce_product\Entity\ProductInterface $product */
     $product = $route_match->getParameter('commerce_product');
+    $product_type_storage = $this->entityTypeManager->getStorage('commerce_product_type');
+
     if (!$product) {
       return AccessResult::forbidden();
     }
-    $product_type_storage = $this->entityTypeManager->getStorage('commerce_product_type');
+
     /** @var \Drupal\commerce_product\Entity\ProductTypeInterface $product_type */
     $product_type = $product_type_storage->load($product->bundle());
+    if (!$product_type) {
+      return AccessResult::forbidden();
+    }
+
     if (!$product_type->allowsMultipleVariations()) {
       // Product types that don't allow multiple variations do not need
       // a product variation collection route.

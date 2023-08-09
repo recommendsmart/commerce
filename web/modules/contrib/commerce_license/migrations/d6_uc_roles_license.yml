@@ -15,14 +15,14 @@ process:
     default_value: role
   uid:
     plugin: migration_lookup
-    migration: # your user migration
+    migration: todo_your_user_migration # your user migration
     source: uid
   state:
     plugin: default_value
     default_value: active
   product_variation:
     plugin: migration_lookup
-    migration: # your product variation migration
+    migration: todo_your_product_variation_migration # your product variation migration
     source: nid
   expiration_type:
     # This assumes Commerce Recurring is used with licenses.
@@ -39,13 +39,10 @@ process:
     default_value: 0
   license_role:
     plugin: default_value
-    default_value: # needs a role value, or a migration lookup.
+    default_value: todo_your_license_role # needs a role value, or a migration lookup.
 destination:
   plugin: entity:commerce_license
   destination_module: commerce_license
-migration_dependencies:
-  required: {}
-  optional: {}
 dependencies:
   enforced:
     module:

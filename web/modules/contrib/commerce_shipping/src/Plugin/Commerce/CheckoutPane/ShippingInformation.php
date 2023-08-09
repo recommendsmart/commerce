@@ -312,7 +312,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
       // We're still relying on the packer manager for packing the order since
       // we don't want the shipments to be saved for performance reasons.
       // The shipments are saved on pane submission.
-      list($shipments, $removed_shipments) = $this->packerManager->packToShipments($this->order, $shipping_profile, $shipments);
+      [$shipments, $removed_shipments] = $this->packerManager->packToShipments($this->order, $shipping_profile, $shipments);
 
       // Store the IDs of removed shipments for submitPaneForm().
       $pane_form['removed_shipments']['#value'] = array_map(function ($shipment) {
@@ -384,7 +384,7 @@ class ShippingInformation extends CheckoutPaneBase implements ContainerFactoryPl
     $shipment_indexes = Element::children($pane_form['shipments']);
     $triggering_element = $form_state->getTriggeringElement();
     $recalculate = !empty($triggering_element['#recalculate']);
-    $button_type = isset($triggering_element['#button_type']) ? $triggering_element['#button_type'] : '';
+    $button_type = $triggering_element['#button_type'] ?? '';
     /** @var \Drupal\commerce\Plugin\Commerce\InlineForm\EntityInlineFormInterface $inline_form */
     $inline_form = $pane_form['shipping_profile']['#inline_form'];
     /** @var \Drupal\profile\Entity\ProfileInterface $profile */

@@ -18,12 +18,12 @@ class AreaTest extends UnitTestCase {
    *
    * @var \Drupal\physical\Area
    */
-  protected $area;
+  protected Area $area;
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->area = new Area('4', 'm2');

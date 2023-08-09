@@ -2,10 +2,10 @@
     "name": "drupal/commerce_square",
     "type": "drupal-module",
     "description": "Provides Commerce integration for Square Connect.",
-    "homepage": "http://drupal.org/project/commerce_square",
-    "license": "GPL-2.0+",
+    "homepage": "https://drupal.org/project/commerce_square",
+    "license": "GPL-2.0-or-later",
     "require": {
-        "php": ">=7.2",
+        "php": "^7.3 || ^8.0",
         "drupal/commerce": "~2.25",
         "square/square": "^17.2"
     }

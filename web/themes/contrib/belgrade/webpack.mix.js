@@ -1,4 +1,6 @@
 let mix = require('laravel-mix')
+require('laravel-mix-copy-watched');
+
 let fs = require('fs-extra')
 
 let getFiles = function (dir) {
@@ -23,32 +25,24 @@ let getFiles = function (dir) {
  |
  */
 
-  // Compile all the css per directory.
-  const directories = [
-    'product-teaser',
-    'commerce',
-    'pages',
-    'components'
-  ];
+// Compile all the css per directory.
+const directories = [
+  'pages',
+  'components',
+  'components/commerce',
+  'components/layout-builder',
+  'components/product-teaser',
+  'theme'
+];
 
 
-  directories.forEach(directory => {
-    getFiles('src/scss/' + directory).forEach(function (filepath) {
-      mix.sass('src/scss/' + directory +'/' + filepath, 'dist/' + directory + '/')
-    });
-  })
-
-
-  // Copy Bootstrap assets
-  mix.before(() => {
-    // fs.copySync('node_modules/bootstrap-icons/bootstrap-icons.svg', 'dist/images/bootstrap-icons.svg')
-    // fs.copySync('node_modules/bootstrap/dist/js/bootstrap.bundle.js.map', 'dist/bootstrap.bundle.js.map')
-    // fs.copySync('node_modules/bootstrap-icons/icons', 'src/icons')
-    fs.copySync('node_modules/bootstrap/dist/js/bootstrap.bundle.js', 'dist/bootstrap.bundle.js');
+directories.forEach(directory => {
+  getFiles('src/scss/' + directory).forEach(function (filepath) {
+    mix.sass('src/scss/' + directory + '/' + filepath, 'dist/' + directory + '/')
   });
+})
 
-
-  mix
+mix
   .js('src/js/main.js', 'dist/')
   .js('src/js/product.images.js', 'dist/')
   .js('src/js/throbber.js', 'dist/')
@@ -64,3 +58,9 @@ let getFiles = function (dir) {
     autoprefixer: {}
   });
 
+// Directly copies the images, icons and fonts with no optimizations on the images
+mix.copyWatched('src/images', 'dist/images');
+mix.copyWatched('src/fonts/**/*', 'dist/fonts');
+// Bootstrap
+// mix.copyWatched('node_modules/bootstrap-icons/icons', 'src/icons');
+mix.copyWatched('node_modules/bootstrap/dist/js/bootstrap.bundle.js', 'dist/bootstrap.js');

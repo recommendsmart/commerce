@@ -4,11 +4,14 @@ namespace Drupal\commerce_price;
 
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Entity\Routing\DefaultHtmlRouteProvider;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Provides routes for the Currency entity.
  */
 class CurrencyRouteProvider extends DefaultHtmlRouteProvider {
+
+  use StringTranslationTrait;
 
   /**
    * {@inheritdoc}
@@ -19,7 +22,7 @@ class CurrencyRouteProvider extends DefaultHtmlRouteProvider {
     // The t() function is used to ensure the string is picked up for
     // translation, even though _title is supposed to be untranslated.
     $route->setDefault('_title_callback', '');
-    $route->setDefault('_title', t('Add custom currency')->getUntranslatedString());
+    $route->setDefault('_title', $this->t('Add custom currency')->getUntranslatedString());
 
     return $route;
   }

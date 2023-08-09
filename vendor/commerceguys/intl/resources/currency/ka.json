@@ -457,9 +457,6 @@
 	"SHP": {
 		"name": "წმ. ელენეს კუნძულის ფუნტი"
 	},
-	"HRK": {
-		"name": "ხორვატული კუნა"
-	},
 	"DJF": {
 		"name": "ჯიბუტის ფრანკი"
 	},
@@ -475,14 +472,5 @@
 	"XPF": {
 		"name": "CFP ფრანკი",
 		"symbol": "CFPF"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

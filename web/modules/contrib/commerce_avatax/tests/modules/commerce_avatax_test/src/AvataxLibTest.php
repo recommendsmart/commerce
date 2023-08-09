@@ -4,6 +4,7 @@ namespace Drupal\commerce_avatax_test;
 
 use Drupal\commerce_avatax\AvataxLib;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Extension\ExtensionPathResolver;
 
 /**
  * Decorates `commerce_avatax.avatax_lib` for testing.
@@ -11,25 +12,41 @@ use Drupal\Component\Serialization\Json;
 class AvataxLibTest extends AvataxLib {
 
   /**
+   * The extension path resolver.
+   *
+   * @var \Drupal\Core\Extension\ExtensionPathResolver
+   */
+  protected $extensionPathResolver;
+
+  /**
+   * Sets the extension path resolver.
+   *
+   * @param \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver
+   *   The extension path resolver.
+   */
+  public function setExtensionPathResolver(ExtensionPathResolver $extension_path_resolver) {
+    $this->extensionPathResolver = $extension_path_resolver;
+  }
+
+  /**
    * {@inheritdoc}
    */
   public function resolveAddress(array $address) {
-
     // Irvine.
     if ($address['locality'] === 'Irvine') {
-      $file = drupal_get_path('module', 'commerce_avatax') . '/tests/fixtures/irvine.json';
+      $file = $this->extensionPathResolver->getPath('module', 'commerce_avatax') . '/tests/fixtures/irvine.json';
       if ($address['administrative_area'] === 'C0' || $address['address_line1'] === '2000 Main Stree') {
-        $file = drupal_get_path('module', 'commerce_avatax') . '/tests/fixtures/irvine_suggestion.json';
+        $file = $this->extensionPathResolver->getPath('module', 'commerce_avatax') . '/tests/fixtures/irvine_suggestion.json';
       }
 
       if ($address['address_line1'] === '20000 Main Street') {
-        $file = drupal_get_path('module', 'commerce_avatax') . '/tests/fixtures/irvine_error.json';
+        $file = $this->extensionPathResolver->getPath('module', 'commerce_avatax') . '/tests/fixtures/irvine_error.json';
       }
     }
     else {
-      $file = drupal_get_path('module', 'commerce_avatax') . '/tests/fixtures/durham.json';
+      $file = $this->extensionPathResolver->getPath('module', 'commerce_avatax') . '/tests/fixtures/durham.json';
       if ($address['address_line1'] === '512 S Mangu' || $address['postal_code'] === '27001') {
-        $file = drupal_get_path('module', 'commerce_avatax') . '/tests/fixtures/durham_suggestion.json';
+        $file = $this->extensionPathResolver->getPath('module', 'commerce_avatax') . '/tests/fixtures/durham_suggestion.json';
       }
     }
 

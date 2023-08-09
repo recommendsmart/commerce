@@ -23,7 +23,7 @@ class RoleGrantedLockingTest extends CommerceBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_license',
   ];
 
@@ -68,13 +68,13 @@ class RoleGrantedLockingTest extends CommerceBrowserTestBase {
   /**
    * Tests a role granted by a license is locked on a user's account form.
    */
-  public function testUserFormHasLock() {
-    // Get the account for for the license owner user.
-    $this->drupalGet("user/" . $this->license->getOwnerId() . "/edit");
+  public function testUserFormHasLock(): void {
+    // Get the account for the license owner user.
+    $this->drupalGet('user/' . $this->license->getOwnerId() . '/edit');
     $this->assertSession()->statusCodeEquals(200);
 
-    $this->assertSession()->fieldDisabled("roles[licensed_role]");
-    $this->assertSession()->pageTextContains("This role is granted by a license. It cannot be removed manually.");
+    $this->assertSession()->fieldDisabled('roles[licensed_role]');
+    $this->assertSession()->pageTextContains('This role is granted by a license. It cannot be removed manually.');
     // Ensure that saving the form doesn't remove the granted role.
     $this->submitForm([], 'Save');
     $this->assertTrue($this->license->getOwner()->hasRole('licensed_role'));

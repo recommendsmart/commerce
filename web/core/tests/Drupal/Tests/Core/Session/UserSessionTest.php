@@ -117,7 +117,7 @@ class UserSessionTest extends UnitTestCase {
     $entity_type_manager->expects($this->any())
       ->method('getStorage')
       ->with($this->equalTo('user_role'))
-      ->will($this->returnValue($role_storage));
+      ->willReturn($role_storage);
     $container = new ContainerBuilder();
     $container->set('entity_type.manager', $entity_type_manager);
     \Drupal::setContainer($container);
@@ -160,6 +160,19 @@ class UserSessionTest extends UnitTestCase {
   public function testUserGetRoles() {
     $this->assertEquals([RoleInterface::AUTHENTICATED_ID, 'role_two'], $this->users['user_three']->getRoles());
     $this->assertEquals(['role_two'], $this->users['user_three']->getRoles(TRUE));
+  }
+
+  /**
+   * Tests the hasRole method.
+   *
+   * @covers ::hasRole
+   */
+  public function testHasRole() {
+    $this->assertTrue($this->users['user_one']->hasRole('role_one'));
+    $this->assertFalse($this->users['user_two']->hasRole('no role'));
+    $this->assertTrue($this->users['user_three']->hasRole(RoleInterface::AUTHENTICATED_ID));
+    $this->assertFalse($this->users['user_three']->hasRole(RoleInterface::ANONYMOUS_ID));
+    $this->assertTrue($this->users['user_last']->hasRole(RoleInterface::ANONYMOUS_ID));
   }
 
 }

@@ -11,7 +11,6 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Field\FieldDefinitionInterface;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Url;
-use Drupal\image\Entity\ImageStyle;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Config\ConfigFactory;
@@ -173,7 +172,7 @@ class BootstrapBasicImageGalleryFormatter extends ImageFormatterBase implements 
     foreach ($files as $delta => $file) {
 
       $image_uri = $file->getFileUri();
-      $url = Url::fromUri(file_create_url($image_uri));
+      $url = \Drupal::service('file_url_generator')->generate($image_uri);
 
       // Extract field item attributes for the theme function, and unset them
       // from the $item so that the field template does not re-render them.
@@ -209,7 +208,7 @@ class BootstrapBasicImageGalleryFormatter extends ImageFormatterBase implements 
         $item_attributes['data-mainsrc'] = $main_image_style->buildUrl($image_uri);
       }
       else {
-        $item_attributes['data-mainsrc'] = file_create_url($image_uri);
+        $item_attributes['data-mainsrc'] = \Drupal::service('file_url_generator')->generateAbsoluteString($image_uri);
       }
 
       // Generate the thumbnail.
@@ -367,7 +366,7 @@ class BootstrapBasicImageGalleryFormatter extends ImageFormatterBase implements 
     foreach (['image_style', 'thumbnail_image_style', 'modal_image_style'] as $setting_name) {
       $style_id = $this->getSetting($setting_name);
       /** @var \Drupal\image\ImageStyleInterface $style */
-      if ($style_id && $style = ImageStyle::load($style_id)) {
+      if ($style_id && $style = $this->imageStyleStorage->load($style_id)) {
         // If this formatter uses a valid image style to display the image, add
         // the image style configuration entity as dependency of this formatter.
         $dependencies[$style->getConfigDependencyKey()][] = $style->getConfigDependencyName();
@@ -384,13 +383,13 @@ class BootstrapBasicImageGalleryFormatter extends ImageFormatterBase implements 
     foreach (['image_style', 'thumbnail_image_style', 'modal_image_style'] as $setting_name) {
       $style_id = $this->getSetting($setting_name);
       /** @var \Drupal\image\ImageStyleInterface $style */
-      if ($style_id && $style = ImageStyle::load($style_id)) {
+      if ($style_id && $style = $this->imageStyleStorage->load($style_id)) {
         if (!empty($dependencies[$style->getConfigDependencyKey()][$style->getConfigDependencyName()])) {
           $replacement_id = $this->imageStyleStorage->getReplacementId($style_id);
           // If a valid replacement has been provided in the storage, replace
           // the image style with the replacement and signal that the formatter
           // plugin settings were updated.
-          if ($replacement_id && ImageStyle::load($replacement_id)) {
+          if ($replacement_id && $this->imageStyleStorage->load($replacement_id)) {
             $this->setSetting($setting_name, $replacement_id);
             $changed = TRUE;
           }

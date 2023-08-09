@@ -188,6 +188,14 @@ trait BaseEmailTrait {
     return $this;
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function attachNoPath(string $body, string $name = NULL, string $mimeType = NULL) {
+    $this->inner->attach($body, $name, $mimeType);
+    return $this;
+  }
+
   // @codingStandardsIgnoreStart
   // public function embedFromPath(string $path, string $name = null, string $contentType = null);
   // @codingStandardsIgnoreEnd

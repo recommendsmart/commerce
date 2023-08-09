@@ -120,6 +120,9 @@ class Renderer implements RendererInterface {
     $this->elementInfo = $element_info;
     $this->placeholderGenerator = $placeholder_generator;
     $this->renderCache = $render_cache;
+    if (!isset($renderer_config['debug'])) {
+      $renderer_config['debug'] = FALSE;
+    }
     $this->rendererConfig = $renderer_config;
     $this->requestStack = $request_stack;
 
@@ -215,6 +218,10 @@ class Renderer implements RendererInterface {
       return '';
     }
 
+    if ($this->rendererConfig['debug'] === TRUE) {
+      $render_start = microtime(TRUE);
+    }
+
     if (!isset($elements['#access']) && isset($elements['#access_callback'])) {
       $elements['#access'] = $this->doCallback('#access_callback', $elements['#access_callback'], [$elements]);
     }
@@ -276,6 +283,10 @@ class Renderer implements RendererInterface {
         if (is_string($elements['#markup'])) {
           $elements['#markup'] = Markup::create($elements['#markup']);
         }
+        // Add debug output to the renderable array on cache hit.
+        if ($this->rendererConfig['debug'] === TRUE) {
+          $elements = $this->addDebugOutput($elements, TRUE);
+        }
         // The render cache item contains all the bubbleable rendering metadata
         // for the subtree.
         $context->update($elements);
@@ -306,6 +317,7 @@ class Renderer implements RendererInterface {
     if (isset($elements['#lazy_builder'])) {
       assert(is_array($elements['#lazy_builder']), 'The #lazy_builder property must have an array as a value.');
       assert(count($elements['#lazy_builder']) === 2, 'The #lazy_builder property must have an array as a value, containing two values: the callback, and the arguments for the callback.');
+      assert(is_array($elements['#lazy_builder'][1]), 'The #lazy_builder argument for callback must have an array as a value.');
       assert(count($elements['#lazy_builder'][1]) === count(array_filter($elements['#lazy_builder'][1], function ($v) {
         return is_null($v) || is_scalar($v);
       })), "A #lazy_builder callback's context may only contain scalar values or NULL.");
@@ -314,6 +326,8 @@ class Renderer implements RendererInterface {
         '#lazy_builder',
         '#cache',
         '#create_placeholder',
+        '#lazy_builder_preview',
+        '#preview',
         // The keys below are not actually supported, but these are added
         // automatically by the Renderer. Adding them as though they are
         // supported allows us to avoid throwing an exception 100% of the time.
@@ -513,6 +527,11 @@ class Renderer implements RendererInterface {
         throw new \LogicException('Cache keys may not be changed after initial setup. Use the contexts property instead to bubble additional metadata.');
       }
       $this->renderCache->set($elements, $pre_bubbling_elements);
+      // Add debug output to the renderable array on cache miss.
+      if ($this->rendererConfig['debug'] === TRUE) {
+        $render_stop = microtime(TRUE);
+        $elements = $this->addDebugOutput($elements, FALSE, $pre_bubbling_elements, $render_stop - $render_start);
+      }
       // Update the render context; the render cache implementation may update
       // the element, and it may have different bubbleable metadata now.
       // @see \Drupal\Core\Render\PlaceholderingRenderCache::set()
@@ -562,10 +581,7 @@ class Renderer implements RendererInterface {
     // Set the provided context and call the callable, it will use that context.
     $this->setCurrentRenderContext($context);
     $result = $callable();
-    // @todo Convert to an assertion in https://www.drupal.org/node/2408013
-    if ($context->count() > 1) {
-      throw new \LogicException('Bubbling failed.');
-    }
+    assert($context->count() <= 1, 'Bubbling failed.');
 
     // Restore the original render context.
     $this->setCurrentRenderContext($previous_context);
@@ -770,6 +786,69 @@ class Renderer implements RendererInterface {
     // - Helper classes that contain only callback methods can implement this
     //   instead of TrustedCallbackInterface.
     return $this->doTrustedCallback($callback, $args, $message, TrustedCallbackInterface::THROW_EXCEPTION, RenderCallbackInterface::class);
+  }
+
+  /**
+   * Add cache debug information to the render array.
+   *
+   * @param array $elements
+   *   The renderable array that must be wrapped with the cache debug output.
+   * @param bool $is_cache_hit
+   *   A flag indicating that the cache is hit or miss.
+   * @param array $pre_bubbling_elements
+   *   The renderable array for pre-bubbling elements.
+   * @param float $render_time
+   *   The rendering time.
+   *
+   * @return array
+   *   The renderable array.
+   */
+  protected function addDebugOutput(array $elements, bool $is_cache_hit, array $pre_bubbling_elements = [], float $render_time = 0) {
+    if (empty($elements['#markup'])) {
+      return $elements;
+    }
+
+    $debug_items = [
+      'CACHE' => &$elements,
+      'PRE-BUBBLING CACHE' => &$pre_bubbling_elements,
+    ];
+    $prefix = "<!-- START RENDERER -->";
+    $prefix .= "\n<!-- CACHE-HIT: " . ($is_cache_hit ? 'Yes' : 'No') . " -->";
+    foreach ($debug_items as $name_prefix => $debug_item) {
+      if (!empty($debug_item['#cache']['tags'])) {
+        $prefix .= "\n<!-- " . $name_prefix . " TAGS:";
+        foreach ($debug_item['#cache']['tags'] as $tag) {
+          $prefix .= "\n   * " . $tag;
+        }
+        $prefix .= "\n-->";
+      }
+      if (!empty($debug_item['#cache']['contexts'])) {
+        $prefix .= "\n<!-- " . $name_prefix . " CONTEXTS:";
+        foreach ($debug_item['#cache']['contexts'] as $context) {
+          $prefix .= "\n   * " . $context;
+        }
+        $prefix .= "\n-->";
+      }
+      if (!empty($debug_item['#cache']['keys'])) {
+        $prefix .= "\n<!-- " . $name_prefix . " KEYS:";
+        foreach ($debug_item['#cache']['keys'] as $key) {
+          $prefix .= "\n   * " . $key;
+        }
+        $prefix .= "\n-->";
+      }
+      if (!empty($debug_item['#cache']['max-age'])) {
+        $prefix .= "\n<!-- " . $name_prefix . " MAX-AGE: " . $debug_item['#cache']['max-age'] . " -->";
+      }
+    }
+
+    if (!empty($render_time)) {
+      $prefix .= "\n<!-- RENDERING TIME: " . number_format($render_time, 9) . " -->";
+    }
+    $suffix = "<!-- END RENDERER -->";
+
+    $elements['#markup'] = Markup::create("$prefix\n" . $elements['#markup'] . "\n$suffix");
+
+    return $elements;
   }
 
 }

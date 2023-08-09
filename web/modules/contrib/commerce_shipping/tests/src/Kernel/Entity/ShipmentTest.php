@@ -233,6 +233,8 @@ class ShipmentTest extends ShippingKernelTestBase {
     $this->assertCount(4, $order->getAdjustments());
     $this->assertCount(1, $order->get('shipments')->referencedEntities());
     $shipment->delete();
+    $profile = $this->reloadEntity($profile);
+    $this->assertNull($profile);
     // The order shipments are cleared on destruct by the shipment subscriber.
     $this->container->get('commerce_shipping.shipment_subscriber')->destruct();
     $order = $this->reloadEntity($order);

@@ -14,21 +14,20 @@
    */
   Drupal.behaviors.MediaLibraryFormElementEditItem = {
     attach: function attach(context) {
-      $(".media-library-form-element .js-media-library-item a[href]", context)
-        .once("media-library-edit")
-        .each(function() {
-          var elementSettings = {
-            progress: { type: "throbber" },
-            dialogType: "modal",
-            dialog: { width: "80%" },
-            dialogRenderer: null,
-            base: $(this).attr("id"),
-            element: this,
-            url: $(this).attr("href"),
-            event: "click"
-          };
-          Drupal.ajax(elementSettings);
-        });
+      const itemSelector = '.media-library-form-element .js-media-library-item a[href]';
+      $(once('media-library-edit', itemSelector, context)).each(function (index) {
+        var elementSettings = {
+          progress: { type: "throbber" },
+          dialogType: "modal",
+          dialog: { width: "80%" },
+          dialogRenderer: null,
+          base: $(this).attr("id"),
+          element: this,
+          url: $(this).attr("href"),
+          event: "click"
+        };
+        Drupal.ajax(elementSettings);
+      });
     }
   };
 
@@ -47,18 +46,17 @@
       // more items, the button needs to be disabled. Since we can't shift the
       // focus to disabled elements, the focus is set back to the open button
       // via JavaScript by adding the 'data-disabled-focus' attribute.
-      $('.js-media-library-open-button[data-disabled-focus="true"]', context)
-        .once("media-library-disable")
-        .each(function() {
-          $(this).focus();
 
-          // There is a small delay between the focus set by the browser and the
-          // focus of screen readers. We need to give screen readers time to
-          // shift the focus as well before the button is disabled.
-          setTimeout(() => {
-            $(this).attr("disabled", "disabled");
-          }, 50);
-        });
+      const itemSelector = '.js-media-library-open-button[data-disabled-focus="true"]';
+      $(once('media-library-disable', itemSelector, context)).each(function (index) {
+        $(this).focus();
+        // There is a small delay between the focus set by the browser and the
+        // focus of screen readers. We need to give screen readers time to
+        // shift the focus as well before the button is disabled.
+        setTimeout(() => {
+          $(this).attr("disabled", "disabled");
+        }, 50);
+      });
     }
   };
 
@@ -76,27 +74,29 @@
         show: Drupal.t("Show media item weights"),
         hide: Drupal.t("Hide media item weights")
       };
-      $(".js-media-library-widget-toggle-weight", context)
-        .once("media-library-toggle")
-        .on("click", e => {
-          e.preventDefault();
-          $(e.currentTarget)
-            .toggleClass("active")
-            .text(
-              $(e.currentTarget).hasClass("active")
-                ? strings.hide
-                : strings.show
-            )
-            .closest(".js-media-library-widget")
-            .find(".js-media-library-item-weight")
-            .parent()
-            .toggle();
-        })
-        .text(strings.show);
-      $(".js-media-library-item-weight", context)
-        .once("media-library-toggle")
-        .parent()
-        .hide();
+
+      $(once('media-library-toggle', '.js-media-library-widget-toggle-weight', context)).each(function (index) {
+        $(this)
+          .on('click', e => {
+            e.preventDefault();
+            $(e.currentTarget)
+              .toggleClass('active')
+              .text(
+                $(e.currentTarget).hasClass('active')
+                  ? strings.hide
+                  : strings.show
+              )
+              .closest('.js-media-library-widget')
+              .find('.js-media-library-item-weight')
+              .parent()
+              .toggle();
+          })
+          .text(strings.show);
+      });
+
+      $(once('media-library-toggle', '.js-media-library-item-weight', context)).each(function (index) {
+        $(this).parent().hide();
+      });
     }
   };
 

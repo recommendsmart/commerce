@@ -1,16 +1,10 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldType\IntervalItem.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldType;
 
 use Drupal\Core\Field\FieldItemBase;
 use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\TypedData\DataDefinition;
-use Drupal\interval\IntervalInterface;
 use Drupal\interval\IntervalItemInterface;
 use Drupal\interval\InvalidIntervalException;
 
@@ -32,7 +26,7 @@ class IntervalItem extends FieldItemBase implements IntervalItemInterface {
    *
    * @var array
    */
-  protected $intervalPlugin = array();
+  protected $intervalPlugin = [];
 
   /**
    * {@inheritdoc}
@@ -50,31 +44,31 @@ class IntervalItem extends FieldItemBase implements IntervalItemInterface {
    * {@inheritdoc}
    */
   public static function schema(FieldStorageDefinitionInterface $field_definition) {
-    $columns = array(
-      'interval' => array(
+    $columns = [
+      'interval' => [
         'description'   => 'The number of multiples of the period',
         'type'          => 'int',
         'size'          => 'medium',
         'not null'      => TRUE,
         'default'       => 0,
-      ),
-      'period' => array(
+      ],
+      'period' => [
         'description'   => 'The period machine name',
         'type'          => 'varchar',
         'size'          => 'normal',
         'length'        => 20,
         'not null'      => TRUE,
         'default'       => 'day',
-      ),
-    );
-    $indexes = array(
-      'period' => array('period'),
-      'interval' => array('interval'),
-    );
-    return array(
+      ],
+    ];
+    $indexes = [
+      'period' => ['period'],
+      'interval' => ['interval'],
+    ];
+    return [
       'columns' => $columns,
       'indexes' => $indexes,
-    );
+    ];
   }
 
   /**
@@ -116,6 +110,13 @@ class IntervalItem extends FieldItemBase implements IntervalItemInterface {
     parent::setValue($values, $notify);
   }
 
+  /**
+   * {@inheritdoc}
+   */
+  public function getValue() {
+    unset($this->intervalPlugin);
+    return parent::getValue();
+  }
 
   /**
    * {@inheritdoc}

@@ -6,6 +6,7 @@ use Drupal\commerce_order\Entity\OrderItemType;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_product\Entity\ProductVariationType;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 
 /**
@@ -25,7 +26,7 @@ abstract class CommerceFileKernelTestBase extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'interval',
     'recurring_period',
     'file',
@@ -43,7 +44,7 @@ abstract class CommerceFileKernelTestBase extends OrderKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installSchema('commerce_file', ['commerce_file_download_log']);
@@ -74,7 +75,7 @@ abstract class CommerceFileKernelTestBase extends OrderKernelTestBase {
       'filename' => $this->randomMachineName(),
       'uri' => 'private://test.txt',
       'filemime' => 'text/plain',
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $file->save();
     $this->file = $this->reloadEntity($file);

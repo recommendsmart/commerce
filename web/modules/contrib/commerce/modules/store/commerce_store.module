@@ -19,7 +19,7 @@ function commerce_store_mail_alter(&$message) {
     $current_store = \Drupal::service('commerce_store.current_store');
     $current_store = $current_store->getStore();
     if ($current_store) {
-      $message['from'] = $current_store->getEmail();
+      $message['from'] = $current_store->getEmailFromHeader();
     }
   }
 }

@@ -213,9 +213,6 @@
 	"CRC": {
 		"name": "kostarikanske colón"
 	},
-	"HRK": {
-		"name": "kroatiske kuna"
-	},
 	"CUC": {
 		"name": "kubanske konvertible pesos"
 	},
@@ -447,9 +444,6 @@
 	},
 	"HUF": {
 		"name": "ungarske forintar"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "uruguayanske pesos"

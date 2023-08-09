@@ -5,6 +5,7 @@ namespace Drupal\commerce_promotion;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\OrderPreprocessorInterface;
 use Drupal\commerce_order\OrderProcessorInterface;
+use Drupal\commerce_price\Calculator;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Language\LanguageInterface;
 use Drupal\Core\Language\LanguageManagerInterface;
@@ -100,10 +101,18 @@ class PromotionOrderProcessor implements OrderPreprocessorInterface, OrderProces
     // Remove coupons that are no longer valid (due to availability/conditions.)
     $coupons_field_list = $order->get('coupons');
     $constraints = $coupons_field_list->validate();
+    $coupons_to_remove = [];
     /** @var \Symfony\Component\Validator\ConstraintViolationInterface $constraint */
     foreach ($constraints as $constraint) {
-      list($delta, $property_name) = explode('.', $constraint->getPropertyPath());
-      $coupons_field_list->removeItem($delta);
+      [$delta, $property_name] = explode('.', $constraint->getPropertyPath());
+      // Collect the coupon IDS to remove, for use in the item list filter
+      // callback right after.
+      $coupons_to_remove[] = $coupons_field_list->get($delta)->target_id;
+    }
+    if ($coupons_to_remove) {
+      $coupons_field_list->filter(function ($item) use ($coupons_to_remove) {
+        return !in_array($item->target_id, $coupons_to_remove, TRUE);
+      });
     }
 
     $content_langcode = $this->languageManager->getCurrentLanguage(LanguageInterface::TYPE_CONTENT)->getId();
@@ -128,6 +137,18 @@ class PromotionOrderProcessor implements OrderPreprocessorInterface, OrderProces
         $promotion = $promotion->getTranslation($content_langcode);
       }
       $promotion->apply($order);
+    }
+    // Cleanup order items added by the BuyXGetY offer in case the promotion
+    // no longer applies.
+    foreach ($order->getItems() as $order_item) {
+      if (!$order_item->getData('owned_by_promotion', FALSE)) {
+        continue;
+      }
+      // Remove order items which had their quantities set to 0.
+      if (Calculator::compare($order_item->getQuantity(), '0') === 0) {
+        $order->removeItem($order_item);
+        $order_item->delete();
+      }
     }
   }
 

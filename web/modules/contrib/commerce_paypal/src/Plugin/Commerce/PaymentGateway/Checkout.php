@@ -106,6 +106,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       'enable_on_cart' => TRUE,
       'collect_billing_information' => FALSE,
       'webhook_id' => '',
+      'enable_credit_card_icons' => TRUE,
     ] + parent::defaultConfiguration();
   }
 
@@ -193,13 +194,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       '#title' => $this->t('Disable funding sources'),
       '#description' => $this->t('The disabled funding sources for the transaction. Any funding sources passed do not display with Smart Payment Buttons. By default, funding source eligibility is smartly decided based on a variety of factors.'),
       '#type' => 'checkboxes',
-      '#options' => [
-        'card' => $this->t('Credit or Debit Cards'),
-        'credit' => $this->t('PayPal Credit'),
-        'sepa' => $this->t('SEPA-Lastschrift'),
-        'sofort' => $this->t('Sofort'),
-        'mybank' => $this->t('MyBank'),
-      ],
+      '#options' => commerce_paypal_get_funding_sources(),
       '#default_value' => $this->configuration['disable_funding'],
       '#states' => $spb_states,
     ];
@@ -243,6 +238,12 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       '#default_value' => $this->configuration['update_shipping_profile'],
       '#access' => $shipping_enabled,
       '#states' => $spb_states,
+    ];
+    $form['enable_credit_card_icons'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable Credit Card Icons'),
+      '#description' => $this->t('Enabling this setting will display credit card icons in the payment section during checkout.'),
+      '#default_value' => $this->configuration['enable_credit_card_icons'],
     ];
     $form['customize_buttons'] = [
       '#type' => 'checkbox',
@@ -373,6 +374,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       'update_shipping_profile',
       'enable_on_cart',
       'webhook_id',
+      'enable_credit_card_icons',
     ];
 
     // Only save the style settings if the customize buttons checkbox is checked.
@@ -759,9 +761,9 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
     $paypal_amount = $paypal_order['purchase_units'][0]['amount'];
     $paypal_total = Price::fromArray(['number' => $paypal_amount['value'], 'currency_code' => $paypal_amount['currency_code']]);
 
-    // Make sure the order total matches the total we get from PayPal.
-    if (!$paypal_total->equals($order->getTotalPrice())) {
-      throw new PaymentGatewayException('The PayPal order total does not match the order total.');
+    // Make sure the order balance matches the total we get from PayPal.
+    if (!$paypal_total->equals($order->getBalance())) {
+      throw new PaymentGatewayException('The PayPal order total does not match the order balance.');
     }
     if (!in_array($paypal_order['status'], ['APPROVED', 'SAVED'])) {
       throw new PaymentGatewayException(sprintf('Unexpected PayPal order status %s.', $paypal_order['status']));
@@ -771,6 +773,9 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       'remote_id' => $paypal_order['id'],
       'flow' => $flow,
       'intent' => strtolower($paypal_order['intent']),
+      // It's safe to assume the last funding source set in the cookie was for
+      // this order and note it in the data array for later use.
+      'funding_source' => $request->cookies->get('lastFundingSource', NULL),
     ]);
 
     if (empty($order->getEmail())) {
@@ -902,7 +907,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
         'partially_refunded' => 'partially_refunded',
       ],
     ];
-    return isset($mapping[$type][$remote_state]) ? $mapping[$type][$remote_state] : '';
+    return $mapping[$type][$remote_state] ?? '';
   }
 
   /**
@@ -933,7 +938,7 @@ class Checkout extends OffsitePaymentGatewayBase implements CheckoutInterface {
       if (!$shipments) {
         /** @var \Drupal\commerce_shipping\PackerManagerInterface $packer_manager */
         $packer_manager = \Drupal::service('commerce_shipping.packer_manager');
-        list($shipments) = $packer_manager->packToShipments($order, $this->buildCustomerProfile($order), $shipments);
+        [$shipments] = $packer_manager->packToShipments($order, $this->buildCustomerProfile($order), $shipments);
       }
       // Can't proceed without shipments.
       if (!$shipments) {

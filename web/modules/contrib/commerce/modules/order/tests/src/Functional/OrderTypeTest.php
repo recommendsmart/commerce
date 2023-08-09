@@ -38,7 +38,7 @@ class OrderTypeTest extends OrderBrowserTestBase {
       'refresh_mode' => 'always',
       'refresh_frequency' => 60,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Foo order type.');
 
     $order_type = OrderType::load('foo');
@@ -80,7 +80,7 @@ class OrderTypeTest extends OrderBrowserTestBase {
       'label' => 'Default2',
       'id' => 'default2',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Default2 order type.');
 
     // Confirm that the original order type is unchanged.
@@ -114,8 +114,8 @@ class OrderTypeTest extends OrderBrowserTestBase {
 
     // Confirm that the type can't be deleted while there's an order.
     $this->drupalGet($order_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('@type is used by 1 order on your site. You cannot remove this order type until you have removed all of the @type orders.', ['@type' => $order_type->label()]));
-    $this->assertSession()->pageTextNotContains(t('This action cannot be undone.'));
+    $this->assertSession()->pageTextContains($this->t('@type is used by 1 order on your site. You cannot remove this order type until you have removed all of the @type orders.', ['@type' => $order_type->label()]));
+    $this->assertSession()->pageTextNotContains($this->t('This action cannot be undone.'));
 
     // Confirm that the delete page is not available when the type is locked.
     $order_type->lock();
@@ -128,9 +128,9 @@ class OrderTypeTest extends OrderBrowserTestBase {
     $order_type->unlock();
     $order_type->save();
     $this->drupalGet($order_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('Are you sure you want to delete the order type @label?', ['@label' => $order_type->label()]));
-    $this->assertSession()->pageTextContains(t('This action cannot be undone.'));
-    $this->submitForm([], t('Delete'));
+    $this->assertSession()->pageTextContains($this->t('Are you sure you want to delete the order type @label?', ['@label' => $order_type->label()]));
+    $this->assertSession()->pageTextContains($this->t('This action cannot be undone.'));
+    $this->submitForm([], $this->t('Delete'));
     $order_type_exists = (bool) OrderType::load($order_type->id());
     $this->assertEmpty($order_type_exists);
   }
@@ -140,7 +140,7 @@ class OrderTypeTest extends OrderBrowserTestBase {
    */
   public function testOrderTypeDependencies() {
     $this->drupalGet('admin/commerce/config/order-types/default/edit');
-    $this->submitForm(['workflow' => 'test_workflow'], t('Save'));
+    $this->submitForm(['workflow' => 'test_workflow'], $this->t('Save'));
 
     $order_type = OrderType::load('default');
     $this->assertEquals('test_workflow', $order_type->getWorkflowId());

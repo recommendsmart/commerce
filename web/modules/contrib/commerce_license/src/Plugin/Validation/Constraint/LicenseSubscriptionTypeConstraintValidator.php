@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_license\Plugin\Validation\Constraint;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -42,15 +42,16 @@ class LicenseSubscriptionTypeConstraintValidator extends ConstraintValidator imp
   /**
    * {@inheritdoc}
    */
-  public function validate($items, Constraint $constraint) {
-    if (!$item = $items->first()) {
+  public function validate($value, Constraint $constraint) {
+    $items = $value;
+    if (!$items->first()) {
       return;
     }
 
     $subscription_plugin_id = $items->first()->target_plugin_id;
 
     // Don't act if the subscription plugin isn't ours.
-    if ($subscription_plugin_id != 'license') {
+    if ($subscription_plugin_id !== 'license') {
       return;
     }
 

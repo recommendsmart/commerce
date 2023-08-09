@@ -33,8 +33,8 @@ class OrderItemLicensed extends EntityTraitBase {
     // Builds the field definitions.
     $fields = [];
     $fields['license'] = BundleFieldDefinition::create('entity_reference')
-      ->setLabel(t('License'))
-      ->setDescription(t('The license purchased with this order item.'))
+      ->setLabel($this->t('License'))
+      ->setDescription($this->t('The license purchased with this order item.'))
       ->setSetting('target_type', 'commerce_license')
       ->setSetting('handler', 'default')
       ->setCardinality(1)

@@ -50,11 +50,14 @@ use Drupal\Core\Entity\EntityStorageInterface;
  *     "event",
  *     "targetEntityType",
  *     "from",
+ *     "toType",
+ *     "toRole",
  *     "to",
  *     "cc",
  *     "bcc",
  *     "subject",
  *     "body",
+ *     "queue",
  *     "conditions",
  *     "conditionOperator",
  *   },
@@ -105,6 +108,20 @@ class Email extends ConfigEntityBase implements EmailInterface {
   protected $from;
 
   /**
+   * The 'toType' option.
+   *
+   * @var string
+   */
+  protected $toType;
+
+  /**
+   * The 'toRole' value.
+   *
+   * @var string
+   */
+  protected $toRole;
+
+  /**
    * The "to" address.
    *
    * @var string
@@ -138,6 +155,13 @@ class Email extends ConfigEntityBase implements EmailInterface {
    * @var string
    */
   protected $body;
+
+  /**
+   * Whether to email the email should be queued.
+   *
+   * @var bool
+   */
+  protected $queue;
 
   /**
    * The conditions.
@@ -206,6 +230,36 @@ class Email extends ConfigEntityBase implements EmailInterface {
    */
   public function setFrom($from) {
     $this->from = $from;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getToType() {
+    return $this->toType;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setToType($to_type) {
+    $this->toType = $to_type;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getToRole() {
+    return $this->toRole;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setToRole($to_role) {
+    $this->toRole = $to_role;
     return $this;
   }
 
@@ -281,6 +335,21 @@ class Email extends ConfigEntityBase implements EmailInterface {
    */
   public function setBody($body) {
     return $this->body = $body;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function shouldQueue() {
+    return $this->queue;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setQueue($queue) {
+    $this->queue = (bool) $queue;
+    return $this;
   }
 
   /**

@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_license\Plugin\Validation\Constraint;
 
-use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\DependencyInjection\ContainerInjectionInterface;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\Validator\Constraint;
 use Symfony\Component\Validator\ConstraintValidator;
@@ -42,20 +42,21 @@ class LicenseExpirationTypeWithSubscriptionConstraintValidator extends Constrain
   /**
    * {@inheritdoc}
    */
-  public function validate($items, Constraint $constraint) {
-    if (!$item = $items->first()) {
+  public function validate($value, Constraint $constraint) {
+    $items = $value;
+    if (!$items->first()) {
       return;
     }
 
     $product_variation = $items->getEntity();
     if (!$product_variation->hasField('subscription_type')) {
-      // Don't act if the product variation doens't use subscriptions.
+      // Don't act if the product variation doesn't use subscriptions.
       return;
     }
 
     $expiration_type_plugin_id = $items->first()->target_plugin_id;
 
-    if ($expiration_type_plugin_id != 'unlimited') {
+    if ($expiration_type_plugin_id !== 'unlimited') {
       $this->context->buildViolation($constraint->message)
         ->setInvalidValue($expiration_type_plugin_id)
         ->addViolation();

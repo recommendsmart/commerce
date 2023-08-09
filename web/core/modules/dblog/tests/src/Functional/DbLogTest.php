@@ -14,8 +14,7 @@ use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\system\Functional\Menu\AssertBreadcrumbTrait;
 
 /**
- * Generate events and verify dblog entries; verify user access to log reports
- * based on permissions.
+ * Verifies log entries and user access based on permissions.
  *
  * @group dblog
  */
@@ -32,7 +31,6 @@ class DbLogTest extends BrowserTestBase {
     'dblog',
     'error_test',
     'node',
-    'forum',
     'help',
     'block',
   ];
@@ -162,23 +160,22 @@ class DbLogTest extends BrowserTestBase {
     $wid = $query->execute()->fetchField();
     $this->drupalGet('admin/reports/dblog/event/' . $wid);
 
-    $table = $this->xpath("//table[@class='dblog-event']");
-    $this->assertCount(1, $table);
+    $table = $this->assertSession()->elementExists('xpath', "//table[@class='dblog-event']");
 
     // Verify type, severity and location.
-    $type = $table[0]->findAll('xpath', "//tr/th[contains(text(), 'Type')]/../td");
-    $this->assertCount(1, $type);
-    $this->assertEquals('access denied', $type[0]->getText());
-    $severity = $table[0]->findAll('xpath', "//tr/th[contains(text(), 'Severity')]/../td");
-    $this->assertCount(1, $severity);
-    $this->assertEquals('Warning', $severity[0]->getText());
-    $location = $table[0]->findAll('xpath', "//tr/th[contains(text(), 'Location')]/../td/a");
+    $type = "//tr/th[contains(text(), 'Type')]/../td";
+    $this->assertSession()->elementsCount('xpath', $type, 1, $table);
+    $this->assertEquals('access denied', $table->findAll('xpath', $type)[0]->getText());
+    $severity = "//tr/th[contains(text(), 'Severity')]/../td";
+    $this->assertSession()->elementsCount('xpath', $severity, 1, $table);
+    $this->assertEquals('Warning', $table->findAll('xpath', $severity)[0]->getText());
+    $location = $table->findAll('xpath', "//tr/th[contains(text(), 'Location')]/../td/a");
     $this->assertCount(1, $location);
     $href = $location[0]->getAttribute('href');
     $this->assertEquals($this->baseUrl . '/' . $uri, $href);
 
     // Verify message.
-    $message = $table[0]->findAll('xpath', "//tr/th[contains(text(), 'Message')]/../td");
+    $message = $table->findAll('xpath', "//tr/th[contains(text(), 'Message')]/../td");
     $this->assertCount(1, $message);
     $regex = "@Path: .+admin/reports\. Drupal\\\\Core\\\\Http\\\\Exception\\\\CacheableAccessDeniedHttpException: The 'access site reports' permission is required\. in Drupal\\\\Core\\\\Routing\\\\AccessAwareRouter->checkAccess\(\) \(line \d+ of .+/core/lib/Drupal/Core/Routing/AccessAwareRouter\.php\)\.@";
     $this->assertMatchesRegularExpression($regex, $message[0]->getText());
@@ -201,7 +198,7 @@ class DbLogTest extends BrowserTestBase {
    * Tests individual log event page with missing log attributes.
    *
    * In some cases few log attributes are missing. For example:
-   * - Missing referer: When request is made to a specific url directly and
+   * - Missing referer: When request is made to a specific URL directly and
    *   error occurred. In this case there is no referer.
    * - Incorrect location: When location attribute is incorrect uri which can
    *   not be used to generate a valid link.
@@ -387,7 +384,6 @@ class DbLogTest extends BrowserTestBase {
     $this->drupalCreateContentType(['type' => 'page', 'name' => 'Basic page']);
     $this->doNode('article');
     $this->doNode('page');
-    $this->doNode('forum');
 
     // When a user account is canceled, any content they created remains but the
     // uid = 0. Records in the watchdog table related to that user have the uid
@@ -409,8 +405,7 @@ class DbLogTest extends BrowserTestBase {
   }
 
   /**
-   * Tests the escaping of links in the operation row of a database log detail
-   * page.
+   * Tests link escaping in the operation row of a database log detail page.
    */
   private function verifyLinkEscaping() {
     $link = Link::fromTextAndUrl('View', Url::fromRoute('entity.node.canonical', ['node' => 1]))->toString();
@@ -514,7 +509,7 @@ class DbLogTest extends BrowserTestBase {
    * Generates and then verifies some node events.
    *
    * @param string $type
-   *   A node type (e.g., 'article', 'page' or 'forum').
+   *   A node type (e.g., 'article' or 'page').
    */
   private function doNode($type) {
     // Create user.
@@ -525,7 +520,10 @@ class DbLogTest extends BrowserTestBase {
 
     // Create a node using the form in order to generate an add content event
     // (which is not triggered by drupalCreateNode).
-    $edit = $this->getContent($type);
+    $edit = [
+      'title[0][value]' => $this->randomMachineName(8),
+      'body[0][value]'  => $this->randomMachineName(32),
+    ];
     $title = $edit['title[0][value]'];
     $this->drupalGet('node/add/' . $type);
     $this->submitForm($edit, 'Save');
@@ -534,7 +532,9 @@ class DbLogTest extends BrowserTestBase {
     $node = $this->drupalGetNodeByTitle($title);
     $this->assertNotNull($node, new FormattableMarkup('Node @title was loaded', ['@title' => $title]));
     // Edit the node.
-    $edit = $this->getContentUpdate($type);
+    $edit = [
+      'body[0][value]' => $this->randomMachineName(32),
+    ];
     $this->drupalGet('node/' . $node->id() . '/edit');
     $this->submitForm($edit, 'Save');
     $this->assertSession()->statusCodeEquals(200);
@@ -574,51 +574,6 @@ class DbLogTest extends BrowserTestBase {
     $this->assertSession()->statusCodeEquals(200);
     // Verify that the 'page not found' event was recorded.
     $this->assertSession()->pageTextContains('node/' . $node->id());
-  }
-
-  /**
-   * Creates random content based on node content type.
-   *
-   * @param string $type
-   *   Node content type (e.g., 'article').
-   *
-   * @return array
-   *   Random content needed by various node types.
-   */
-  private function getContent($type) {
-    switch ($type) {
-      case 'forum':
-        $content = [
-          'title[0][value]' => $this->randomMachineName(8),
-          'taxonomy_forums' => 1,
-          'body[0][value]' => $this->randomMachineName(32),
-        ];
-        break;
-
-      default:
-        $content = [
-          'title[0][value]' => $this->randomMachineName(8),
-          'body[0][value]' => $this->randomMachineName(32),
-        ];
-        break;
-    }
-    return $content;
-  }
-
-  /**
-   * Creates random content as an update based on node content type.
-   *
-   * @param string $type
-   *   Node content type (e.g., 'article').
-   *
-   * @return array
-   *   Random content needed by various node types.
-   */
-  private function getContentUpdate($type) {
-    $content = [
-      'body[0][value]' => $this->randomMachineName(32),
-    ];
-    return $content;
   }
 
   /**
@@ -725,12 +680,14 @@ class DbLogTest extends BrowserTestBase {
     $this->drupalGet('admin/reports/dblog', ['query' => ['order' => 'Type']]);
     $this->assertSession()->statusCodeEquals(200);
     $this->assertSession()->pageTextContains('Operations');
+    $this->assertSession()->fieldExists('edit-type');
 
     // Clear all logs and make sure the confirmation message is found.
     $this->clearLogsEntries();
     // Confirm that the logs should be cleared.
     $this->submitForm([], 'Confirm');
     $this->assertSession()->pageTextContains('Database log cleared.');
+    $this->assertSession()->fieldNotExists('edit-type');
   }
 
   /**
@@ -824,7 +781,7 @@ class DbLogTest extends BrowserTestBase {
    * @param string $log_message
    *   The database log message to check.
    * @param string $message
-   *   The message to pass to simpletest.
+   *   A message to display if the assertion fails.
    *
    * @internal
    */

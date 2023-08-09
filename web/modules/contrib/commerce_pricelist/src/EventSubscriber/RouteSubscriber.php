@@ -18,6 +18,9 @@ class RouteSubscriber extends RouteSubscriberBase {
       $parameters['commerce_product_variation']['type'] = 'entity:commerce_product_variation';
       $route->setOption('parameters', $parameters);
     }
+    if ($route = $collection->get('view.commerce_pricelist_product_prices.page')) {
+      $route->setOption('_admin_route', TRUE);
+    }
   }
 
 }

@@ -3,23 +3,25 @@
 namespace Drupal\commerce_price\TwigExtension;
 
 use Drupal\commerce_price\Price;
+use Twig\Extension\AbstractExtension;
+use Twig\TwigFilter;
 
 /**
  * Provides Price-specific Twig extensions.
  */
-class PriceTwigExtension extends \Twig_Extension {
+class PriceTwigExtension extends AbstractExtension {
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getFilters() {
     return [
-      new \Twig_SimpleFilter('commerce_price_format', [$this, 'formatPrice']),
+      new TwigFilter('commerce_price_format', [$this, 'formatPrice']),
     ];
   }
 
   /**
-   * @inheritdoc
+   * {@inheritdoc}
    */
   public function getName() {
     return 'commerce_price.twig_extension';

@@ -224,9 +224,6 @@
 	"NOK": {
 		"name": "Kroni ya Norwe"
 	},
-	"HRK": {
-		"name": "Kuna ya Kroeshia"
-	},
 	"MWK": {
 		"name": "Kwacha ya Malawi"
 	},
@@ -417,9 +414,6 @@
 	"SCR": {
 		"name": "Rupia ya Ushelisheli"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"ILS": {
 		"name": "Shekeli Mpya ya Israel",
 		"symbol": "₪"
@@ -465,9 +459,6 @@
 	"MNT": {
 		"name": "Tugrik ya Mongolia"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"VUV": {
 		"name": "Vatu ya Vanuatu"
 	},
@@ -489,9 +480,6 @@
 	"EUR": {
 		"name": "Yuro",
 		"symbol": "€"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	},
 	"PLN": {
 		"name": "Zloti ya Polandi"

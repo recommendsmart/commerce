@@ -73,7 +73,7 @@ class FacetsPrettyPathsUrlProcessor extends UrlProcessorPluginBase implements Co
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('request_stack')->getMasterRequest(),
+      version_compare(\Drupal::VERSION, '9.3', '>=') ? $container->get('request_stack')->getMainRequest() : $container->get('request_stack')->getMasterRequest(),
       $container->get('entity_type.manager'),
       $container->get('current_route_match'),
       $container->get('facets_pretty_paths.active_filters')

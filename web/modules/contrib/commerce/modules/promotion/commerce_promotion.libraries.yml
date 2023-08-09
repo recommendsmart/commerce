@@ -11,3 +11,4 @@ coupon_redemption_form:
   dependencies:
     - core/jquery
     - core/drupal
+    - core/once

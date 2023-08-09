@@ -249,6 +249,7 @@ class Border extends StylePluginBase {
       '#attributes' => [
         'class' => ['bs_col--full', 'bs_input-boxes', 'bs_input-boxes--box-model', 'bs_border--type'],
       ],
+      '#disable_live_preview' => TRUE,
     ];
 
     $form['border_style'] = [
@@ -383,7 +384,7 @@ class Border extends StylePluginBase {
       $default_value = $this->getStyleOptionIndexByClass('rounded_corners', $storage['border']['rounded_corners']['class']);
     }
 
-    $icon_path = drupal_get_path('module', 'bootstrap_styles') . '/images/';
+    $icon_path = \Drupal::service('extension.list.module')->getPath('bootstrap_styles') . '/images/';
 
     $form['rounded_corners'] = [
       '#type' => 'range',

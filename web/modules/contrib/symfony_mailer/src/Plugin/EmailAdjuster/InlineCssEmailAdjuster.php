@@ -37,6 +37,8 @@ class InlineCssEmailAdjuster extends EmailAdjusterBase implements ContainerFacto
   protected $cssInliner;
 
   /**
+   * Constructor.
+   *
    * @param array $configuration
    *   A configuration array containing information about the plugin instance.
    * @param string $plugin_id
@@ -69,7 +71,7 @@ class InlineCssEmailAdjuster extends EmailAdjusterBase implements ContainerFacto
    */
   public function postRender(EmailInterface $email) {
     // Inline CSS. Request optimization so that the CssOptimizer performs
-    // essential processing such as @include.
+    // essential processing such as @import.
     $assets = (new AttachedAssets())->setLibraries($email->getLibraries());
     $css = '';
     foreach ($this->assetResolver->getCssAssets($assets, TRUE) as $file) {

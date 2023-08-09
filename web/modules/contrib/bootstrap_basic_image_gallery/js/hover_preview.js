@@ -3,14 +3,14 @@
  * Bootstrap Basic Image Gallery - hovering over thumbnails changes main.
  */
 
-(function ($, Drupal) {
+(function ($, Drupal, once) {
   'use strict';
 
   Drupal.behaviors.bootstrap_basic_image_gallery_hover_preview = {
     attach: function attach(context, settings) {
 
       // Find each thumbnail.
-      $.each($(context).find('.bootstrap-basic-image-gallery .thumb').once('hover_preview'), function (index, item) {
+      once('hover_preview', '.bootstrap-basic-image-gallery .thumb' , context).forEach((item, index) => {
         // On hover, exchange the main image with the thumbnail image.
         $(item).on('mouseover', function(ev) {
           // Get the thumbnail being hovered.
@@ -26,4 +26,4 @@
 
     }
   };
-})(jQuery, Drupal);
+})(jQuery, Drupal, once);

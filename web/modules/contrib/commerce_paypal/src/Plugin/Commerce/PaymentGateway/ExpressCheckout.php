@@ -793,7 +793,7 @@ class ExpressCheckout extends OffsitePaymentGatewayBase implements ExpressChecko
 
     // Allow modules to alter the NVP request.
     $event = new ExpressCheckoutRequestEvent($nvp_data, $order);
-    $this->eventDispatcher->dispatch(PayPalEvents::EXPRESS_CHECKOUT_REQUEST, $event);
+    $this->eventDispatcher->dispatch($event, PayPalEvents::EXPRESS_CHECKOUT_REQUEST);
     $nvp_data = $event->getNvpData();
     // Make PayPal request.
     $request = $this->httpClient->post($this->getApiUrl(), [

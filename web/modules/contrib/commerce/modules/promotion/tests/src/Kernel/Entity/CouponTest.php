@@ -119,7 +119,7 @@ class CouponTest extends OrderKernelTestBase {
 
     $date_pattern = DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
     $time = $this->container->get('datetime.time');
-    $default_start_date = gmdate($date_pattern, $time->getRequestTime());
+    $default_start_date = date($date_pattern, $time->getRequestTime());
     $this->assertEquals($default_start_date, $coupon->getStartDate()->format($date_pattern));
     $coupon->setStartDate(new DrupalDateTime('2017-01-01 12:12:12'));
     $this->assertEquals('2017-01-01 12:12:12 UTC', $coupon->getStartDate()->format('Y-m-d H:i:s T'));

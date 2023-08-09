@@ -130,7 +130,13 @@ class CheckoutController extends ControllerBase {
     }
     catch (BadResponseException $exception) {
       $this->logger->error($exception->getResponse()->getBody()->getContents());
-      return new Response('', Response::HTTP_BAD_REQUEST);
+      $message = $this->t('Payment failed. Please review your information and try again.');
+      return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+    }
+    catch (\Exception $exception) {
+      $this->logger->error($exception->getMessage());
+      $message = $this->t('Payment failed. Please review your information and try again.');
+      return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
     }
   }
 
@@ -180,10 +186,15 @@ class CheckoutController extends ControllerBase {
     }
     catch (PaymentGatewayException $e) {
       // When the payment fails, we don't instruct the JS to redirect, the page
-      // will be reloaded to show errors.
+      // will display the error.
       $this->logger->error($e->getMessage());
-      $this->messenger->addError(t('Payment failed at the payment server. Please review your information and try again.'));
-      return new JsonResponse();
+      $message = $this->t('Payment failed at the payment server. Please review your information and try again.');
+      return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
+    }
+    catch (\Exception $exception) {
+      $this->logger->error($exception->getMessage());
+      $message = $this->t('Payment failed. Please review your information and try again.');
+      return new JsonResponse(['message' => $message], Response::HTTP_BAD_REQUEST);
     }
   }
 

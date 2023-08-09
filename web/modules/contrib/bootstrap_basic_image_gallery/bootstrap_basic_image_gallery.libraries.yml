@@ -3,7 +3,7 @@ lazyload:
     js/lazyload.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
 hover_preview:
@@ -11,7 +11,15 @@ hover_preview:
     js/hover_preview.js: {}
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
+    - core/drupal
+    - core/drupalSettings
+hover_preview_media:
+  js:
+    js/hover_preview_media.js: {}
+  dependencies:
+    - core/jquery
+    - core/once
     - core/drupal
     - core/drupalSettings
 bootstrap_basic:
@@ -32,4 +40,4 @@ bootstrap_components:
     bootstrap/js/bootstrap.min.js: { minified: true }
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once

@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\commerce_cart\Functional;
 
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Tests\commerce_order\Functional\OrderBrowserTestBase;
 
 /**
@@ -10,6 +11,8 @@ use Drupal\Tests\commerce_order\Functional\OrderBrowserTestBase;
  * @group commerce
  */
 class EmptyCartButtonTest extends OrderBrowserTestBase {
+
+  use StringTranslationTrait;
 
   /**
    * The cart order to test against.
@@ -73,8 +76,8 @@ class EmptyCartButtonTest extends OrderBrowserTestBase {
     $this->assertSession()->pageTextContains('$999.00');
     $this->assertSession()->pageTextContains('$222.00');
     $this->assertSession()->buttonExists('Empty cart');
-    $this->submitForm([], t('Empty cart'));
-    $this->assertSession()->pageTextContains(t('Your shopping cart is empty.'));
+    $this->submitForm([], $this->t('Empty cart'));
+    $this->assertSession()->pageTextContains($this->t('Your shopping cart is empty.'));
   }
 
 }

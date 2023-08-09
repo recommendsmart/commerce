@@ -159,7 +159,11 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
     $display_settings['third_party_settings']['layout_builder']['view_mode'] = $this->getContextValue('view_mode');
     $entity = $this->getEntity();
     try {
-      $build = $entity->get($this->fieldName)->view($display_settings);
+      $build = [];
+      $view = $entity->get($this->fieldName)->view($display_settings);
+      if ($view) {
+        $build = [$view];
+      }
     }
     // @todo Remove in https://www.drupal.org/project/drupal/issues/2367555.
     catch (EnforcedResponseException $e) {
@@ -204,8 +208,14 @@ class FieldBlock extends BlockBase implements ContextAwarePluginInterface, Conta
       return $access;
     }
 
-    // Check to see if the field has any values.
-    if ($field->isEmpty()) {
+    // Check to see if the field has any values or a default value.
+    if ($field->isEmpty() && !$field->getFieldDefinition()->getDefaultValue($entity)) {
+      // @todo Remove special handling of image fields after
+      //   https://www.drupal.org/project/drupal/issues/3005528.
+      if ($field->getFieldDefinition()->getType() === 'image' && $field->getFieldDefinition()->getSetting('default_image')) {
+        return $access;
+      }
+
       return $access->andIf(AccessResult::forbidden());
     }
     return $access;

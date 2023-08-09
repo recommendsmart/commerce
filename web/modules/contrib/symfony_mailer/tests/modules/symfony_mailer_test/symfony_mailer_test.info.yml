@@ -1,7 +1,7 @@
-name: Symfony Mailer Test
+name: Drupal Symfony Mailer Test
 type: module
-package: Mail
+description: For testing of Drupal Symfony Mailer.
+package: Testing
 hidden: true
-core_version_requirement: ^9.1
 dependencies:
   - symfony_mailer:symfony_mailer

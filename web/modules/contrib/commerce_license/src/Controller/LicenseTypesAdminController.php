@@ -6,7 +6,6 @@ use Drupal\Core\Controller\ControllerBase;
 use Drupal\Core\Entity\EntityTypeBundleInfoInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
@@ -14,8 +13,6 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  * Controller for admin routes for commerce license non-entity bundles.
  */
 class LicenseTypesAdminController extends ControllerBase {
-
-  use StringTranslationTrait;
 
   /**
    * The entity type bundle info service.
@@ -68,7 +65,7 @@ class LicenseTypesAdminController extends ControllerBase {
   /**
    * Callback for the admin overview route.
    */
-  public function adminPage() {
+  public function adminPage(): array {
     $entity_type = $this->entityTypeManager->getDefinition('commerce_license');
     $entity_bundle_info = $this->entityTypeBundleInfo->getBundleInfo('commerce_license');
 
@@ -101,7 +98,7 @@ class LicenseTypesAdminController extends ControllerBase {
   /**
    * Callback for the field UI base route.
    */
-  public function bundlePage($bundle = NULL) {
+  public function bundlePage($bundle = NULL): array {
     $entity_bundle_info = $this->entityTypeBundleInfo->getBundleInfo('commerce_license');
 
     return [
@@ -119,32 +116,32 @@ class LicenseTypesAdminController extends ControllerBase {
    *
    * @see \Drupal\Core\Entity\EntityListBuilder::buildRow()
    */
-  public function buildOperations($bundle_name) {
+  public function buildOperations($bundle_name): array {
     $operations = [];
 
     if ($this->currentUser->hasPermission('administer commerce_license fields')) {
       $operations['manage-fields'] = [
-        'title' => t('Manage fields'),
+        'title' => $this->t('Manage fields'),
         'weight' => 15,
-        'url' => Url::fromRoute("entity.commerce_license.field_ui_fields", [
+        'url' => Url::fromRoute('entity.commerce_license.field_ui_fields', [
           'bundle' => $bundle_name,
         ]),
       ];
     }
     if ($this->currentUser->hasPermission('administer commerce_license form display')) {
       $operations['manage-form-display'] = [
-        'title' => t('Manage form display'),
+        'title' => $this->t('Manage form display'),
         'weight' => 20,
-        'url' => Url::fromRoute("entity.entity_form_display.commerce_license.default", [
+        'url' => Url::fromRoute('entity.entity_form_display.commerce_license.default', [
           'bundle' => $bundle_name,
         ]),
       ];
     }
     if ($this->currentUser->hasPermission('administer commerce_license display')) {
       $operations['manage-display'] = [
-        'title' => t('Manage display'),
+        'title' => $this->t('Manage display'),
         'weight' => 25,
-        'url' => Url::fromRoute("entity.entity_view_display.commerce_license.default", [
+        'url' => Url::fromRoute('entity.entity_view_display.commerce_license.default', [
           'bundle' => $bundle_name,
         ]),
       ];

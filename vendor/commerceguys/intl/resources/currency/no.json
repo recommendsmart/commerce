@@ -208,9 +208,6 @@
 	"CDF": {
 		"name": "kongolesiske franc"
 	},
-	"HRK": {
-		"name": "kroatiske kuna"
-	},
 	"CUC": {
 		"name": "kubanske konvertible pesos"
 	},
@@ -445,9 +442,6 @@
 	},
 	"HUF": {
 		"name": "ungarske forinter"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "uruguayanske pesos"

@@ -98,7 +98,7 @@ class ThemeEmailAdjuster extends EmailAdjusterBase implements ContainerFactoryPl
     $form['theme'] = [
       '#type' => 'select',
       '#title' => $this->t('Theme'),
-      '#description' => $this->t('Select the theme that will be used to render emails which are configured for this. This can be either the default theme, the active theme with fallback to default theme (if the active theme has no "email" library and the default theme has) or any active theme.'),
+      '#description' => $this->t('Select the theme that will be used to render emails which are configured for this. This can be either the default theme, the active theme with fallback to default theme (if the active theme is the admin theme) or any enabled theme.'),
       '#options' => $this->getThemes(),
       '#required' => TRUE,
       '#default_value' => $this->configuration['theme'] ?? NULL,

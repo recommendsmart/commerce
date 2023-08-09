@@ -15,6 +15,7 @@ use Drupal\KernelTests\KernelTestBase;
 /**
  * Tests export functionality.
  *
+ * @requires module paragraphs
  * @coversDefaultClass \Drupal\default_content\Normalizer\ContentEntityNormalizer
  * @group default_content
  */
@@ -25,12 +26,11 @@ class ParagraphNormalizerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'user',
     'field',
     'serialization',
-    'hal',
     'default_content',
     'paragraphs',
     'entity_reference_revisions',

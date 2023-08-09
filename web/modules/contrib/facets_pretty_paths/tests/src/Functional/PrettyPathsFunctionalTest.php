@@ -34,7 +34,7 @@ class PrettyPathsFunctionalTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->container->get('module_installer')->install(['facets_pretty_paths_test']);
   }

@@ -114,6 +114,10 @@ class OrderItemTest extends OrderKernelTestBase {
     $this->assertTrue($order_item->isLocked());
     $order_item->unlock();
     $this->assertFalse($order_item->isLocked());
+
+    $order_item->setQuantity('0');
+    $order_item->save();
+    $this->assertEmpty($order_item->getAdjustments());
   }
 
   /**

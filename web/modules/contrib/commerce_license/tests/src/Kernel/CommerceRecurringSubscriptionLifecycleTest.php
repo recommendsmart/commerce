@@ -2,13 +2,15 @@
 
 namespace Drupal\Tests\commerce_license\Kernel;
 
-use Drupal\Component\Render\FormattableMarkup;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_payment\Entity\PaymentGateway;
 use Drupal\commerce_payment\Entity\PaymentMethod;
 use Drupal\commerce_recurring\Entity\BillingSchedule;
+use Drupal\commerce_recurring\Entity\BillingScheduleInterface;
 use Drupal\commerce_recurring\Entity\Subscription;
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Tests\commerce_order\Kernel\OrderKernelTestBase;
 
 /**
@@ -36,12 +38,10 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'advancedqueue',
     'commerce_payment',
     'commerce_payment_example',
-    'interval',
-    'recurring_period',
     'commerce_license',
     'commerce_license_test',
     'commerce_recurring',
@@ -105,7 +105,7 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
       'id' => 'test_id',
       'label' => 'Hourly schedule',
       'displayLabel' => 'Hourly schedule',
-      'billingType' => BillingSchedule::BILLING_TYPE_PREPAID,
+      'billingType' => BillingScheduleInterface::BILLING_TYPE_PREPAID,
       'plugin' => 'fixed',
       'configuration' => [
         'interval' => [
@@ -176,9 +176,9 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
   /**
    * Tests the creation of the license when a subscription order is placed.
    */
-  public function testCreation() {
+  public function testCreation(): void {
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(0, $licenses, "There are no licenses yet.");
+    $this->assertCount(0, $licenses, 'There are no licenses yet.');
 
     $order_item = OrderItem::create([
       // The order item must be of a type with the license trait.
@@ -235,36 +235,36 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
     // This tests that when the recurring order was saved, our own availability
     // checking did not fire and cause the order item to be removed.
     $recurring_order_items = $recurring_order->getItems();
-    $this->assertCount(1, $recurring_order_items, "The recurring order has an order item.");
+    $this->assertCount(1, $recurring_order_items, 'The recurring order has an order item.');
     $recurring_order_item = reset($recurring_order_items);
     $this->assertEquals($subscription->id(), $recurring_order_item->get('subscription')->target_id, "The recurring order's order item has a reference to the subscription.");
 
     // Check that the order item now refers to a new license which has been
     // created for the user.
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(1, $licenses, "One license was saved.");
+    $this->assertCount(1, $licenses, 'One license was saved.');
     $license = reset($licenses);
 
     $order_item = $this->reloadEntity($order_item);
-    $this->assertEquals($license->id(), $order_item->license->entity->id(), "The order item has a reference to the saved license.");
+    $this->assertEquals($license->id(), $order_item->license->entity->id(), 'The order item has a reference to the saved license.');
 
-    $this->assertEquals($license->id(), $subscription->license->entity->id(), "The subscription has a reference to the saved license.");
+    $this->assertEquals($license->id(), $subscription->license->entity->id(), 'The subscription has a reference to the saved license.');
 
-    $this->assertEquals('active', $license->getState()->getId(), "The license is active.");
+    $this->assertEquals('active', $license->getState()->getId(), 'The license is active.');
     $this->assertEquals('grantLicense', \Drupal::state()->get('commerce_license_state_change_test'), "The license plugin's grantLicense() method was called.");
 
     // Make the subscription cancel.
     // This is the state it goes to when a renewal payment fails.
     // No need to go via the order system for this, as Commerce Recurring's
     // tests check this. We can just modify the subscription.
-    $subscription->state = 'canceled';
+    $subscription->getState()->applyTransitionById('cancel');
     $subscription->save();
 
     $license = $this->reloadEntity($license);
-    $this->assertEquals('canceled', $license->getState()->getId(), "The license is canceled.");
+    $this->assertEquals('canceled', $license->getState()->getId(), 'The license is canceled.');
     $this->assertEquals('revokeLicense', \Drupal::state()->get('commerce_license_state_change_test'), "The license plugin's revokeLicense() method was called.");
 
-    // TODO: cover the subscription reaching the 'expired' state -- though there
+    // @todo cover the subscription reaching the 'expired' state -- though there
     // is nothing yet in Commerce Recurring that ever makes it reach that state.
   }
 
@@ -279,8 +279,10 @@ class CommerceRecurringSubscriptionLifecycleTest extends OrderKernelTestBase {
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   A new, saved entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createEntity($entity_type, array $values) {
+  protected function createEntity(string $entity_type, array $values): EntityInterface {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
     $storage = \Drupal::service('entity_type.manager')->getStorage($entity_type);
     $entity = $storage->create($values);

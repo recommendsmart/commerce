@@ -16,9 +16,8 @@ class LicenseRoleTypeTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'state_machine',
-    'recurring_period',
     'commerce_license',
   ];
 
@@ -67,8 +66,11 @@ class LicenseRoleTypeTest extends OrderKernelTestBase {
   /**
    * Tests that a role license grants and revokes a role from its owner.
    */
-  public function testLicenseGrantRevoke() {
-    $role = $this->roleStorage->create(['id' => 'licensed_role']);
+  public function testLicenseGrantRevoke(): void {
+    $role = $this->roleStorage->create([
+      'id' => 'licensed_role',
+      'label' => 'Licensed role',
+    ]);
     $role->save();
 
     $license_owner = $this->createUser();
@@ -91,7 +93,7 @@ class LicenseRoleTypeTest extends OrderKernelTestBase {
 
     // Assert the user does not have the role.
     $license_owner = $this->reloadEntity($license_owner);
-    $this->assertFalse($license_owner->hasRole('licensed_role'), "The user does not have the licensed role.");
+    $this->assertFalse($license_owner->hasRole('licensed_role'), 'The user does not have the licensed role.');
 
     // Don't bother pushing the license through state changes, as that is
     // by covered by LicenseStateChangeTest. Just call the plugin direct to
@@ -100,21 +102,24 @@ class LicenseRoleTypeTest extends OrderKernelTestBase {
 
     // The license owner now has the role.
     $license_owner = $this->reloadEntity($license_owner);
-    $this->assertTrue($license_owner->hasRole('licensed_role'), "The user has the licensed role.");
+    $this->assertTrue($license_owner->hasRole('licensed_role'), 'The user has the licensed role.');
 
     // Revoke the license.
     $license->getTypePlugin()->revokeLicense($license);
 
     // Assert the user does not have the role.
     $license_owner = $this->reloadEntity($license_owner);
-    $this->assertFalse($license_owner->hasRole('licensed_role'), "The user does not have the licensed role.");
+    $this->assertFalse($license_owner->hasRole('licensed_role'), 'The user does not have the licensed role.');
   }
 
   /**
    * Tests a license receives field values from a configured plugin.
    */
-  public function testLicenseCreationFromPlugin() {
-    $role = $this->roleStorage->create(['id' => 'licensed_role']);
+  public function testLicenseCreationFromPlugin(): void {
+    $role = $this->roleStorage->create([
+      'id' => 'licensed_role',
+      'label' => 'Licensed role',
+    ]);
     $role->save();
 
     $license_owner = $this->createUser();
@@ -144,7 +149,7 @@ class LicenseRoleTypeTest extends OrderKernelTestBase {
     $license->save();
     $license = $this->reloadEntity($license);
 
-    $this->assertEquals($role->id(), $license->license_role->target_id, "The role field was set on the license.");
+    $this->assertEquals($role->id(), $license->license_role->target_id, 'The role field was set on the license.');
   }
 
 }

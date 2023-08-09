@@ -16,7 +16,7 @@ class LicenseCheckoutForm extends ContentEntityForm {
    * {@inheritdoc}
    */
   public function buildForm(array $form, FormStateInterface $form_state) {
-    /* @var $entity \Drupal\commerce_license\Entity\License */
+    /** @var \Drupal\commerce_license\Entity\License $entity */
     $form = parent::buildForm($form, $form_state);
 
     if (!$this->entity->isNew()) {
@@ -29,8 +29,6 @@ class LicenseCheckoutForm extends ContentEntityForm {
     }
 
     $this->entity->getPlugin()->buildCheckoutForm($form, $form_state);
-
-    $entity = $this->entity;
 
     return $form;
   }
@@ -46,8 +44,8 @@ class LicenseCheckoutForm extends ContentEntityForm {
       $entity->setNewRevision();
 
       // If a new revision is created, save the current user as revision author.
-      $entity->setRevisionCreationTime(\Drupal::time()->getRequestTime());
-      $entity->setRevisionUserId(\Drupal::currentUser()->id());
+      $entity->setRevisionCreationTime($this->time->getRequestTime());
+      $entity->setRevisionUserId($this->currentUser()->id());
     }
     else {
       $entity->setNewRevision(FALSE);

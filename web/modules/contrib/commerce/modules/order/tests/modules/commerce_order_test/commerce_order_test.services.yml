@@ -4,6 +4,11 @@ services:
     tags:
       - { name: event_subscriber }
 
+  commerce_order_test.order_label_subscriber:
+    class: Drupal\commerce_order_test\EventSubscriber\OrderLabelSubscriber
+    tags:
+      - { name: event_subscriber }
+
   commerce_order_test.test_availability_checker:
     class: Drupal\commerce_order_test\TestAvailabilityChecker
     tags:

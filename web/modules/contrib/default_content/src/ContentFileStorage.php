@@ -46,7 +46,7 @@ class ContentFileStorage implements ContentFileStorageInterface {
     foreach ($iterator as $fileinfo) {
       /* @var \SplFileInfo $fileinfo */
 
-      // Skip directories and non-json files.
+      // Skip directories and non-json/yaml files.
       if ($fileinfo->isDir() || ($fileinfo->getExtension() != 'json' && $fileinfo->getExtension() != 'yml')) {
         continue;
       }

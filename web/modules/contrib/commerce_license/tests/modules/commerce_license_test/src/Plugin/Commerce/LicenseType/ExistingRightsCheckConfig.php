@@ -26,8 +26,8 @@ class ExistingRightsCheckConfig extends TestLicenseBase implements ExistingRight
     // The state tells us whether to say rights exist or not.
     return ExistingRightsResult::rightsExistIf(
       \Drupal::state()->get('commerce_license_test.existing_rights_check_config'),
-      $this->t("You already have the rights."),
-      $this->t("The user already has the rights.")
+      $this->t('You already have the rights.'),
+      $this->t('The user already has the rights.')
     );
   }
 

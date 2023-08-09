@@ -73,6 +73,7 @@ class CustomerProfileAlterTest extends UnitTestCase {
     $address_field_item->toArray()->willReturn($mocked_address);
     $address_field_list = $this->prophesize(FieldItemListInterface::class);
     $address_field_list->first()->willReturn($address_field_item->reveal());
+    $address_field_list->isEmpty()->willReturn(FALSE);
     $shipping_profile->get('address')->willReturn($address_field_list->reveal());
     $customer_profile->getEntity()->willReturn($shipping_profile->reveal());
 
@@ -160,7 +161,7 @@ class CustomerProfileAlterTest extends UnitTestCase {
    * Gets a mocked CustomerProfileAlter object for testing.
    *
    * @param array $settings
-   *  The settings to use.
+   *   The settings to use.
    *
    * @return \Drupal\commerce_avatax\CustomerProfileAlter
    *   The customer profile alter.

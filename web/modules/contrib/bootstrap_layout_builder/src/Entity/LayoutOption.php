@@ -4,6 +4,7 @@ namespace Drupal\bootstrap_layout_builder\Entity;
 
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\bootstrap_layout_builder\LayoutOptionInterface;
+use Drupal\Core\Entity\EntityStorageInterface;
 
 /**
  * Defines the layout option entity class.
@@ -32,6 +33,7 @@ use Drupal\bootstrap_layout_builder\LayoutOptionInterface;
  *     "layout_id" = "layout_id",
  *     "label" = "label",
  *     "structure" = "structure",
+ *     "default_breakpoints" = "default_breakpoints",
  *     "breakpoints" = "breakpoints",
  *     "weight" = "weight",
  *   },
@@ -41,6 +43,7 @@ use Drupal\bootstrap_layout_builder\LayoutOptionInterface;
  *     "layout_id" = "layout_id",
  *     "label" = "label",
  *     "structure" = "structure",
+ *     "default_breakpoints" = "default_breakpoints",
  *     "breakpoints" = "breakpoints",
  *     "weight" = "weight",
  *   },
@@ -87,6 +90,13 @@ class LayoutOption extends ConfigEntityBase implements LayoutOptionInterface {
    * @var array
    */
   protected $breakpoints;
+
+  /**
+   * The enabled default breakpoints for this option.
+   *
+   * @var array
+   */
+  protected $default_breakpoints;
 
   /**
    * Order of options on the config page & Layout Builder add/update forms.
@@ -190,6 +200,57 @@ class LayoutOption extends ConfigEntityBase implements LayoutOptionInterface {
   public function getLayoutById($layout_id) {
     $layout = $this->entityTypeManager()->getStorage('blb_layout')->load($layout_id);
     return $layout;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultBreakpointsIds() {
+    $ids = [];
+    if ($this->default_breakpoints) {
+      foreach ($this->default_breakpoints as $key => $value) {
+        if ($value) {
+          $ids[] = $key;
+        }
+      }
+    }
+    return $ids;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultBreakpointsLabels() {
+    $labels = [];
+    if ($this->default_breakpoints) {
+      foreach ($this->default_breakpoints as $breakpoint_id) {
+        $breakpoint = $this->entityTypeManager()->getStorage('blb_breakpoint')->load($breakpoint_id);
+        if ($breakpoint) {
+          $labels[] = $breakpoint->label();
+        }
+      }
+    }
+    return $labels;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function postSave(EntityStorageInterface $storage, $update = TRUE) {
+    parent::postSave($storage, $update);
+    foreach ($this->getLayout()->getLayoutOptions() as $layoutOption) {
+      if ($layoutOption->getOriginalId() !== $this->getOriginalId()) {
+        if (array_intersect($this->getDefaultBreakpointsIds(), $layoutOption->getDefaultBreakpointsIds())) {
+          $breakpoints = $this->entityTypeManager()->getStorage('blb_breakpoint')->loadMultiple(
+            array_diff($layoutOption->getDefaultBreakpointsIds(), $this->getDefaultBreakpointsIds())
+          );
+          $layoutOption->default_breakpoints = array_map(function ($breakpoint) {
+            return $breakpoint->id();
+          }, $breakpoints);
+          $layoutOption->save();
+        }
+      }
+    }
   }
 
 }

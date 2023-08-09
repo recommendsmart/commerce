@@ -106,4 +106,8 @@
       transform: scale(1);
     }
   }
+
+  .text-white &:before {
+    background-color: currentColor;
+  }
 }

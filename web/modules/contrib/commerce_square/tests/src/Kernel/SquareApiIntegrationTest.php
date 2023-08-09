@@ -38,7 +38,7 @@ class SquareApiIntegrationTest extends CommerceKernelTestBase {
   /**
    * The test gateway.
    *
-   * @var \Drupal\commerce_payment\Entity\PaymentGateway
+   * @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface
    */
   protected $gateway;
 

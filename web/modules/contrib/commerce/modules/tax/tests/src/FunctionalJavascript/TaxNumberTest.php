@@ -47,7 +47,7 @@ class TaxNumberTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'classy';
+  protected $defaultTheme = 'starterkit_theme';
 
   /**
    * {@inheritdoc}

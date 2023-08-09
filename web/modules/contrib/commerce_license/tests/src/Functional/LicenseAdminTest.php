@@ -18,7 +18,7 @@ class LicenseAdminTest extends CommerceBrowserTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_license',
   ];
 
@@ -34,7 +34,7 @@ class LicenseAdminTest extends CommerceBrowserTestBase {
   /**
    * Tests editing a variation type.
    */
-  public function testVariationTypeEdit() {
+  public function testVariationTypeEdit(): void {
     /** @var \Drupal\commerce_product\Entity\ProductVariationTypeInterface $product_variation_type */
     $product_variation_type = ProductVariationType::load('default');
     $this->drupalGet($product_variation_type->toUrl('edit-form'));

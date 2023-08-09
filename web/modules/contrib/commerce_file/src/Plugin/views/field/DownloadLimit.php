@@ -100,7 +100,7 @@ class DownloadLimit extends FieldPluginBase {
     }
     $download_limit = $this->licenseFileManager->getDownloadLimit($license);
     if (!$download_limit) {
-      return '';
+      return $this->t('Unlimited');
     }
     $file_id = $values->{$this->view->field['commerce_file']->aliases['commerce_file_target_id']};
     $counts = $this->downloadLogger->getDownloadCounts($license);

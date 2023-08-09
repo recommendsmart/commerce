@@ -57,7 +57,7 @@ class DsnTransport extends TransportBase {
       Transport::fromDsn($dsn);
     }
     catch (\Exception $e) {
-      $form_state->setErrorByName('dsn', $this->t('Invalid DSN.'));
+      $form_state->setErrorByName('dsn', $this->t('Invalid DSN: @message', ['@message' => $e->getMessage()]));
     }
   }
 

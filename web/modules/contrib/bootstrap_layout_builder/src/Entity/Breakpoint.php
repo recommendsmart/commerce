@@ -105,7 +105,7 @@ class Breakpoint extends ConfigEntityBase implements BreakpointInterface {
   public function getLayoutOptions($layout_id) {
     $options = [];
     $query = $this->entityTypeManager()->getStorage('blb_layout_option')->getQuery();
-    $blb_options = $query->condition('layout_id', $layout_id)->sort('weight', 'ASC')->execute();
+    $blb_options = $query->condition('layout_id', $layout_id)->accessCheck(TRUE)->sort('weight', 'ASC')->execute();
     foreach ($blb_options as $option_id) {
       $option = $this->entityTypeManager()->getStorage('blb_layout_option')->load($option_id);
       if (!in_array($this->id(), $option->getBreakpointsIds())) {
@@ -126,7 +126,7 @@ class Breakpoint extends ConfigEntityBase implements BreakpointInterface {
     // Full width case.
     $sufix = '12';
     if (count($strucutre) > 1) {
-      $sufix = $strucutre[$key];
+      $sufix = (isset($strucutre[$key])) ? $strucutre[$key] : $strucutre[0];
     }
     $class = $this->getBaseClass() . '-' . $sufix;
     return $class;

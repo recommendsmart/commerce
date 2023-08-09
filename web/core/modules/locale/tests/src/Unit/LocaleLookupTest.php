@@ -68,6 +68,8 @@ class LocaleLookupTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->storage = $this->createMock('Drupal\locale\StringStorageInterface');
     $this->cache = $this->createMock('Drupal\Core\Cache\CacheBackendInterface');
     $this->lock = $this->createMock('Drupal\Core\Lock\LockBackendInterface');
@@ -77,7 +79,7 @@ class LocaleLookupTest extends UnitTestCase {
     $this->user = $this->createMock('Drupal\Core\Session\AccountInterface');
     $this->user->expects($this->any())
       ->method('getRoles')
-      ->will($this->returnValue(['anonymous']));
+      ->willReturn(['anonymous']);
 
     $this->configFactory = $this->getConfigFactoryStub(['locale.settings' => ['cache_strings' => FALSE]]);
 
@@ -112,7 +114,7 @@ class LocaleLookupTest extends UnitTestCase {
     $this->storage->expects($this->once())
       ->method('findTranslation')
       ->with($this->equalTo($args))
-      ->will($this->returnValue($result));
+      ->willReturn($result);
 
     $locale_lookup = $this->getMockBuilder('Drupal\locale\LocaleLookup')
       ->setConstructorArgs(['en', 'irrelevant', $this->storage, $this->cache, $this->lock, $this->configFactory, $this->languageManager, $this->requestStack])
@@ -229,7 +231,7 @@ class LocaleLookupTest extends UnitTestCase {
     $this->storage->expects($this->once())
       ->method('findTranslation')
       ->with($this->equalTo($args))
-      ->will($this->returnValue($result));
+      ->willReturn($result);
 
     $this->configFactory = $this->getConfigFactoryStub(['locale.settings' => ['cache_strings' => TRUE]]);
     $locale_lookup = $this->getMockBuilder('Drupal\locale\LocaleLookup')
@@ -254,10 +256,10 @@ class LocaleLookupTest extends UnitTestCase {
       ->will($this->returnSelf());
     $this->storage->expects($this->once())
       ->method('findTranslation')
-      ->will($this->returnValue(NULL));
+      ->willReturn(NULL);
     $this->storage->expects($this->once())
       ->method('createString')
-      ->will($this->returnValue($string));
+      ->willReturn($string);
 
     $request = Request::create('/test');
     $this->requestStack->push($request);
@@ -349,7 +351,7 @@ class LocaleLookupTest extends UnitTestCase {
     $this->user = $this->createMock('Drupal\Core\Session\AccountInterface');
     $this->user->expects($this->any())
       ->method('getRoles')
-      ->will($this->returnValue($roles));
+      ->willReturn($roles);
 
     $container = new ContainerBuilder();
     $container->set('current_user', $this->user);
@@ -361,7 +363,6 @@ class LocaleLookupTest extends UnitTestCase {
 
     $o = new \ReflectionObject($locale_lookup);
     $method = $o->getMethod('getCid');
-    $method->setAccessible(TRUE);
     $cid = $method->invoke($locale_lookup, 'getCid');
 
     $this->assertEquals($expected, $cid);

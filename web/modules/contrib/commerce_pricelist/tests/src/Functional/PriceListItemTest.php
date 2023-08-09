@@ -471,11 +471,11 @@ class PriceListItemTest extends CommerceBrowserTestBase {
       'commerce_product' => $this->firstVariation->getProduct()->id(),
     ])->toString();
     $this->assertSession()->linkByHrefExists($first_variation_prices_uri);
-    $this->clickLink('Edit');
+    $this->drupalGet($this->firstVariation->toUrl('edit-form'));
     $this->assertSession()->linkExists('Prices');
     $this->assertSession()->linkByHrefExists($first_variation_prices_uri);
     $this->clickLink('Prices');
-    $this->assertText('No prices yet.');
+    $this->assertSession()->responseContains('No prices yet.');
     $this->createEntity('commerce_pricelist_item', [
       'type' => 'commerce_product_variation',
       'price_list_id' => $this->priceList->id(),

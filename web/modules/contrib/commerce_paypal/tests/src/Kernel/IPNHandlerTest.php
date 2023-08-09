@@ -19,7 +19,7 @@ class IPNHandlerTest extends OrderKernelTestBase implements ServiceModifierInter
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_paypal',
   ];
 

@@ -27,7 +27,7 @@ class LicenseViewsData extends CommerceEntityViewsData {
     ];
 
     // Workaround for core shortcoming.
-    // TODO: remove once https://www.drupal.org/node/2337515 is fixed.
+    // @todo remove once https://www.drupal.org/node/2337515 is fixed.
     $data[$base_table]['state']['filter']['id'] = 'state_machine_state';
 
     return $data;

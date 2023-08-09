@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\config_rewrite\Kernel;
 
+use Drupal\config_rewrite\Exception\NonexistentInitialConfigException;
 use Drupal\KernelTests\KernelTestBase;
 
 /**
@@ -15,7 +16,7 @@ class NonexistentInitialConfigTest extends KernelTestBase {
    *
    * @var array
    */
-  public static $modules = ['system', 'user', 'config_rewrite', 'config_rewrite_nonexisting', 'language'];
+  protected static $modules = ['system', 'user', 'config_rewrite', 'config_rewrite_nonexisting', 'language'];
 
   /**
    * The active configuration storage.
@@ -41,22 +42,21 @@ class NonexistentInitialConfigTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->configRewriter = $this->container->get('config_rewrite.config_rewriter');
     $this->activeConfigStorage = $this->container->get('config.storage');
     $this->languageConfigFactoryOverride = $this->container->get('language.config_factory_override');
-    $this->installSchema('system', ['sequence']);
     $this->installEntitySchema('user_role');
   }
 
   /**
    * @covers ::rewriteModuleConfig
    * @covers ::rewriteConfig
-   * @expectedException \Drupal\config_rewrite\Exception\NonexistentInitialConfigException
    */
   function testConfigRewrite() {
+    $this->expectException(NonexistentInitialConfigException::class);
     $this->configRewriter->rewriteModuleConfig('config_rewrite_nonexisting');
   }
 

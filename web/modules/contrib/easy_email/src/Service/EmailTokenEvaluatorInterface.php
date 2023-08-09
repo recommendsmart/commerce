@@ -12,7 +12,7 @@ interface EmailTokenEvaluatorInterface {
    *
    * @param \Drupal\easy_email\Entity\EasyEmailInterface $email
    */
-  public function evaluateTokens(EasyEmailInterface $email);
+  public function evaluateTokens(EasyEmailInterface $email, bool $clear = TRUE);
 
   /**
    * @param \Drupal\easy_email\Entity\EasyEmailInterface $email
@@ -21,7 +21,7 @@ interface EmailTokenEvaluatorInterface {
    *
    * @return array|string
    */
-  public function replaceTokens(EasyEmailInterface $email, $values, $unique = FALSE);
+  public function replaceTokens(EasyEmailInterface $email, $values, $unique = FALSE, bool $clear = TRUE);
 
   /**
    * @param \Drupal\easy_email\Entity\EasyEmailInterface $email

@@ -126,7 +126,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
 
     $this->setRawFieldValue('start_date[0][value][date]', '2019-11-29');
     $this->setRawFieldValue('start_date[0][value][time]', '10:30:00');
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
     $this->assertSession()->pageTextContains("Saved the $name promotion.");
     $rows = $this->getSession()->getPage()->findAll('xpath', "//table/tbody/tr/td[text()[contains(., '$name')]]");
     $this->assertCount(1, $rows);
@@ -187,7 +187,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->fillField('offer[0][target_plugin_configuration][order_buy_x_get_y][get][conditions][products][order_item_product][configuration][form][products]', $this->product->label() . ' (' . $this->product->id() . ')');
     $this->getSession()->getPage()->checkField('offer[0][target_plugin_configuration][order_buy_x_get_y][get][auto_add]');
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
 
     /** @var \Drupal\commerce_promotion\Entity\PromotionInterface $promotion */
     $promotion = Promotion::load(1);
@@ -226,7 +226,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
     $this->getSession()->getPage()->selectFieldOption('offer[0][target_plugin_id]', 'order_item_fixed_amount_off');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->fillField('offer[0][target_plugin_configuration][order_item_fixed_amount_off][amount][number]', '10.00');
-    $this->submitForm([], t('Save and add coupons'));
+    $this->submitForm([], $this->t('Save and add coupons'));
     $this->assertSession()->pageTextContains("Saved the $name promotion.");
 
     /** @var \Drupal\commerce_promotion\Entity\PromotionInterface $promotion */
@@ -258,7 +258,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
       'name[0][value]' => $name,
       'offer[0][target_plugin_configuration][order_percentage_off][percentage]' => '10.0',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains("Saved the $name promotion.");
 
     $rows = $this->getSession()->getPage()->findAll('xpath', "//table/tbody/tr/td[text()[contains(., '$name')]]");
@@ -410,7 +410,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
     ]);
     $this->drupalGet($promotion->toUrl('delete-form'));
     $this->assertSession()->pageTextContains('This action cannot be undone.');
-    $this->submitForm([], t('Delete'));
+    $this->submitForm([], $this->t('Delete'));
 
     $this->container->get('entity_type.manager')->getStorage('commerce_promotion')->resetCache([$promotion->id()]);
     $promotion_exists = (bool) Promotion::load($promotion->id());
@@ -427,8 +427,8 @@ class PromotionTest extends CommerceWebDriverTestBase {
     ]);
     $this->assertTrue($promotion->isEnabled());
     $this->drupalGet($promotion->toUrl('disable-form'));
-    $this->assertSession()->pageTextContains(t('Are you sure you want to disable the promotion @label?', ['@label' => $promotion->label()]));
-    $this->submitForm([], t('Disable'));
+    $this->assertSession()->pageTextContains($this->t('Are you sure you want to disable the promotion @label?', ['@label' => $promotion->label()]));
+    $this->submitForm([], $this->t('Disable'));
 
     $promotion = $this->reloadEntity($promotion);
     $this->assertFalse($promotion->isEnabled());
@@ -445,8 +445,8 @@ class PromotionTest extends CommerceWebDriverTestBase {
     ]);
     $this->assertFalse($promotion->isEnabled());
     $this->drupalGet($promotion->toUrl('enable-form'));
-    $this->assertSession()->pageTextContains(t('Are you sure you want to enable the promotion @label?', ['@label' => $promotion->label()]));
-    $this->submitForm([], t('Enable'));
+    $this->assertSession()->pageTextContains($this->t('Are you sure you want to enable the promotion @label?', ['@label' => $promotion->label()]));
+    $this->submitForm([], $this->t('Enable'));
 
     $promotion = $this->reloadEntity($promotion);
     $this->assertTrue($promotion->isEnabled());
@@ -483,7 +483,7 @@ class PromotionTest extends CommerceWebDriverTestBase {
     $this->getSession()->getPage()->pressButton('remove_offer2');
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->assertSession()->fieldNotExists('offer[0][target_plugin_configuration][combination_offer][offers][2][target_plugin_id]');
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
     $this->assertSession()->pageTextContains("Saved the $name promotion.");
 
     /** @var \Drupal\commerce_promotion\Entity\PromotionInterface $promotion */

@@ -1,0 +1,14 @@
+langcode: en
+status: true
+dependencies:
+  enforced:
+    module:
+      - commerce_license
+  module:
+    - commerce_license
+    - entity
+id: commerce_license_delete_action
+label: 'Delete license'
+type: commerce_license
+plugin: 'entity:delete_action:commerce_license'
+configuration: {  }

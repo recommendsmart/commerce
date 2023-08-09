@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_license\Entity;
 
+use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Entity\ContentEntityInterface;
 use Drupal\Core\Entity\EntityChangedInterface;
 use Drupal\user\EntityOwnerInterface;
-use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
 
 /**
  * Provides an interface for License entities.
@@ -32,7 +32,7 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    * @return \Drupal\commerce_license\Entity\LicenseInterface
    *   The called License entity.
    */
-  public function setCreatedTime($timestamp);
+  public function setCreatedTime(int $timestamp);
 
   /**
    * Gets the License expiration timestamp.
@@ -51,7 +51,7 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    * @return \Drupal\commerce_license\Entity\LicenseInterface
    *   The called License entity.
    */
-  public function setExpiresTime($timestamp);
+  public function setExpiresTime(int $timestamp);
 
   /**
    * Gets the granted timestamp.
@@ -69,7 +69,7 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    *
    * @return $this
    */
-  public function setGrantedTime($timestamp);
+  public function setGrantedTime(int $timestamp);
 
   /**
    * Gets the renewal timestamp.
@@ -87,13 +87,23 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    *
    * @return $this
    */
-  public function setRenewedTime($timestamp);
+  public function setRenewedTime(int $timestamp);
 
   /**
-   * Get an unconfigured instance of the associated license type plugin.
+   * The renewal window start time.
+   *
+   * Calculated in the case of a renewable license.
+   *
+   * @return int|null
+   *   The renewal window start time.
+   */
+  public function getRenewalWindowStartTime();
+
+  /**
+   * Get an un-configured instance of the associated license type plugin.
    *
    * @return \Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface
-   *   An unconfigured instance of the associated license type plugin.
+   *   An un-configured instance of the associated license type plugin.
    */
   public function getTypePlugin();
 
@@ -101,15 +111,15 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    * Gets the type of expiration this license uses.
    *
    * @return string
-   *   The ID of the recurring_period plugin.
+   *   The ID of the plugin.
    */
   public function getExpirationPluginType();
 
   /**
    * Gets the expiration plugin for this license.
    *
-   * @return \Drupal\recurring_period\Plugin\RecurringPeriod\RecurringPeriodInterface
-   *   The recurring_period plugin configured for this license.
+   * @return \Drupal\commerce_license\Plugin\Commerce\LicensePeriod\LicensePeriodInterface
+   *   The plugin configured for this license.
    */
   public function getExpirationPlugin();
 
@@ -153,6 +163,14 @@ interface LicenseInterface extends ContentEntityInterface, EntityChangedInterfac
    * @see \Drupal\state_machine\Plugin\Field\FieldType\StateItem
    */
   public static function getWorkflowId(LicenseInterface $license);
+
+  /**
+   * Checks if the license can be renewed at this time.
+   *
+   * @return bool
+   *   TRUE if the license can be renewed. FALSE otherwise.
+   */
+  public function canRenew();
 
   /**
    * Gets the originating order.

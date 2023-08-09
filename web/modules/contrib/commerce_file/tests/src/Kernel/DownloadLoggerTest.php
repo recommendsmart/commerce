@@ -28,7 +28,7 @@ class DownloadLoggerTest extends KernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_license',
     'commerce_file',
   ];

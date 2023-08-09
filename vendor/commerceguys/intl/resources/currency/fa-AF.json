@@ -390,9 +390,6 @@
 	"CRC": {
 		"name": "کولون کاستاریکا"
 	},
-	"HRK": {
-		"name": "کونای کرواسی"
-	},
 	"MMK": {
 		"name": "کیات میانمار"
 	},
@@ -489,11 +486,5 @@
 	"EUR": {
 		"name": "یورو",
 		"symbol": "€"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	}
 }

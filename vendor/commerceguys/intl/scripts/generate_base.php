@@ -6,8 +6,8 @@ require __DIR__ . '/../vendor/autoload.php';
 $isoCurrencies = __DIR__ . '/assets/c2.xml';
 // Downloaded from https://github.com/unicode-org/cldr-json.git
 $currencyData = __DIR__ . '/assets/cldr/cldr-json/cldr-core/supplemental/currencyData.json';
-$localeDirectory = __DIR__ . '/assets/cldr/cldr-json/cldr-localenames-full/main/';
-$numbersDirectory = __DIR__ . '/assets/cldr/cldr-json/cldr-numbers-full/main/';
+$localeDirectory = __DIR__ . '/assets/cldr/cldr-json/cldr-localenames-modern/main/';
+$numbersDirectory = __DIR__ . '/assets/cldr/cldr-json/cldr-numbers-modern/main/';
 
 // Preflight checks.
 if (!file_exists($currencyData)) {
@@ -32,30 +32,19 @@ if (!function_exists('collator_create')) {
 // Locales listed with a "-" match only those exact ones.
 $ignoredLocales = [
     // English is our fallback, we don't need another.
-    'und',
+    "und",
     // Esperanto, Interlingua, Volapuk are made up languages.
-    'eo', 'ia', 'vo',
-    // Belarus (Classical orthography), Church Slavic, Manx, Prussian,
-    // Sanskrit are historical languages.
-    'be-tarask', 'cu', 'gv', 'prg', 'sa',
+    "eo", "ia", "vo",
+    // Belarus (Classical orthography), Church Slavic, Manx,
+    // Prussian are historical.
+    "be-tarask", "cu", "gv", "prg",
     // Valencian differs from its parent only by a single character (è/é).
-    'ca-ES-valencia',
+    "ca-ES-valencia",
     // Africa secondary languages.
-    'agq', 'ak', 'am', 'asa', 'bas', 'bem', 'bez', 'bm', 'cgg', 'dav',
-    'dje', 'dua', 'dyo', 'ebu', 'ee', 'ewo', 'ff', 'ff-Latn', 'guz',
-    'ha', 'ig', 'jgo', 'jmc', 'kab', 'kam', 'kea', 'kde', 'ki', 'kkj',
-    'kln', 'khq', 'ksb', 'ksf', 'lag', 'luo', 'luy', 'lu', 'lg', 'ln',
-    'mas', 'mer', 'mua', 'mgo', 'mgh', 'mfe', 'naq', 'nd', 'nmg', 'nnh',
-    'nus', 'nyn', 'om', 'pcm', 'rof', 'rwk', 'saq', 'seh', 'ses', 'sbp',
-    'sg', 'shi', 'sn', 'teo', 'ti', 'tzm', 'twq', 'vai', 'vai-Latn', 'vun',
-    'wo', 'xog', 'xh', 'zgh', 'yav', 'yo', 'zu',
-    // Europe secondary languages.
-    'br', 'dsb', 'fo', 'fur', 'fy', 'hsb', 'ksh', 'kw', 'nds', 'or', 'rm',
-    'sc', 'se', 'smn', 'wae',
-    // Other infrequently used locales.
-    'ceb', 'ccp', 'chr', 'ckb', 'haw', 'ii', 'jv', 'kgp', 'kl', 'kn', 'lkt',
-    'lrc', 'mi', 'mzn', 'os', 'qu', 'row', 'sah', 'su', 'tt', 'ug', 'yi',
-    'yrl',
+    // Not present in "modern" data, just listed in parentLocales.
+    "bm", "byn", "dje", "dyo", "ff", "ha", "shi", "vai", "wo", "yo",
+    // Infrequently used locales.
+    "jv", "kn", "ml", "row", "sat", "sd", "to",
 ];
 
 /**

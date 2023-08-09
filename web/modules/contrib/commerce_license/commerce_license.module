@@ -5,13 +5,13 @@
  * Contains commerce_license.module.
  */
 
+use Drupal\commerce_license\FormAlter\GrantedEntityFormAlter;
 use Drupal\Core\Entity\EntityFormInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Session\AccountInterface;
-use Drupal\commerce_license\FormAlter\GrantedEntityFormAlter;
 
 /**
  * Implements hook_help().
@@ -20,8 +20,7 @@ function commerce_license_help($route_name, RouteMatchInterface $route_match) {
   switch ($route_name) {
     // Main module help for the commerce_license module.
     case 'help.page.commerce_license':
-      $output = '';
-      $output .= '<h3>' . t('About') . '</h3>';
+      $output = '<h3>' . t('About') . '</h3>';
       $output .= '<p>' . t('License entities and product behavior') . '</p>';
       return $output;
 
@@ -34,18 +33,18 @@ function commerce_license_help($route_name, RouteMatchInterface $route_match) {
  */
 function commerce_license_entity_bundle_field_info_alter(&$fields, EntityTypeInterface $entity_type, $bundle) {
   // Add constraints to product variations which use subscription licenses.
-  if ($entity_type->id() == 'commerce_product_variation'
-    && !empty($fields['subscription_type'])
-    && !empty($fields['license_type'])
-  ) {
-    // Add a constraint to the subscription_type field to ensure that our
-    // license subscription type can only be used when the license trait is
-    // also present on the product variation entity.
-    $fields['subscription_type']->addConstraint('LicenseSubscriptionType', []);
-
-    // Add a constraint to the expiration_type field to ensure that when a
-    // subscription is used, the expiration is set to 'unlimited'.
-    $fields['license_expiration']->addConstraint('LicenseExpirationTypeWithSubscription', []);
+  if ($entity_type->id() === 'commerce_product_variation') {
+    if (!empty($fields['subscription_type'])) {
+      // Add a constraint to the subscription_type field to ensure that our
+      // license subscription type can only be used when the license trait is
+      // also present on the product variation entity.
+      $fields['subscription_type']->addConstraint('LicenseSubscriptionType', []);
+    }
+    if (!empty($fields['license_expiration'])) {
+      // Add a constraint to the expiration_type field to ensure that when a
+      // subscription is used, the expiration is set to 'unlimited'.
+      $fields['license_expiration']->addConstraint('LicenseExpirationTypeWithSubscription', []);
+    }
   }
 }
 
@@ -67,13 +66,38 @@ function commerce_license_commerce_order_item_delete(EntityInterface $entity) {
 
   // Only act if the order is in draft. If the order is being edited when
   // complete, the license is probably active.
-  if ($entity->getOrder() && $entity->getOrder()->getState()->getId() != 'draft') {
+  $order = $entity->getOrder();
+  if ($order) {
+    $order_state = $order->getState()->getId();
+    if ($order_state !== 'draft') {
+      return;
+    }
+  }
+  else {
+    // The order was deleted.
     return;
   }
 
-  // Delete the license.
-  $license = $entity->license->entity;
-  $license->delete();
+  /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
+  $license = $entity->get('license')->entity;
+  if ($license->getState()->getId() === 'renewal_in_progress') {
+    // Already active license was chosen to renew.
+    // Need to put it back in 'active' state.
+    // But directly setting 'active' state
+    // will be caught by License::preSave() and extend its expiry time!
+    // So, first put it into 'renewal_cancelled' state,
+    // then to 'active'.
+    $license->getState()->applyTransitionById('cancel_renewal');
+    $license->save();
+
+    $license->getState()->applyTransitionById('confirm');
+    $license->save();
+  }
+  // If this is the originating order, then delete the license.
+  elseif ($license->getOriginatingOrderId() === $order->id()) {
+    // Delete the license.
+    $license->delete();
+  }
 }
 
 /**
@@ -108,7 +132,7 @@ function commerce_license_field_widget_form_alter(&$element, FormStateInterface 
   $field_name = $field_definition->getName();
   $entity_type_id = $field_definition->getTargetEntityTypeId();
 
-  if ($field_name == 'license_type' && $entity_type_id == 'commerce_product_variation') {
+  if ($field_name === 'license_type' && $entity_type_id === 'commerce_product_variation') {
     // If the plugin ID form element doesn't have an '#options' key, then we
     // can't remove the plugins that should not be allowed here, either because
     // the widget for this field has been changed by an admin, or because the
@@ -118,7 +142,7 @@ function commerce_license_field_widget_form_alter(&$element, FormStateInterface 
     // on the site, and so granting license that shouldn't be allowed is a
     // security risk.
     if (!isset($element['target_plugin_id']['#options'])) {
-      throw new \Exception("Unable to change the plugin type options on the license_type field on the commerce_product_variation. Check the field widget type.");
+      throw new \RuntimeException('Unable to change the plugin type options on the license_type field on the commerce_product_variation. Check the field widget type.');
     }
 
     // Get the allowed license types for this product variation type.
@@ -155,15 +179,23 @@ function commerce_license_theme() {
       'file' => 'commerce_license.page.inc',
       'template' => 'commerce_license',
     ],
+    'commerce_license_edit_form' => [
+      'render element' => 'form',
+    ],
     'commerce_license_expire' => [
       'variables' => [
         'license_entity' => NULL,
         'purchased_entity' => NULL,
         // Needs to be its own parameter, as toUrl() is not whitelisted for
         // Twig.
-        // TODO: remove when http://www.drupal.org/project/drupal/issues/2907810
+        // @todo remove when http://www.drupal.org/project/drupal/issues/2907810
         // is fixed.
         'purchased_entity_url' => '',
+      ],
+    ],
+    'commerce_license_status_report_grouped' => [
+      'variables' => [
+        'grouped_requirements' => NULL,
       ],
     ],
   ];
@@ -175,7 +207,7 @@ function commerce_license_theme() {
 function commerce_license_theme_suggestions_commerce_license(array $variables) {
   $suggestions = [];
   $entity = $variables['elements']['#commerce_license'];
-  $sanitized_view_mode = strtr($variables['elements']['#view_mode'], '.', '_');
+  $sanitized_view_mode = str_replace('.', '_', $variables['elements']['#view_mode']);
 
   $suggestions[] = 'commerce_license__' . $sanitized_view_mode;
   $suggestions[] = 'commerce_license__' . $entity->bundle();
@@ -193,7 +225,7 @@ function commerce_license_theme_suggestions_commerce_license_expire(array $varia
 
   $license_entity = $variables['license_entity'];
 
-  // TODO: This works in themes, but not for a template within this module,
+  // @todo This works in themes, but not for a template within this module,
   // apparently because of a core bug.
   $suggestions[] = 'commerce_license_expire__' . $license_entity->bundle();
 
@@ -213,17 +245,16 @@ function commerce_license_theme_suggestions_commerce_license_expire(array $varia
  * @return string
  *   The timezone name.
  */
-function commerce_license_get_user_timezone(AccountInterface $user) {
+function commerce_license_get_user_timezone(AccountInterface $user): string {
   $config = \Drupal::config('system.date');
-  if ($user && $config->get('timezone.user.configurable') && $user->isAuthenticated() && $user->getTimezone()) {
+  if ($config->get('timezone.user.configurable') && $user->isAuthenticated() && $user->getTimezone()) {
     return $user->getTimezone();
   }
-  else {
-    // Ignore PHP strict notice if time zone has not yet been set in the php.ini
-    // configuration.
-    $config_data_default_timezone = $config->get('timezone.default');
-    return !empty($config_data_default_timezone) ? $config_data_default_timezone : @date_default_timezone_get();
-  }
+
+  // Ignore PHP strict notice if time zone has not yet been set in the php.ini
+  // configuration.
+  $config_data_default_timezone = $config->get('timezone.default');
+  return !empty($config_data_default_timezone) ? $config_data_default_timezone : @date_default_timezone_get();
 }
 
 /**

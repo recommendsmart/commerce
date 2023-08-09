@@ -29,11 +29,6 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
   protected $usesFields = TRUE;
 
   /**
-   * {@inheritdoc}
-   */
-  protected $usesRowPlugin = TRUE;
-
-  /**
    * Definition.
    */
   protected function defineOptions() {
@@ -41,6 +36,7 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
 
     $options['image_field'] = ['default' => []];
     $options['heading_field'] = ['default' => []];
+    $options['body_field'] = ['default' => []];
     $options['image_class'] = ['default' => 'media-left'];
 
     return $options;
@@ -52,11 +48,6 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
   public function buildOptionsForm(&$form, FormStateInterface $form_state) {
     parent::buildOptionsForm($form, $form_state);
 
-    $form['help'] = [
-      '#markup' => $this->t('The Bootstrap media object displays content with an image item lead with heading and text (<a href=":docs">see documentation</a>).', [':docs' => 'https://www.drupal.org/docs/contributed-modules/views-bootstrap-for-bootstrap-3/media-object']),
-      '#weight' => -99,
-    ];
-
     $fields = $this->displayHandler->getFieldLabels(TRUE);
     $optionalFields = ['' => $this->t('<None>')];
     $optionalFields += $this->displayHandler->getFieldLabels(TRUE);
@@ -67,7 +58,7 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
       '#options' => $fields,
       '#required' => TRUE,
       '#default_value' => $this->options['heading_field'],
-      '#description' => $this->t('Select the field that will be used as the media object heading. Exclude this field from display to prevent duplication.'),
+      '#description' => $this->t('Select the field that will be used as the media object heading.'),
     ];
 
     $form['image_field'] = [
@@ -76,12 +67,7 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
       '#options' => $this->displayHandler->getFieldLabels(TRUE),
       '#required' => TRUE,
       '#default_value' => $this->options['image_field'],
-      '#description' => $this->t('Select the field that will be used as the media object image. Exclude this field from display to prevent duplication.'),
-    ];
-
-    $form['body_field'] = [
-      '#title' => $this->t('Body field'),
-      '#markup' => $this->t('All fields that are not excluded from display will be shown as the body.'),
+      '#description' => $this->t('Select the field that will be used as the media object image.'),
     ];
 
     $form['image_class'] = [
@@ -94,6 +80,15 @@ class ViewsBootstrapMediaObject extends StylePluginBase {
       ],
       '#default_value' => $this->options['image_class'],
       '#description' => $this->t('Align the media object image left or right.'),
+    ];
+
+    $form['body_field'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Body field'),
+      '#options' => $optionalFields,
+      '#required' => FALSE,
+      '#default_value' => $this->options['body_field'],
+      '#description' => $this->t('Select the field that will be used as the media object body.'),
     ];
 
   }

@@ -7,6 +7,12 @@ symfony_mailer.settings:
     default_transport:
       type: string
       label: Default transport ID
+    override:
+      type: sequence
+      label: 'Override settings'
+      sequence:
+        type: integer
+        label: 'State'
 
 symfony_mailer.mailer_transport.*:
   type: config_entity
@@ -69,6 +75,25 @@ symfony_mailer.transport_plugin.smtp:
     port:
       type: integer
       label: 'Port'
+    query:
+      type: mapping
+      label: 'URL query parameters'
+      mapping:
+        verify_peer:
+          type: boolean
+          label: 'Verify peer'
+        local_domain:
+          type: string
+          label: 'HELO command domain name'
+        restart_threshold:
+          type: integer
+          label: 'Restart threshold'
+        restart_threshold_sleep:
+          type: integer
+          label: 'Restart threshold sleep'
+        ping_threshold:
+          type: integer
+          label: 'Ping threshold'
 
 symfony_mailer.mailer_policy.*:
   type: config_entity
@@ -176,18 +201,25 @@ symfony_mailer.email_adjuster_plugin.email_transport:
       type: label
       label: 'Email body'
 
-symfony_mailer.email_adjuster_plugin.mailer_default_headers:
-  type: mapping
-  label: 'Default headers'
-
-symfony_mailer.email_adjuster_plugin.mailer_html_to_text:
-  type: mapping
-  label: 'HTML to text'
-
 symfony_mailer.email_adjuster_plugin.mailer_inline_css:
   type: mapping
   label: 'Inline CSS'
 
+symfony_mailer.email_adjuster_plugin.mailer_plain_only:
+  type: mapping
+  label: 'Plain text only'
+
 symfony_mailer.email_adjuster_plugin.mailer_url_to_absolute:
   type: mapping
   label: 'URL to absolute'
+
+symfony_mailer.email_adjuster_plugin.mailer_wrap_and_convert:
+  type: mapping
+  label: 'Wrap and convert'
+  mapping:
+    plain:
+      type: boolean
+      label: 'Plain text'
+    swiftmailer:
+      type: boolean
+      label: 'Emulate swiftmailer'

@@ -18,4 +18,15 @@ interface MailerInterface {
    */
   public function send(InternalEmailInterface $email);
 
+  /**
+   * Changes the active theme.
+   *
+   * @param string $theme_name
+   *   The theme name.
+   *
+   * @return string
+   *   The previously active theme name.
+   */
+  public function changeTheme(string $theme_name);
+
 }

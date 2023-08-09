@@ -77,6 +77,42 @@ interface EmailInterface extends ConfigEntityInterface {
   public function setFrom($from);
 
   /**
+   * Gets the "toType" option.
+   *
+   * @return string
+   *   The "toType" option.
+   */
+  public function getToType();
+
+  /**
+   * Sets the "toType" option.
+   *
+   * @param string $to_type
+   *   The "toType" value.
+   *
+   * @return $this
+   */
+  public function setToType($to_type);
+
+  /**
+   * Gets the "toRole" value.
+   *
+   * @return string
+   *   The "toRole" value.
+   */
+  public function getToRole();
+
+  /**
+   * Sets the "toRole" value.
+   *
+   * @param string $to_role
+   *   The "toRole" value.
+   *
+   * @return $this
+   */
+  public function setToRole($to_role);
+
+  /**
    * Gets the "to" address.
    *
    * @return string
@@ -165,6 +201,24 @@ interface EmailInterface extends ConfigEntityInterface {
    * @return $this
    */
   public function setBody($body);
+
+  /**
+   * Gets whether to email the email should be queued.
+   *
+   * @return bool
+   *   TRUE if the email should be queued, FALSE otherwise.
+   */
+  public function shouldQueue();
+
+  /**
+   * Sets whether to email the email should be queued.
+   *
+   * @param bool $queue
+   *   TRUE if the email should be queued, FALSE otherwise.
+   *
+   * @return $this
+   */
+  public function setQueue(bool $queue);
 
   /**
    * Gets the email conditions.

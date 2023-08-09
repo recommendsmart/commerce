@@ -264,10 +264,10 @@ class AllowedBlocksForm extends FormBase {
         ];
       }
 
-      if ($category == 'Custom blocks' || $category == 'Custom block types') {
+      if ($category == 'Custom blocks' || $category == 'Content block' || $category == 'Custom block types') {
         $category_form['description'] = [
           '#type' => 'container',
-          '#children' => $this->t('<p>In the event both <em>Custom Block Types</em> and <em>Custom Blocks</em> restrictions are enabled, <em>Custom Block Types</em> restrictions are disregarded.</p>'),
+          '#children' => $this->t('<p>In the event both <em>Custom Block Types</em> and <em>Content Blocks</em> restrictions are enabled, <em>Custom Block Types</em> restrictions are disregarded.</p>'),
           '#states' => [
             'visible' => [
               ':input[name="allowed_blocks[' . $category . '][restriction]"]' => ['value' => "restricted"],
@@ -404,7 +404,7 @@ class AllowedBlocksForm extends FormBase {
     $category_is_restricted = (!empty($this->allowedBlockCategories) && !in_array($category, $this->allowedBlockCategories));
     // Attempt to retrieve default value from tempStore, then from config
     // before settings to 'all'.
-    if (!is_null($temp_data[$category]['restriction_type'])) {
+    if (isset($temp_data) && isset($temp_data[$category]['restriction_type'])) {
       return $temp_data[$category]['restriction_type'];
     }
     else {

@@ -46,7 +46,7 @@ class CustomTest extends CommerceWebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->pressButton('remove_territory0');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
     $this->assertSession()->pageTextContains('Please add at least one rate.');
     $this->assertSession()->pageTextContains('Please add at least one territory.');
 
@@ -68,7 +68,7 @@ class CustomTest extends CommerceWebDriverTestBase {
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->getSession()->getPage()->selectFieldOption('configuration[custom][territories][1][territory][country_code]', 'IT');
     $this->assertSession()->assertWaitOnAjaxRequest();
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
     $this->container->get('entity_type.manager')->getStorage('commerce_tax_type')->resetCache([$tax_type->id()]);
     $tax_type = TaxType::load($tax_type->id());
     $plugin_configuration = $tax_type->getPlugin()->getConfiguration();

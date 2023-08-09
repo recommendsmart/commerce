@@ -113,6 +113,7 @@ class Padding extends StylePluginBase {
       '#attributes' => [
         'class' => ['bs_col--full', 'bs_input-boxes', 'bs_input-boxes--box-model', 'bs_padding--type'],
       ],
+      '#disable_live_preview' => TRUE,
     ];
 
     $default_value = 0;
@@ -165,6 +166,7 @@ class Padding extends StylePluginBase {
     // Pass padding options to drupal settings.
     $padding_options = [];
     $padding_options['padding'] = array_keys($this->getStyleOptions('padding'));
+
     for ($i = 0; $i < 4; $i++) {
       $padding_options['padding_' . $directions[$i]] = array_keys($this->getStyleOptions('padding_' . $directions[$i]));
     }
@@ -187,17 +189,17 @@ class Padding extends StylePluginBase {
       'bottom',
     ];
 
-    $schema = [
+    $storage = [
       'padding' => [
         'class' => $this->getStyleOptionClassByIndex('padding', $group_elements['padding']),
       ],
     ];
 
     for ($i = 0; $i < 4; $i++) {
-      $schema['padding_' . $directions[$i]]['class'] = $this->getStyleOptionClassByIndex('padding_' . $directions[$i], $group_elements['padding_' . $directions[$i]]);
+      $storage['padding_' . $directions[$i]]['class'] = $this->getStyleOptionClassByIndex('padding_' . $directions[$i], $group_elements['padding_' . $directions[$i]]);
     }
 
-    return $schema;
+    return $storage;
   }
 
   /**

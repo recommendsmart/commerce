@@ -61,10 +61,25 @@ class LicenseListBuilder extends EntityListBuilder {
    * {@inheritdoc}
    */
   public function buildRow(EntityInterface $entity) {
-    /* @var $entity \Drupal\commerce_license\Entity\License */
+    /** @var \Drupal\commerce_license\Entity\License $entity */
     $row['id'] = $entity->id();
     $row['type'] = $this->licenseTypes[$entity->bundle()]['label'];
     return $row + parent::buildRow($entity);
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getDefaultOperations(EntityInterface $entity) {
+    $operations = parent::getDefaultOperations($entity);
+    if ($entity->access('view') && $entity->hasLinkTemplate('canonical')) {
+      $operations['view'] = [
+        'title' => $this->t('View'),
+        'weight' => 1,
+        'url' => $this->ensureDestination($entity->toUrl('canonical')),
+      ];
+    }
+    return $operations;
   }
 
 }

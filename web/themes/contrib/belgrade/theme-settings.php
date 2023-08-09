@@ -10,7 +10,6 @@
  */
 
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\Core\Link;
 use Drupal\Core\Url;
 
 /**
@@ -37,11 +36,7 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
   $form['belgrade'] = array(
     '#type' => 'vertical_tabs',
     '#weight' => -10,
-    '#description' => t('Note: Some of these settings require you to <a href="@cache-link">flush caches.</a>',
-      array(
-        '@cache-link' => Url::fromRoute('system.performance_settings')->toString()
-      )
-    )
+    '#description' => t('Cheatsheet of <a href="@link">Bootstrap components.</a>', ['@link' => Url::fromUri('internal:/' . \Drupal::service('extension.list.theme')->getPath($theme) . '/cheatsheet/index.html')->toString()]),
   );
 
   // General settings
@@ -65,6 +60,14 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
     '#description' => t('Place the logo SVG code in the DOM.'),
     '#default_value' => theme_get_setting('inline_logo')
   );
+
+  // Input submit button.
+  $form['settings']['general']['belgrade_submit_button'] = [
+    '#type' => 'checkbox',
+    '#title' => t('Convert input submit to button element'),
+    '#default_value' => theme_get_setting('belgrade_submit_button'),
+    '#description' => t('This can cause problems with AJAX.'),
+  ];
 
   // Fieldset accordions
   $form['settings']['general']['fieldset_accordion'] = array(
@@ -166,7 +169,6 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
     '#type' => 'details',
     '#title' => 'Navigation (Offcanvas)',
     '#collapsible' => true,
-    '#open' => true,
   );
 
   $form['regions']['navigation']['navigation_toggle_text'] = array(
@@ -261,7 +263,6 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
     '#type' => 'details',
     '#title' => t('Fonts & Icons'),
     '#collapsible' => true,
-    '#open' => true,
     '#group' => 'belgrade',
   );
 
@@ -294,7 +295,6 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
     '#type' => 'details',
     '#title' => t('Layout Builder'),
     '#collapsible' => true,
-    '#open' => true,
     '#group' => 'belgrade',
   );
 
@@ -310,4 +310,3 @@ function belgrade_form_system_theme_settings_alter(&$form, FormStateInterface $f
   $form['logo']['#open'] = false;
   $form['favicon']['#open'] = false;
 }
-

@@ -44,7 +44,7 @@ class ShipmentConfirmationMail implements ShipmentConfirmationMailInterface {
   public function send(ShipmentInterface $shipment, $to = NULL, $bcc = NULL) {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $shipment->getOrder();
-    $to = isset($to) ? $to : $order->getEmail();
+    $to = $to ?? $order->getEmail();
     if (!$to) {
       // The email should not be empty.
       return FALSE;

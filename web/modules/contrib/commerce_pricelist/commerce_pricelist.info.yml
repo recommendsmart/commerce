@@ -9,7 +9,7 @@ dependencies:
   - commerce:commerce_price
   - drupal:file
 
-# Information added by Drupal.org packaging script on 2022-02-09
-version: '8.x-2.4'
+# Information added by Drupal.org packaging script on 2023-01-23
+version: '8.x-2.8'
 project: 'commerce_pricelist'
-datestamp: 1644415812
+datestamp: 1674462273

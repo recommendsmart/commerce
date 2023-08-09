@@ -80,6 +80,25 @@ class CustomCardFieldsBuilder implements CustomCardFieldsBuilderInterface {
       'clientToken' => $client_token,
       'cardFieldsSelector' => '#commerce-paypal-checkout-custom-card-fields',
     ];
+
+    // Display credit card logos in checkout form.
+    if ($config['enable_credit_card_icons'] && $config['payment_solution'] === 'custom_card_fields') {
+      $element['#attached']['library'][] = 'commerce_paypal/credit_card_icons';
+      $element['#attached']['library'][] = 'commerce_payment/payment_method_icons';
+
+      $supported_credit_cards = [];
+      foreach ($payment_gateway->getPlugin()->getCreditCardTypes() as $credit_card) {
+        $supported_credit_cards[] = $credit_card->getId();
+      }
+
+      $element += [
+        'credit_card_logos' => [
+          '#theme' => 'commerce_paypal_credit_card_logos',
+          '#credit_cards' => $supported_credit_cards,
+        ],
+      ];
+    }
+
     $element += [
       'card_fields_form' => [
         '#theme' => 'commerce_paypal_checkout_custom_card_fields',

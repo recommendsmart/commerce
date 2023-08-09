@@ -5,11 +5,14 @@ namespace Drupal\Tests\commerce_cart\Traits;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_product\Entity\ProductInterface;
 use Drupal\commerce_product\Entity\ProductVariationInterface;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Defines a trait for commerce_cart functional tests.
  */
 trait CartBrowserTestTrait {
+
+  use StringTranslationTrait;
 
   /**
    * Posts the add to cart form for a product.
@@ -77,7 +80,7 @@ trait CartBrowserTestTrait {
    */
   protected function assertOrderItemInOrder(ProductVariationInterface $variation, OrderItemInterface $order_item, $quantity = '1') {
     $this->assertEquals($order_item->getTitle(), $variation->getOrderItemTitle());
-    $this->assertNotEmpty(($order_item->getQuantity() == $quantity), t('The product @product has been added to cart with quantity of @quantity.', [
+    $this->assertNotEmpty(($order_item->getQuantity() == $quantity), $this->t('The product @product has been added to cart with quantity of @quantity.', [
       '@product' => $order_item->getTitle(),
       '@quantity' => $order_item->getQuantity(),
     ]));

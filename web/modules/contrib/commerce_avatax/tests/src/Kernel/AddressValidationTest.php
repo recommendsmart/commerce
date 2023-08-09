@@ -33,7 +33,7 @@ class AddressValidationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->installConfig('commerce_avatax');
   }
@@ -205,6 +205,7 @@ class AddressValidationTest extends KernelTestBase {
 
     return new AvataxLib(
       $this->container->get('plugin.manager.commerce_adjustment_type'),
+      $this->container->get('entity_type.manager'),
       $this->container->get('commerce_avatax.chain_tax_code_resolver'),
       $client_factory->reveal(),
       $this->container->get('config.factory'),

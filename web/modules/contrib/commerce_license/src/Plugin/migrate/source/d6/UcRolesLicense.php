@@ -36,8 +36,8 @@ class UcRolesLicense extends DrupalSqlBase {
 
     // Joining to {uc_roles_products} gets us the product node ID and the
     // duration configuration.
-    // TODO: this join assumes there is only one product per role. If some
-    // roles are sold by multiple products, this will break!
+    // @todo this join assumes there is only one product per role.
+    // If some roles are sold by multiple products, this will break!
     $query->innerJoin('uc_roles_products', 'urp', 'ure.rid = urp.rid');
     $query->fields('urp', [
       'nid',
@@ -47,7 +47,7 @@ class UcRolesLicense extends DrupalSqlBase {
 
     // Get the orders that purchased this product.
     // Join to {uc_orders} via {uc_order_products}, getting first the order
-    // line items that hold the product, and the the corresponding order.
+    // line items that hold the product, and the corresponding order.
     $query->innerJoin('uc_order_products', 'uop', 'urp.nid = uop.nid');
     // This join also ensures that the orders are purchased by the users who
     // have a role granted.
@@ -60,12 +60,12 @@ class UcRolesLicense extends DrupalSqlBase {
       'order_id',
     ]);
 
-    // Use a groupwise mininum selfjoin to get only the earliest order by each
+    // Use a groupwise minimum self-join to get only the earliest order by each
     // user for a role.
-    // TODO: this assumes that later orders are renewals, and that there are no
+    // @todo this assumes that later orders are renewals, and that there are no
     // gaps in a user's license ownership, e.g. user buys license, lets it
     // expire, buys another one.
-    // TODO: this join should also have a condition on the product nid!
+    // @todo this join should also have a condition on the product nid.
     $query->leftJoin('uc_orders', 'uo_later', 'uo.uid = uo_later.uid AND uo.modified > uo_later.modified');
     $query->isNull('uo_later.order_id');
 
@@ -88,7 +88,7 @@ class UcRolesLicense extends DrupalSqlBase {
       'created',
       'modified',
     ]);
-    $query->orderBy('created', DESC);
+    $query->orderBy('created', 'DESC');
     $query->range(0, 1);
 
     $latest_order_data = $query->execute()->fetchAssoc();

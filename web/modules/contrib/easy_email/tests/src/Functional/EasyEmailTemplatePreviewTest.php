@@ -147,9 +147,14 @@ class EasyEmailTemplatePreviewTest extends EasyEmailTestBase {
     $plain_body_url = $this->getIframeUrlAndQuery($plain_body_iframe);
 
     $this->drupalGet($html_body_url['path'], ['query' => $html_body_url['query']]);
-    $this->assertSession()->responseContains('<p>This is a test email (HTML) for user account ' . $user1->getAccountName() . '.</p>');
+    $html_content = $this->getSession()->getPage()->getContent();
+    $this->htmlOutput($html_content);
+    $this->assertStringContainsString('This is a test email (HTML) for user account ' . $user1->getAccountName() . '.', $html_content);
+    $this->assertSession()->responseContains('This is a test email (HTML) for user account ' . $user1->getAccountName() . '.');
 
     $this->drupalGet($plain_body_url['path'], ['query' => $plain_body_url['query']]);
+    $html_content = $this->getSession()->getPage()->getContent();
+    $this->htmlOutput($html_content);
     $this->assertSession()->responseContains('This is a test email (HTML) for user account ' . $user1->getAccountName() . '.');
   }
 
@@ -219,7 +224,7 @@ class EasyEmailTemplatePreviewTest extends EasyEmailTestBase {
     $plain_body_url = $this->getIframeUrlAndQuery($plain_body_iframe);
 
     $this->drupalGet($html_body_url['path'], ['query' => $html_body_url['query']]);
-    $this->assertSession()->responseContains('<p>This is a test email (HTML) for user account ' . $user1->getAccountName() . '.</p>');
+    $this->assertSession()->responseContains('This is a test email (HTML) for user account ' . $user1->getAccountName() . '.');
 
     $this->drupalGet($plain_body_url['path'], ['query' => $plain_body_url['query']]);
     $this->assertSession()->responseContains('This is a test email (Plain Text) for user account ' . $user1->getAccountName() . '.');
@@ -425,7 +430,7 @@ class EasyEmailTemplatePreviewTest extends EasyEmailTestBase {
     $this->assertSession()->elementNotExists('css', '[data-drupal-selector="plain-body"] iframe');
 
     $this->drupalGet($html_body_url['path'], ['query' => $html_body_url['query']]);
-    $this->assertSession()->responseContains('<p>This is a test email (HTML) for user account ' . $user1->getAccountName() . '.</p>');
+    $this->assertSession()->responseContains('This is a test email (HTML) for user account ' . $user1->getAccountName() . '.');
   }
 
   /**

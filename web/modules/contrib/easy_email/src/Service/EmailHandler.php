@@ -160,7 +160,8 @@ class EmailHandler implements EmailHandlerInterface {
     }
 
     $this->renderer->executeInRenderContext(new RenderContext(), function () use ($email) {
-      return $this->tokenEvaluator->evaluateTokens($email);
+      // Don't clear tokens here because we need to check for unsafe tokens later.
+      return $this->tokenEvaluator->evaluateTokens($email, FALSE);
     });
 
     $this->userEvaluator->evaluateUsers($email);
@@ -175,7 +176,7 @@ class EmailHandler implements EmailHandlerInterface {
     }
 
     $this->attachmentEvaluator->evaluateAttachments($email, $save_attachments_to);
-    $params['files'] = $email->getEvaluatedAttachments();
+    $params['attachments'] = $email->getEvaluatedAttachments();
 
     $reply = $email->getReplyToAddress();
 
@@ -197,12 +198,15 @@ class EmailHandler implements EmailHandlerInterface {
       ];
     }
 
+    // Now, let's evaluate tokens more time and clear any that are left unreplaced.
+    $this->tokenEvaluator->evaluateTokens($email, TRUE);
+
     foreach ($emails_to_send as $email_info) {
       if (!empty($email_info['to'])) {
         $this->eventDispatcher->dispatch(new EasyEmailEvent($email), EasyEmailEvents::EMAIL_PRESEND);
         $message = $this->mailManager->mail('easy_email', $email_info['email']->bundle(), $email_info['to'], $default_langcode, $email_info['params'], $reply, TRUE);
       }
-      if(!empty($message['result'])){
+      if (!empty($message['result'])) {
         $this->eventDispatcher->dispatch(new EasyEmailEvent($email), EasyEmailEvents::EMAIL_SENT);
         $email_info['email']->setSentTime($this->time->getCurrentTime())
           ->save();
@@ -271,20 +275,29 @@ class EmailHandler implements EmailHandlerInterface {
       $message = $this->renderedPreviews[$email->id()];
     }
     if (empty($message)) {
-      $this->tokenEvaluator->evaluateTokens($email);
+      $this->tokenEvaluator->evaluateTokens($email, FALSE);
 
       $params = $this->generateEmailParams($email, $params);
       $params['easy_email_preview'] = TRUE;
 
       $reply = $email->getReplyToAddress();
 
-      $recipient_emails = $email->getRecipientAddresses();
+      $recipient_emails = $email->getRecipientAddresses() ?? [];
       $default_langcode = $this->languageManager->getDefaultLanguage()->getId();
       $to = implode(', ', $recipient_emails);
 
       $message = $this->mailManager->mail('easy_email', $email->bundle(), $to, $default_langcode, $params, $reply, FALSE);
       if (!$email->isNew()) {
         $this->renderedPreviews[$email->id()] = $message;
+      }
+    }
+
+    // Copy anything within the 'params' key up to the main array.
+    if (!empty($message['params']) && is_array($message['params'])) {
+      foreach ($message['params'] as $key => $value) {
+        if (!isset($message[$key])) {
+          $message[$key] = $value;
+        }
       }
     }
 

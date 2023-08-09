@@ -173,9 +173,6 @@
 	"HTG": {
 		"name": "Haiti Gurdu"
 	},
-	"HRK": {
-		"name": "Hırvatistan Kunası"
-	},
 	"INR": {
 		"name": "Hindistan Rupisi",
 		"symbol": "₹"
@@ -457,9 +454,6 @@
 	},
 	"UYU": {
 		"name": "Uruguay Pesosu"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"JOD": {
 		"name": "Ürdün Dinarı"

@@ -21,6 +21,13 @@ commerce_tax.commerce_tax_type.*:
       label: 'Plugin'
     configuration:
       type: commerce_tax.commerce_tax_type.plugin.[%parent.plugin]
+    conditions:
+      type: sequence
+      sequence:
+        type: commerce_condition
+    conditionOperator:
+      type: string
+      label: 'Condition operator'
 
 commerce_tax.commerce_tax_type.plugin.*:
   type: commerce_tax_type_configuration

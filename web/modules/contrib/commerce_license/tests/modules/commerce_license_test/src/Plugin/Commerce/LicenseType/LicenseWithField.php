@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_license_test\Plugin\Commerce\LicenseType;
 
-use Drupal\entity\BundleFieldDefinition;
 use Drupal\commerce_license\Entity\LicenseInterface;
+use Drupal\entity\BundleFieldDefinition;
 
 /**
  * License type for testing a field can be set when granting and revoking.
@@ -38,8 +38,8 @@ class LicenseWithField extends TestLicenseBase {
     $fields = parent::buildFieldDefinitions();
 
     $fields['test_field'] = BundleFieldDefinition::create('text')
-      ->setLabel(t('Test field'))
-      ->setDescription(t('A test field that this plugin will set values on.'))
+      ->setLabel($this->t('Test field'))
+      ->setDescription($this->t('A test field that this plugin will set values on.'))
       ->setCardinality(1);
 
     return $fields;

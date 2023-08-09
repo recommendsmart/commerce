@@ -123,7 +123,7 @@ class ManualPaymentAdminTest extends CommerceBrowserTestBase {
     $this->getSession()->getPage()->pressButton('Continue');
     $this->submitForm(['payment[amount][number]' => '100', 'payment[received]' => TRUE], 'Add payment');
     $this->assertSession()->addressEquals($this->paymentUri);
-    $this->assertSession()->elementContains('css', 'table tbody tr:nth-child(2) td:nth-child(2)', 'Completed');
+    $this->assertSession()->elementContains('css', 'table tbody tr:nth-child(1) td:nth-child(2)', 'Completed');
 
     \Drupal::entityTypeManager()->getStorage('commerce_payment')->resetCache([2]);
     /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */

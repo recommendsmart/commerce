@@ -13,7 +13,7 @@ final class OrderEvents {
    *
    * Note:
    * At this point the order still has the original data (customer, email).
-   * Use $event->getOrder()-getCustomer()->isAnonymous() to check whether the
+   * Use $event->getOrder()->getCustomer()->isAnonymous() to check whether the
    * original customer was anonymous.
    *
    * Fired before the order is saved.
@@ -23,6 +23,15 @@ final class OrderEvents {
    * @see \Drupal\commerce_order\Event\OrderAssignEvent
    */
   const ORDER_ASSIGN = 'commerce_order.order.assign';
+
+  /**
+   * Name of the event fired when altering an order label.
+   *
+   * @Event
+   *
+   * @see \Drupal\commerce_order\Event\OrderLabelEvent
+   */
+  const ORDER_LABEL = 'commerce_order.order.label';
 
   /**
    * Name of the event fired after the order has been fully paid.

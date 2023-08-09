@@ -50,7 +50,7 @@ class BackgroundColor extends StylePluginBase {
    * {@inheritdoc}
    */
   public function buildStyleFormElements(array &$form, FormStateInterface $form_state, $storage) {
-    $icon_path = drupal_get_path('module', 'bootstrap_styles') . '/images/';
+    $icon_path = \Drupal::service('extension.list.module')->getPath('bootstrap_styles') . '/images/';
     $form['background_type']['#options']['color'] = $this->getSvgIconMarkup($icon_path . 'plugins/background/background-color.svg');
     $form['background_type']['#default_value'] = $storage['background']['background_type'] ?? 'color';
 
@@ -80,11 +80,13 @@ class BackgroundColor extends StylePluginBase {
    * {@inheritdoc}
    */
   public function submitStyleFormElements(array $group_elements) {
-    return [
+    $storage = [
       'background_color' => [
         'class' => $group_elements['background_color'],
       ],
     ];
+
+    return $storage;
   }
 
   /**
@@ -96,7 +98,12 @@ class BackgroundColor extends StylePluginBase {
     $background_type = $storage['background']['background_type'] ?? 'color';
 
     if ($background_type != 'video') {
-      $classes[] = $storage['background_color']['class'];
+      $classes[] = $storage['background_color']['class'] !== "_none" ? $storage['background_color']['class'] : "";
+
+      if (!empty($storage['background_color']['class']) && $storage['background_color']['class'] !== "_none") {
+        $classes[] = 'bg-color';
+      }     
+
       // Add the classes to the build.
       $build = $this->addClassesToBuild($build, $classes, $theme_wrapper);
     }

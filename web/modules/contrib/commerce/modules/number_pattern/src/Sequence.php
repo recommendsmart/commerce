@@ -42,7 +42,7 @@ final class Sequence {
     }
     $this->number = $definition['number'];
     $this->generated = $definition['generated'];
-    $this->storeId = isset($definition['store_id']) ? $definition['store_id'] : 0;
+    $this->storeId = $definition['store_id'] ?? 0;
   }
 
   /**

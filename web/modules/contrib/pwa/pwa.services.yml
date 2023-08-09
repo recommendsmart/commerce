@@ -1,4 +1,13 @@
 services:
   pwa.manifest:
     class: Drupal\pwa\Manifest
-    arguments: ['@config.factory', '@language_manager']
+    arguments:
+      - '@config.factory'
+      - '@language_manager'
+      - '@module_handler'
+      - '@request_stack'
+      - '@theme.manager'
+  pwa.response_subscriber:
+    class: Drupal\pwa\EventSubscriber\ResponseSubscriber
+    tags:
+      - { name: event_subscriber }

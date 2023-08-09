@@ -35,9 +35,19 @@ interface StoreInterface extends ContentEntityInterface, EntityOwnerInterface, E
    * Gets the store email.
    *
    * @return string
-   *   The store email
+   *   The store email.
    */
   public function getEmail();
+
+  /**
+   * Gets the store email formatted as email 'From' header.
+   *
+   * Example: 'My Store <mystore@example.com>'
+   *
+   * @return string
+   *   The store name, with email wrapped in angle brackets.
+   */
+  public function getEmailFromHeader();
 
   /**
    * Sets the store email.

@@ -348,7 +348,7 @@ class ProductVariationAttributeMapperTest extends CommerceKernelTestBase {
         ],
         'attribute_ram' => $this->ramAttributes[$value[0]],
         'attribute_disk1' => $this->disk1Attributes[$value[1]],
-        'attribute_disk2' => isset($this->disk2Attributes[$value[2]]) ? $this->disk2Attributes[$value[2]] : NULL,
+        'attribute_disk2' => $this->disk2Attributes[$value[2]] ?? NULL,
       ]);
       $variation->save();
       $variations[] = $variation;
@@ -619,7 +619,7 @@ class ProductVariationAttributeMapperTest extends CommerceKernelTestBase {
         ],
         'attribute_ram' => $this->ramAttributes[$value[0]],
         'attribute_disk1' => $this->disk1Attributes[$value[1]],
-        'attribute_disk2' => isset($this->disk2Attributes[$value[2]]) ? $this->disk2Attributes[$value[2]] : NULL,
+        'attribute_disk2' => $this->disk2Attributes[$value[2]] ?? NULL,
       ]);
       $variation->save();
       $variations[] = $variation;

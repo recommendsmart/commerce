@@ -15,7 +15,9 @@ use Drupal\Component\Utility\Variable;
 use Drupal\Core\Cache\CacheBackendInterface;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Datetime\DrupalDateTime;
+use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\profile\Entity\ProfileInterface;
 use GuzzleHttp\Client;
 use GuzzleHttp\Exception\ClientException;
 use Psr\Log\LoggerInterface;
@@ -32,6 +34,13 @@ class AvataxLib implements AvataxLibInterface {
    * @var \Drupal\commerce_order\AdjustmentTypeManager
    */
   protected $adjustmentTypeManager;
+
+  /**
+   * The entity type manager.
+   *
+   * @var \Drupal\Core\Entity\EntityTypeManagerInterface
+   */
+  protected $entityTypeManager;
 
   /**
    * The chain tax code resolver.
@@ -83,10 +92,19 @@ class AvataxLib implements AvataxLibInterface {
   protected $cache;
 
   /**
+   * A cache of prepared customer profiles, keyed by order ID.
+   *
+   * @var \Drupal\profile\Entity\ProfileInterface
+   */
+  protected $profiles = [];
+
+  /**
    * Constructs a new AvataxLib object.
    *
    * @param \Drupal\commerce_order\AdjustmentTypeManager $adjustment_type_manager
    *   The adjustment type manager.
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
+   *   The entity type manager.
    * @param \Drupal\commerce_avatax\Resolver\ChainTaxCodeResolverInterface $chain_tax_code_resolver
    *   The chain tax code resolver.
    * @param \Drupal\commerce_avatax\ClientFactory $client_factory
@@ -102,8 +120,9 @@ class AvataxLib implements AvataxLibInterface {
    * @param \Drupal\Core\Cache\CacheBackendInterface $cache_backend
    *   The cache backend.
    */
-  public function __construct(AdjustmentTypeManager $adjustment_type_manager, ChainTaxCodeResolverInterface $chain_tax_code_resolver, ClientFactory $client_factory, ConfigFactoryInterface $config_factory, EventDispatcherInterface $event_dispatcher, LoggerInterface $logger, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend) {
+  public function __construct(AdjustmentTypeManager $adjustment_type_manager, EntityTypeManagerInterface $entity_type_manager, ChainTaxCodeResolverInterface $chain_tax_code_resolver, ClientFactory $client_factory, ConfigFactoryInterface $config_factory, EventDispatcherInterface $event_dispatcher, LoggerInterface $logger, ModuleHandlerInterface $module_handler, CacheBackendInterface $cache_backend) {
     $this->adjustmentTypeManager = $adjustment_type_manager;
+    $this->entityTypeManager = $entity_type_manager;
     $this->chainTaxCodeResolver = $chain_tax_code_resolver;
     $this->config = $config_factory->get('commerce_avatax.settings');
     $this->client = $client_factory->createInstance($this->config->get());
@@ -145,7 +164,10 @@ class AvataxLib implements AvataxLibInterface {
       $this->moduleHandler->alter('commerce_avatax_order_response', $response_body, $order);
       // Cache the request + the response for 24 hours.
       $expire = time() + (60 * 60 * 24);
-      $this->cache->set($cid, ['request' => $request_body, 'response' => $response_body], $expire);
+      $this->cache->set($cid, [
+        'request' => $request_body,
+        'response' => $response_body,
+      ], $expire);
     }
     return $response_body;
   }
@@ -252,17 +274,18 @@ class AvataxLib implements AvataxLibInterface {
 
       // Send the "SKU" as the "itemCode".
       if ($purchased_entity instanceof ProductVariationInterface) {
-        $line_item['itemCode'] = $purchased_entity->getSku();
+        $item_code = $purchased_entity->getSku();
+        // Avalara has a max length of 50 for the itemCode.
+        // If the sku is longer than 50, then we will pass the uuid instead.
+        if (strlen($item_code) > 50) {
+          $item_code = $purchased_entity->uuid();
+        }
+        $line_item['itemCode'] = $item_code;
       }
-      if ($has_shipments) {
-        $line_item['addresses'] = [
-          'shipFrom' => self::formatAddress($store->getAddress()),
-          'shipTo' => self::formatAddress($address),
-        ];
-      }
-      else {
-        $line_item['addresses']['singleLocation'] = self::formatAddress($address);
-      }
+      $line_item['addresses'] = [
+        'shipFrom' => self::formatAddress($store->getAddress()),
+        'shipTo' => self::formatAddress($address),
+      ];
 
       $line_item['taxCode'] = $this->chainTaxCodeResolver->resolve($order_item);
       $request_body['lines'][] = $line_item;
@@ -278,7 +301,7 @@ class AvataxLib implements AvataxLibInterface {
           'taxCode' => $this->config->get('shipping_tax_code'),
           'number' => $shipment->uuid(),
           'description' => $shipment->label(),
-          'amount' => $shipment->getAmount()->getNumber(),
+          'amount' => $shipment->getAdjustedAmount(array_diff($adjustment_types, ['tax']))->getNumber(),
           'quantity' => 1,
           'addresses' => [
             'shipFrom' => self::formatAddress($store->getAddress()),
@@ -295,7 +318,7 @@ class AvataxLib implements AvataxLibInterface {
         continue;
       }
       $line_item = [
-        // @todo: Figure out which taxCode to use here.
+        // @todo Figure out which taxCode to use here.
         'taxCode' => 'P0000000',
         'description' => $adjustment->getLabel(),
         'amount' => $adjustment->getAmount()->getNumber(),
@@ -429,7 +452,7 @@ class AvataxLib implements AvataxLibInterface {
    * @return array
    *   Return a Drupal keyed formatted address.
    */
-  public static function formatDrupalAddress(array $address) {
+  public static function formatDrupalAddress(array $address): array {
     return [
       'address_line1' => $address['line1'] ?? '',
       'address_line2' => $address['line2'] ?? '',
@@ -449,7 +472,7 @@ class AvataxLib implements AvataxLibInterface {
    * @return array
    *   Return a formatted address for use in the order request.
    */
-  protected static function formatAddress(AddressInterface $address) {
+  protected static function formatAddress(AddressInterface $address): array {
     return [
       'line1' => $address->getAddressLine1(),
       'line2' => $address->getAddressLine2(),
@@ -462,6 +485,7 @@ class AvataxLib implements AvataxLibInterface {
 
   /**
    * Resolves the customer profile for the given order item.
+   *
    * Stolen from TaxTypeBase::resolveCustomerProfile().
    *
    * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
@@ -470,15 +494,69 @@ class AvataxLib implements AvataxLibInterface {
    * @return \Drupal\profile\Entity\ProfileInterface|null
    *   The customer profile, or NULL if not yet known.
    */
-  protected function resolveCustomerProfile(OrderItemInterface $order_item) {
+  protected function resolveCustomerProfile(OrderItemInterface $order_item): ?ProfileInterface {
     $order = $order_item->getOrder();
-    $customer_profile = $order->getBillingProfile();
-    // A shipping profile is preferred, when available.
+    if (!$order) {
+      return NULL;
+    }
+    $customer_profile = $this->buildCustomerProfile($order);
+    // Allow the customer profile to be altered, per order item.
     $event = new CustomerProfileEvent($customer_profile, $order_item);
-    $this->eventDispatcher->dispatch(TaxEvents::CUSTOMER_PROFILE, $event);
+    $this->eventDispatcher->dispatch($event, TaxEvents::CUSTOMER_PROFILE);
     $customer_profile = $event->getCustomerProfile();
 
     return $customer_profile;
+  }
+
+  /**
+   * Builds a customer profile for the given order.
+   *
+   * Constructed only for the purposes of tax calculation, never saved.
+   * The address comes one of the saved profiles, with the following priority:
+   * - Shipping profile
+   * - Billing profile
+   * - Store profile (if the tax type is display inclusive)
+   * The tax number comes from the billing profile, if present.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   *
+   * @return \Drupal\profile\Entity\ProfileInterface|null
+   *   The customer profile, or NULL if not available yet.
+   */
+  protected function buildCustomerProfile(OrderInterface $order): ?ProfileInterface {
+    $order_uuid = $order->uuid();
+    if (!isset($this->profiles[$order_uuid])) {
+      $order_profiles = $order->collectProfiles();
+      $address = NULL;
+      foreach (['shipping', 'billing'] as $scope) {
+        if (isset($order_profiles[$scope])) {
+          $address_field = $order_profiles[$scope]->get('address');
+          if (!$address_field->isEmpty()) {
+            $address = $address_field->getValue();
+            break;
+          }
+        }
+      }
+      if (!$address) {
+        // A customer profile isn't usable without an address. Stop here.
+        return NULL;
+      }
+
+      $tax_number = NULL;
+      if (isset($order_profiles['billing']) && $order_profiles['billing']->hasField('tax_number')) {
+        $tax_number = $order_profiles['billing']->get('tax_number')->getValue();
+      }
+      $profile_storage = $this->entityTypeManager->getStorage('profile');
+      $this->profiles[$order_uuid] = $profile_storage->create([
+        'type' => 'customer',
+        'uid' => 0,
+        'address' => $address,
+        'tax_number' => $tax_number,
+      ]);
+    }
+
+    return $this->profiles[$order_uuid];
   }
 
   /**
@@ -494,16 +572,25 @@ class AvataxLib implements AvataxLibInterface {
    * @return array
    *   The response array.
    */
-  protected function doRequest($method, $path, array $parameters = []) {
+  protected function doRequest(string $method, string $path, array $parameters = []): array {
     $response_body = [];
+    $error = FALSE;
     try {
       $response = $this->client->request($method, $path, $parameters);
       $response_body = Json::decode($response->getBody()->getContents());
     }
     catch (ClientException $e) {
+      $error = TRUE;
       $body = $e->getResponse()->getBody()->getContents();
       $response_body = Json::decode($body);
-      $this->logger->error('@method @path error: <pre>' . print_r($body, TRUE) .'</pre>', ['@method' => $method, '@path' => $path]);
+      // Log a formatted error response.
+      $this->logger->error('@method error @title <pre>@path</pre>Request: <pre>@request</pre>Response: <pre>@response</pre>', [
+        '@method' => $method,
+        '@path' => $path,
+        '@title' => $response_body['title'] ?? $response_body['error']['message'] ?? 'Exception',
+        '@request' => Variable::export($parameters),
+        '@response' => Variable::export($response_body),
+      ]);
     }
     catch (\Exception $e) {
       $this->logger->error($e->getMessage());
@@ -511,12 +598,15 @@ class AvataxLib implements AvataxLibInterface {
     // Log the response/request if logging is enabled.
     if ($this->config->get('logging')) {
       $url = $this->client->getConfig('base_uri') . $path;
-      $this->logger->info("URL: <pre>$method @url</pre>Headers: <pre>@headers</pre>Request: <pre>@request</pre>Response: <pre>@response</pre>", [
-        '@url' => $url,
-        '@headers' => Variable::export($this->client->getConfig('headers')),
-        '@request' => Variable::export($parameters),
-        '@response' => Variable::export($response_body),
-      ]);
+      // Log the response if it has not returned an error.
+      if (!$error) {
+        $this->logger->info('URL: <pre>$method @url</pre>Headers: <pre>@headers</pre>Request: <pre>@request</pre>Response: <pre>@response</pre>', [
+          '@url' => $url,
+          '@headers' => Variable::export($this->client->getConfig('headers')),
+          '@request' => Variable::export($parameters),
+          '@response' => Variable::export($response_body),
+        ]);
+      }
     }
 
     return $response_body;
@@ -530,7 +620,7 @@ class AvataxLib implements AvataxLibInterface {
    *
    * @return $this
    */
-  public function setClient(Client $client) {
+  public function setClient(Client $client): self {
     $this->client = $client;
     return $this;
   }

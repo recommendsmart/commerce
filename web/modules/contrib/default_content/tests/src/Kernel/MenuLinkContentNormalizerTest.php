@@ -21,12 +21,11 @@ class MenuLinkContentNormalizerTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'system',
     'user',
     'field',
     'serialization',
-    'hal',
     'default_content',
     'link',
     'menu_link_content',

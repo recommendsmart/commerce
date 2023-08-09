@@ -32,7 +32,7 @@ class ClientFactoryTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
     $this->config = [
       'account_id' => 'DUMMY ACCOUNT',

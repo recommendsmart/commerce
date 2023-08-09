@@ -3,7 +3,7 @@
 namespace Drupal\Tests\commerce_order\Kernel;
 
 use Drupal\commerce_order\Entity\Order;
-use Symfony\Cmf\Component\Routing\RouteObjectInterface;
+use Drupal\Core\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 
 /**

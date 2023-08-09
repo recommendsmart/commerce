@@ -15,7 +15,7 @@ form-authnet:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/jquery.once
+    - core/once
 
 form-accept:
   version: VERSION
@@ -24,7 +24,7 @@ form-accept:
   dependencies:
     - core/jquery
     - core/drupal
-    - core/jquery.once
+    - core/once
     - commerce_authnet/form-authnet
 
 form-echeck:

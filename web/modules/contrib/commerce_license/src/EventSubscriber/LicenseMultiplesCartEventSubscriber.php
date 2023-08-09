@@ -2,11 +2,14 @@
 
 namespace Drupal\commerce_license\EventSubscriber;
 
-use Drupal\Core\Url;
 use Drupal\commerce_cart\Event\CartEntityAddEvent;
 use Drupal\commerce_cart\Event\CartEvents;
 use Drupal\commerce_cart\Event\CartOrderItemUpdateEvent;
 use Drupal\commerce_order\Entity\OrderItemInterface;
+use Drupal\Core\Messenger\MessengerInterface;
+use Drupal\Core\Messenger\MessengerTrait;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
+use Drupal\Core\Url;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 
 /**
@@ -20,19 +23,33 @@ use Symfony\Component\EventDispatcher\EventSubscriberInterface;
  */
 class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
 
+  use MessengerTrait;
+  use StringTranslationTrait;
+
+  /**
+   * Constructs a new LicenseMultiplesCartEventSubscriber object.
+   *
+   * @param \Drupal\Core\Messenger\MessengerInterface $messenger
+   *   The messenger.
+   */
+  public function __construct(MessengerInterface $messenger) {
+    $this->setMessenger($messenger);
+  }
+
   /**
    * {@inheritdoc}
    */
   public static function getSubscribedEvents() {
-    $events = [
-      // These need to run before \Drupal\commerce_cart\EventSubscriber\CartEventSubscriber
-      // Also expects the patch at https://www.drupal.org/project/commerce/issues/2930979
+    return [
+      // These need to run before
+      // \Drupal\commerce_cart\EventSubscriber\CartEventSubscriber.
+      // Also expects the patch at
+      // https://www.drupal.org/project/commerce/issues/2930979
       // so that CartEventSubscriber doesn't show its message when we prevent
       // an item from being added.
       CartEvents::CART_ENTITY_ADD => ['onCartEntityAdd', 100],
       CartEvents::CART_ORDER_ITEM_UPDATE => ['onCartItemUpdate', 100],
     ];
-    return $events;
   }
 
   /**
@@ -45,8 +62,10 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\commerce_cart\Event\CartEntityAddEvent $event
    *   The cart event.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function onCartEntityAdd(CartEntityAddEvent $event) {
+  public function onCartEntityAdd(CartEntityAddEvent $event): void {
     $order_item = $event->getOrderItem();
 
     // Only act if the order item has a license reference field.
@@ -54,7 +73,7 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    // TODO: Allow license type plugins to respond here, as for types that
+    // @todo Allow license type plugins to respond here, as for types that
     // collect user data in the checkout form, the same product variation can
     // result in different licenses.
     // Only act if the order item quantity is greater than 1.
@@ -65,10 +84,13 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
     // Force the quantity back to 1.
     $this->forceOrderItemQuantity($order_item);
 
-    \Drupal::messenger()->addError(t('You may only have one of @product-label in <a href="@cart-url">your cart</a>.', [
+    $this->messenger()->addError($this->t('You may only have one of @product-label in <a href="@cart-url">your cart</a>.', [
       '@product-label' => $order_item->getPurchasedEntity()->label(),
       '@cart-url' => Url::fromRoute('commerce_cart.page')->toString(),
     ]));
+    // Since we have reverted the quantity, we will stop propagation, so that
+    // add to cart messages are not logged nor displayed.
+    $event->stopPropagation();
   }
 
   /**
@@ -76,8 +98,10 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\commerce_cart\Event\CartOrderItemUpdateEvent $event
    *   The cart event.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  public function onCartItemUpdate(CartOrderItemUpdateEvent $event) {
+  public function onCartItemUpdate(CartOrderItemUpdateEvent $event): void {
     $order_item = $event->getOrderItem();
 
     // Only act if the order item has a license reference field.
@@ -85,7 +109,7 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
       return;
     }
 
-    // TODO: Allow license type plugins to respond here, as for types that
+    // @todo Allow license type plugins to respond here, as for types that
     // collect user data in the checkout form, the same product variation can
     // result in different licenses.
     // Only act if the order item quantity is greater than 1.
@@ -98,7 +122,7 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
 
     // Don't show a link to the cart as the user will typically be on the cart
     // page.
-    \Drupal::messenger()->addError(t('You may only have one of @product-label in your cart.', [
+    $this->messenger()->addError($this->t('You may only have one of @product-label in your cart.', [
       '@product-label' => $order_item->getPurchasedEntity()->label(),
     ]));
   }
@@ -108,8 +132,10 @@ class LicenseMultiplesCartEventSubscriber implements EventSubscriberInterface {
    *
    * @param \Drupal\commerce_order\Entity\OrderItemInterface $order_item
    *   The order item.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function forceOrderItemQuantity(OrderItemInterface $order_item) {
+  protected function forceOrderItemQuantity(OrderItemInterface $order_item): void {
     // Force the quantity back to 1.
     $order_item->setQuantity(1);
 

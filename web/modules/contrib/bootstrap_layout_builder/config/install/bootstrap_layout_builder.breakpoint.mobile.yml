@@ -1,7 +1,7 @@
 langcode: en
-status: 1
+status: true
 dependencies: {  }
 id: mobile
 label: Mobile
 base_class: col
-weight: '-8'
+weight: -8

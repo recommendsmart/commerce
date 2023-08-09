@@ -33,7 +33,7 @@ class TaxRateConstraintValidator extends ConstraintValidator {
     $zones = $tax_type_plugin->getZones();
     $seen_zones = [];
     foreach ($value as $delta => $item) {
-      list($zone_id, $rate_id) = explode('|', $item->value);
+      [$zone_id, $rate_id] = explode('|', $item->value);
 
       // Ensure the selected zone is "allowed".
       if (!empty($allowed_zones) && !in_array($zone_id, $allowed_zones)) {

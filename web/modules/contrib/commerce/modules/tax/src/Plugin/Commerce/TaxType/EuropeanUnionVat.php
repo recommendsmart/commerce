@@ -702,7 +702,7 @@ class EuropeanUnionVat extends LocalTaxTypeBase {
           'label' => $labels['second_reduced'],
           'percentages' => [
             ['number' => '0.09', 'start_date' => '2011-07-01', 'end_date' => '2018-12-31'],
-            ['number' => '0.09', 'start_date' => '2020-11-01', 'end_date' => '2022-08-31'],
+            ['number' => '0.09', 'start_date' => '2020-11-01', 'end_date' => '2023-02-28'],
           ],
         ],
         [
@@ -727,7 +727,7 @@ class EuropeanUnionVat extends LocalTaxTypeBase {
       'display_label' => $labels['vat'],
       'territories' => [
         // Italy without Livigno, Campione d’Italia and Lake Lugano.
-        ['country_code' => 'IT', 'excluded_postal_codes' => '23030, 22060'],
+        ['country_code' => 'IT', 'excluded_postal_codes' => '23041, 22061'],
       ],
       'rates' => [
         [
@@ -743,6 +743,13 @@ class EuropeanUnionVat extends LocalTaxTypeBase {
           'label' => $labels['reduced'],
           'percentages' => [
             ['number' => '0.1', 'start_date' => '1995-02-24'],
+          ],
+        ],
+        [
+          'id' => 'second_reduced',
+          'label' => $labels['second_reduced'],
+          'percentages' => [
+            ['number' => '0.05', 'start_date' => '2016-01-01'],
           ],
         ],
         [
@@ -798,7 +805,9 @@ class EuropeanUnionVat extends LocalTaxTypeBase {
           'id' => 'standard',
           'label' => $labels['standard'],
           'percentages' => [
-            ['number' => '0.17', 'start_date' => '2015-01-01'],
+            ['number' => '0.17', 'start_date' => '2015-01-01', 'end_date' => '2022-12-31'],
+            ['number' => '0.16', 'start_date' => '2023-01-01', 'end_date' => '2023-12-31'],
+            ['number' => '0.17', 'start_date' => '2024-01-01'],
           ],
           'default' => TRUE,
         ],
@@ -806,14 +815,18 @@ class EuropeanUnionVat extends LocalTaxTypeBase {
           'id' => 'intermediate',
           'label' => $labels['intermediate'],
           'percentages' => [
-            ['number' => '0.14', 'start_date' => '2015-01-01'],
+            ['number' => '0.14', 'start_date' => '2015-01-01', 'end_date' => '2022-12-31'],
+            ['number' => '0.13', 'start_date' => '2023-01-01', 'end_date' => '2023-12-31'],
+            ['number' => '0.14', 'start_date' => '2024-01-01'],
           ],
         ],
         [
           'id' => 'reduced',
           'label' => $labels['reduced'],
           'percentages' => [
-            ['number' => '0.08', 'start_date' => '2015-01-01'],
+            ['number' => '0.08', 'start_date' => '2015-01-01', 'end_date' => '2022-12-31'],
+            ['number' => '0.07', 'start_date' => '2023-01-01', 'end_date' => '2023-12-31'],
+            ['number' => '0.08', 'start_date' => '2024-01-01'],
           ],
         ],
         [

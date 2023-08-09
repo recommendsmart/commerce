@@ -2,6 +2,8 @@
 
 namespace Drupal\commerce_braintree\Plugin\Commerce\PaymentGateway;
 
+use Braintree\Exception as BraintreeException;
+use Braintree\Gateway as BraintreeGateway;
 use Drupal\commerce_braintree\ErrorHelper;
 use Drupal\commerce_payment\CreditCard;
 use Drupal\commerce_payment\Entity\PaymentInterface;
@@ -77,7 +79,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
   public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, PaymentTypeManager $payment_type_manager, PaymentMethodTypeManager $payment_method_type_manager, TimeInterface $time, EventDispatcherInterface $event_dispatcher) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $payment_type_manager, $payment_method_type_manager, $time);
 
-    $this->api = new \Braintree\Gateway([
+    $this->api = new BraintreeGateway([
       'environment' => ($this->getMode() == 'test') ? 'sandbox' : 'production',
       'merchantId' => $this->configuration['merchant_id'],
       'publicKey' => $this->configuration['public_key'],
@@ -96,6 +98,8 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       'public_key' => '',
       'private_key' => '',
       'merchant_account_id' => [],
+      '3d_secure' => '',
+      'enable_credit_card_icons' => TRUE,
     ] + parent::defaultConfiguration();
   }
 
@@ -160,6 +164,13 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       '#default_value' => $this->configuration['3d_secure'],
     ];
 
+    $form['enable_credit_card_icons'] = [
+      '#type' => 'checkbox',
+      '#title' => $this->t('Enable Credit Card Icons'),
+      '#description' => $this->t('Enabling this setting will display credit card icons in the payment section during checkout.'),
+      '#default_value' => $this->configuration['enable_credit_card_icons'],
+    ];
+
     return $form;
   }
 
@@ -176,6 +187,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       $this->configuration['private_key'] = $values['private_key'];
       $this->configuration['merchant_account_id'] = $values['merchant_account_id'];
       $this->configuration['3d_secure'] = $values['3d_secure'];
+      $this->configuration['enable_credit_card_icons'] = $values['enable_credit_card_icons'];
     }
   }
 
@@ -232,14 +244,14 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
 
     // Add metadata and extra transaction data where required.
     $event = new TransactionDataEvent($transaction_data, $payment);
-    $this->eventDispatcher->dispatch(BraintreeEvents::TRANSACTION_DATA, $event);
+    $this->eventDispatcher->dispatch($event, BraintreeEvents::TRANSACTION_DATA);
     $transaction_data = $event->getTransactionData();
 
     try {
       $result = $this->api->transaction()->sale($transaction_data);
       ErrorHelper::handleErrors($result);
     }
-    catch (\Braintree\Exception $e) {
+    catch (BraintreeException $e) {
       ErrorHelper::handleException($e);
     }
 
@@ -264,7 +276,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       $result = $this->api->transaction()->submitForSettlement($remote_id, $decimal_amount);
       ErrorHelper::handleErrors($result);
     }
-    catch (\Braintree\Exception $e) {
+    catch (BraintreeException $e) {
       ErrorHelper::handleException($e);
     }
 
@@ -284,7 +296,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       $result = $this->api->transaction()->void($remote_id);
       ErrorHelper::handleErrors($result);
     }
-    catch (\Braintree\Exception $e) {
+    catch (BraintreeException $e) {
       ErrorHelper::handleException($e);
     }
 
@@ -307,7 +319,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       $result = $this->api->transaction()->refund($remote_id, $decimal_amount);
       ErrorHelper::handleErrors($result);
     }
-    catch (\Braintree\Exception $e) {
+    catch (BraintreeException $e) {
       ErrorHelper::handleException($e);
     }
 
@@ -450,7 +462,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
         $result = $this->api->paymentMethod()->create($data);
         ErrorHelper::handleErrors($result);
       }
-      catch (\Braintree\Exception $e) {
+      catch (BraintreeException $e) {
         ErrorHelper::handleException($e);
       }
 
@@ -465,7 +477,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
         $result = $this->api->customer()->create($data);
         ErrorHelper::handleErrors($result);
       }
-      catch (\Braintree\Exception $e) {
+      catch (BraintreeException $e) {
         ErrorHelper::handleException($e);
       }
       $remote_payment_method = $result->customer->paymentMethods[0];
@@ -502,7 +514,7 @@ class HostedFields extends OnsitePaymentGatewayBase implements HostedFieldsInter
       $result = $this->api->paymentMethod()->delete($payment_method->getRemoteId());
       ErrorHelper::handleErrors($result);
     }
-    catch (\Braintree\Exception $e) {
+    catch (BraintreeException $e) {
       ErrorHelper::handleException($e);
     }
     // Delete the local entity.

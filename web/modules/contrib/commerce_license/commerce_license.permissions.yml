@@ -1,0 +1,4 @@
+administer commerce_license:
+  title: 'Administer Commerce License'
+  description: 'Administer Commerce License.'
+  restrict access: true

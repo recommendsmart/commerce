@@ -26,6 +26,15 @@ final class PayPalEvents {
   const CHECKOUT_CREATE_ORDER_REQUEST = 'commerce_paypal.checkout_create_order_request';
 
   /**
+   * Name of the event fired when calling the PayPal API for creating Payflow payments.
+   *
+   * @Event
+   *
+   * @see \Drupal\commerce_paypal\Event\PayflowRequestEvent.php
+   */
+  const PAYFLOW_CREATE_PAYMENT = 'commerce_paypal.payflow_create_payment';
+
+  /**
    * Name of the event fired when calling the PayPal API for updating an order.
    *
    * @Event

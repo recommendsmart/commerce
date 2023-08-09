@@ -1,9 +1,0 @@
-id: commerce_dashboard
-plugin_id: commerce_dashboard
-granularity: method
-configuration:
-  GET:
-    supported_formats:
-      - json
-    supported_auth:
-      - cookie

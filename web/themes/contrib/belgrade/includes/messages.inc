@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\Core\Template\Attribute;
 use Drupal\Component\Utility\Html;
 
 /**
@@ -11,7 +12,7 @@ function belgrade_preprocess_status_messages(&$variables) {
     $variables['title_ids'][$message_type] = Html::getUniqueId("message-$message_type-title");
   }
   // Add classes to toast wrappers
-  $variables['wrapper_attributes'] = new Drupal\Core\Template\Attribute($variables['attributes']);
+  $variables['wrapper_attributes'] = new Attribute($variables['attributes']);
 
   switch (theme_get_setting('toast_placement')) {
     case 'top_left':

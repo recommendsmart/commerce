@@ -52,10 +52,10 @@ class PaymentOrderUpdater implements PaymentOrderUpdaterInterface, DestructableI
    */
   public function updateOrders() {
     if (!empty($this->updateList)) {
+      /** @var \Drupal\commerce_order\OrderStorage $order_storage */
       $order_storage = $this->entityTypeManager->getStorage('commerce_order');
-      /** @var \Drupal\commerce_order\Entity\OrderInterface[] $orders */
-      $orders = $order_storage->loadMultiple($this->updateList);
-      foreach ($orders as $order) {
+      foreach ($this->updateList as $order_id) {
+        $order = $order_storage->loadForUpdate($order_id);
         $this->updateOrder($order, TRUE);
       }
     }
@@ -92,6 +92,12 @@ class PaymentOrderUpdater implements PaymentOrderUpdaterInterface, DestructableI
     if (!$previous_total->equals($new_total)) {
       $order->setTotalPaid($new_total);
       if ($save_order) {
+        // The order should not be refreshed on save as this service
+        // may run in a queue or webhook where order processors and
+        // conditions will not have access to the user's session.
+        // However, the user's session may be required for the refresh to
+        // function correctly.
+        $order->setRefreshState(OrderInterface::REFRESH_SKIP);
         $order->save();
       }
     }

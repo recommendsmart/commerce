@@ -49,8 +49,6 @@ function pwa_requirements($phase) {
  * Implements hook_install().
  */
 function pwa_install() {
-  user_role_grant_permissions(RoleInterface::ANONYMOUS_ID, ['access pwa']);
-
   // Set the site name dynamically.
   $site_name = \Drupal::config('system.site')->get('name');
   $output = [
@@ -87,4 +85,26 @@ function pwa_update_8001(&$sandbox) {
   // automatically in PWAController::pwa_serviceworker_file_data().
   $cache_urls = array_diff(pwa_str_to_list($config->get('urls_to_cache')), ['/offline']);
   $config->set('urls_to_cache', implode("\r\n", $cache_urls))->save(TRUE);
+}
+
+/**
+ * Set default scope to "/".
+ */
+function pwa_update_8002() {
+  $config_factory = \Drupal::configFactory();
+  $config = $config_factory->getEditable('pwa.config');
+  $config->set('scope', '/')
+    ->save(TRUE);
+
+  // Delete the cached config so that Drupal starts using the new config. Note
+  // that invalidating this cache ID doesn't seem to do it for whatever reason,
+  // so we have to actually delete it.
+  \Drupal::cache('config')->delete('pwa.config');
+}
+
+/**
+ * Remove the non-existent 'access pwa' permission from the anonymous user role.
+ */
+function pwa_update_8003() {
+  user_role_revoke_permissions(RoleInterface::ANONYMOUS_ID, ['access pwa']);
 }

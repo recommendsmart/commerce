@@ -66,6 +66,17 @@ class RolesSplittingTest extends KernelTestBase {
     ]);
     $role->save();
 
+    // Create a role which only depends on shortcut to test empty elements.
+    $empty = Role::create([
+      'id' => 'test_role_empty',
+      'label' => $this->randomString(),
+      'permissions' => [
+        'customize shortcut links',
+      ],
+    ]);
+    $empty->save();
+    $empty->toArray();
+
     // Create a split for the shourtcut module.
     $this->createSplitConfig('test_split', [
       // We use the collection storage so that we can read the patch directly.
@@ -94,8 +105,16 @@ class RolesSplittingTest extends KernelTestBase {
       ],
       'removing' => [],
     ]);
-    $patch = $storage->createCollection('split.test_split')->read('config_split.patch.user.role.test_role');
-    self::assertEquals($expectedPatch->toArray(), $patch);
+    foreach (['test_role', 'test_role_empty'] as $id) {
+      // The patch looks the same for both.
+      $patch = $storage->createCollection('split.test_split')->read('config_split.patch.user.role.' . $id);
+      self::assertEquals($expectedPatch->toArray(), $patch);
+    }
+
+    $expectedRole = $empty->toArray();
+    $expectedRole['permissions'] = [];
+    $expectedRole['dependencies'] = [];
+    self::assertEquals($expectedRole, $storage->read('user.role.test_role_empty'));
   }
 
 }

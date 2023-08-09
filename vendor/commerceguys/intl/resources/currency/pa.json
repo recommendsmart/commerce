@@ -137,9 +137,6 @@
 	"KHR": {
 		"name": "ਕੰਬੋਡੀਆਈ ਰੀਅਲ"
 	},
-	"HRK": {
-		"name": "ਕਰੋਏਸ਼ੀਆਈ ਕੁਨਾ"
-	},
 	"CDF": {
 		"name": "ਕਾਂਗੋਲੀਜ਼ ਫ੍ਰੈਂਕ"
 	},
@@ -484,14 +481,5 @@
 	},
 	"VES": {
 		"name": "ਵੇਨੇਜ਼ੂਏਲਨ ਬੋਲੀਵਰ"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

@@ -108,17 +108,17 @@ class ProductAttributeTest extends ProductBrowserTestBase {
       'variation_types[default]' => 'default',
       'values[0][entity][name][0][value]' => 'Red',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->drupalGet('admin/commerce/config/product-variation-types/default/edit/fields');
-    $this->assertSession()->pageTextContains('attribute_color', 'The color attribute field has been created');
+    $this->assertSession()->pageTextContains('attribute_color');
 
     $this->drupalGet('admin/commerce/product-attributes/manage/color');
     $edit = [
       'variation_types[default]' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->drupalGet('admin/commerce/config/product-variation-types/default/edit/fields');
-    $this->assertSession()->pageTextNotContains('attribute_color', 'The color attribute field has been deleted');
+    $this->assertSession()->pageTextNotContains('attribute_color');
   }
 
   /**

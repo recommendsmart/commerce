@@ -8,6 +8,9 @@ pwa_extras.settings.apple:
       sequence:
         type: string
         label: 'Touch Icon'
+    mask_color:
+      type: string
+      label: 'Mask icon color'
     meta_tags:
       type: sequence
       label: 'Meta Tags'

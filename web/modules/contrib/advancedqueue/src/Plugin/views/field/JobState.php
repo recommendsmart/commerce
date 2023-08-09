@@ -46,7 +46,7 @@ class JobState extends FieldPluginBase {
   public function render(ResultRow $values) {
     $state = $this->getValue($values);
     $state_options = self::getOptions();
-    $label = isset($state_options[$state]) ? $state_options[$state] : $state;
+    $label = $state_options[$state] ?? $state;
 
     if ($this->options['icon']) {
       return [

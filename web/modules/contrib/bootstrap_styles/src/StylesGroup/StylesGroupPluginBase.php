@@ -8,13 +8,13 @@ use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Drupal\Core\Render\Markup;
+use Drupal\bootstrap_styles\HelperTrait;
 
 /**
  * A base class to help developers implement their own Styles Group plugins.
  */
 abstract class StylesGroupPluginBase extends PluginBase implements StylesGroupPluginInterface, ContainerFactoryPluginInterface {
-  use StringTranslationTrait;
+  use StringTranslationTrait, HelperTrait;
 
   /**
    * Config settings.
@@ -71,26 +71,16 @@ abstract class StylesGroupPluginBase extends PluginBase implements StylesGroupPl
    */
   public function getIconPath() {
     // The default icon.
-    $icon_path = drupal_get_path('module', 'bootstrap_styles') . 'images/plugin-group-default-icon.svg';
+    $icon_path = \Drupal::service('extension.list.module')->getPath('bootstrap_styles') . '/images/plugins/plugin-group-default-icon.svg';
     if (isset($this->pluginDefinition['icon'])) {
       $icon = $this->pluginDefinition['icon'];
       $path_array = explode('/', $icon);
       if (isset($path_array[0])) {
         $module_name = $path_array[0];
-        $icon_path = drupal_get_path('module', $module_name) . str_replace($module_name, '', $icon);
+        $icon_path = \Drupal::service('extension.list.module')->getPath($module_name) . str_replace($module_name, '', $icon);
       }
     }
     return $icon_path;
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function getSvgIconMarkup(string $path) {
-    $svg = file_get_contents(DRUPAL_ROOT . '/' . $path);
-    $svg = preg_replace(['/<\?xml.*\?>/i', '/<!DOCTYPE((.|\n|\r)*?)">/i'], '', $svg);
-    $svg = trim($svg);
-    return Markup::create($svg);
   }
 
   /**

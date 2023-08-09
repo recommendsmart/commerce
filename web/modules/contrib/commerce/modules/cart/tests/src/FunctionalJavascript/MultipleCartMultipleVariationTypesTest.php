@@ -102,15 +102,42 @@ class MultipleCartMultipleVariationTypesTest extends CartWebDriverTestBase {
       'My Colors and Sizes FIRST' => [
         'type' => 'color_sizes',
         'variations' => [
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
         ],
       ],
       'My Sizes FIRST' => [
@@ -132,15 +159,42 @@ class MultipleCartMultipleVariationTypesTest extends CartWebDriverTestBase {
       'My Colors and Sizes SECOND' => [
         'type' => 'color_sizes',
         'variations' => [
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['red']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['green']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['small']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['medium']->id()],
-          ['attribute_color' => $this->colorAttributes['blue']->id(), 'attribute_size' => $this->sizeAttributes['large']->id()],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['red']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['green']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['small']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['medium']->id(),
+          ],
+          [
+            'attribute_color' => $this->colorAttributes['blue']->id(),
+            'attribute_size' => $this->sizeAttributes['large']->id(),
+          ],
         ],
       ],
       'My Sizes SECOND' => [

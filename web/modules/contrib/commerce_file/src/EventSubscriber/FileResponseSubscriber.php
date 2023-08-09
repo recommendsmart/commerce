@@ -7,7 +7,7 @@ use Drupal\commerce_file\LicenseFileManagerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Session\AccountInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\Event\PostResponseEvent;
+use Symfony\Component\HttpKernel\Event\TerminateEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 /**
@@ -73,10 +73,10 @@ class FileResponseSubscriber implements EventSubscriberInterface {
   /**
    * Logs file downloads for license owners.
    *
-   * @param \Symfony\Component\HttpKernel\Event\PostResponseEvent $event
+   * @param \Symfony\Component\HttpKernel\Event\TerminateEvent $event
    *   The event object.
    */
-  public function logFileDownload(PostResponseEvent $event) {
+  public function logFileDownload(TerminateEvent $event) {
     // Not a successful response, nothing to do on our side.
     if (!$event->getResponse()->isSuccessful()) {
       return;

@@ -56,7 +56,7 @@ class OrderReceiptResendForm extends ContentEntityConfirmFormBase {
    * {@inheritdoc}
    */
   public function getQuestion() {
-    return $this->t('Are you sure you want to resend the receipt for order %label?', [
+    return $this->t('Are you sure you want to resend the receipt for %label?', [
       '%label' => $this->entity->label(),
     ]);
   }
@@ -81,7 +81,7 @@ class OrderReceiptResendForm extends ContentEntityConfirmFormBase {
   public function submitForm(array &$form, FormStateInterface $form_state) {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $this->entity;
-    $result = $this->orderReceiptMail->send($order);
+    $result = $this->orderReceiptMail->send($order, NULL, NULL, TRUE);
     // Drupal's MailManager sets an error message itself, if the sending failed.
     if ($result) {
       $this->messenger()->addMessage($this->t('Order receipt resent.'));

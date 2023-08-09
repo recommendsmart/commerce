@@ -3,7 +3,7 @@
 namespace Drupal\advancedqueue\Event;
 
 use Drupal\advancedqueue\Job;
-use Symfony\Component\EventDispatcher\Event;
+use Drupal\Component\EventDispatcher\Event;
 
 /**
  * Defines the job event.

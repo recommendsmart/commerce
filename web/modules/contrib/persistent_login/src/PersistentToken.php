@@ -68,7 +68,11 @@ class PersistentToken {
    * @param int $uid
    *   The user id (optional).
    */
-  public function __construct($series, $instance, $uid = self::STATUS_NOT_VALIDATED) {
+  public function __construct(
+    #[\SensitiveParameter] $series,
+    #[\SensitiveParameter] $instance,
+    $uid = self::STATUS_NOT_VALIDATED
+  ) {
     $this->series = $series;
     $this->instance = $instance;
     $this->uid = $uid;
@@ -87,18 +91,22 @@ class PersistentToken {
    * @return static
    *   A new token.
    */
-  public static function createFromString($value) {
-    list($series, $instance) = explode(':', $value);
+  public static function createFromString(
+    #[\SensitiveParameter] $value
+  ) {
+    [$series, $instance] = explode(':', $value);
     return new static($series, $instance);
   }
 
   /**
    * Initialize a new object from an array of values.
    *
-   * @param $values
+   * @param array $values
    *   An array of values to set object properties.
    */
-  public static function createFromArray(array $values) {
+  public static function createFromArray(
+    #[\SensitiveParameter] array $values
+  ) {
     if (empty($values['series'])) {
       throw new \Exception("Required property 'series' not set.");
     }
@@ -106,11 +114,10 @@ class PersistentToken {
       throw new \Exception("Required property 'instance' not set.");
     }
 
-    $token = new static($values['series'], $values['instance'], $values['uid']);
-      $token = $token
-        ->setCreated(new \DateTime('@' . $values['created']))
-        ->setRefreshed(new \DateTime('@' . $values['refreshed']))
-        ->setExpiry(new \DateTime('@' . $values['expires']));
+    $token = (new static($values['series'], $values['instance'], $values['uid']))
+      ->setCreated(new \DateTime('@' . $values['created']))
+      ->setRefreshed(new \DateTime('@' . $values['refreshed']))
+      ->setExpiry(new \DateTime('@' . $values['expires']));
 
     return $token;
   }
@@ -210,7 +217,9 @@ class PersistentToken {
    *
    * @return $this
    */
-  public function updateInstance($instance) {
+  public function updateInstance(
+    #[\SensitiveParameter] $instance
+  ) {
     $this->instance = $instance;
 
     return $this->setRefreshed(new \DateTime());

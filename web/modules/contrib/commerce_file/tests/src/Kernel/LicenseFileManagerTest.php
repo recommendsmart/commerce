@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce_file\Kernel;
 use Drupal\commerce_license\Entity\License;
 use Drupal\commerce_license\Entity\LicenseInterface;
 use Drupal\file\Entity\File;
+use Drupal\file\FileInterface;
 
 /**
  * Tests the license file manager.
@@ -38,7 +39,7 @@ class LicenseFileManagerTest extends CommerceFileKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $test_user = $this->createUser(['mail' => $this->randomString() . '@example.com'], ['view own commerce_license']);
@@ -121,7 +122,7 @@ class LicenseFileManagerTest extends CommerceFileKernelTestBase {
       'filename' => $this->randomMachineName(),
       'uri' => 'private://test2.txt',
       'filemime' => 'text/plain',
-      'status' => FILE_STATUS_PERMANENT,
+      'status' => FileInterface::STATUS_PERMANENT,
     ]);
     $another_file->save();
     $this->assertFalse($this->licenseFileManager->isLicensable($another_file));

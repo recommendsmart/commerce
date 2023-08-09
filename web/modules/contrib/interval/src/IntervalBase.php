@@ -1,11 +1,7 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\IntervalBase.
- */
-
 namespace Drupal\interval;
+
 use Drupal\Core\Plugin\PluginBase;
 
 /**

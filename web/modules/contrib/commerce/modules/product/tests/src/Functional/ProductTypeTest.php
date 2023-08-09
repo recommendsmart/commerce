@@ -40,7 +40,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'variation_type_action' => 'use_existing',
       'variationTypes[default]' => 1,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('The product type Foo has been successfully saved.');
 
     $product_type = ProductType::load($edit['id']);
@@ -64,7 +64,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'multipleVariations' => FALSE,
       'injectVariationFields' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $product_type = ProductType::load($edit['id']);
     $this->assertNotEmpty($product_type);
     $this->assertEquals($edit['label'], $product_type->label());
@@ -92,8 +92,8 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'description' => 'My even more random product type',
       'variation_type_action' => 'create_new',
     ];
-    $this->submitForm($edit, t('Save'));
-    $this->assertSession()->pageTextContains(t('A product variation type with the machine name @name already exists. Select an existing product variation type or change the machine name for this product type.', ['@name' => $product_type_id]));
+    $this->submitForm($edit, $this->t('Save'));
+    $this->assertSession()->pageTextContains($this->t('A product variation type with the machine name @name already exists. Select an existing product variation type or change the machine name for this product type.', ['@name' => $product_type_id]));
 
     // Confirm that the form can't be submitted with no order item types.
     $default_order_item_type = OrderItemType::load('default');
@@ -107,8 +107,8 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'description' => 'Another random product type',
       'variation_type_action' => 'create_new',
     ];
-    $this->submitForm($edit, t('Save'));
-    $this->assertSession()->pageTextContains(t('A new product variation type cannot be created, because no order item types were found. Select an existing product variation type or retry after creating a new order item type.'));
+    $this->submitForm($edit, $this->t('Save'));
+    $this->assertSession()->pageTextContains($this->t('A new product variation type cannot be created, because no order item types were found. Select an existing product variation type or retry after creating a new order item type.'));
 
     // Confirm that a non-default order item type can be selected.
     $default_order_item_type->delete();
@@ -126,7 +126,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'description' => 'My even more random product type',
       'variation_type_action' => 'create_new',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $product_type = ProductType::load($edit['id']);
     $this->assertNotEmpty($product_type);
     $this->assertEquals($edit['label'], $product_type->label());
@@ -149,7 +149,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'multipleVariations' => FALSE,
       'injectVariationFields' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('The product type Default! has been successfully saved.');
 
     $product_type = ProductType::load('default');
@@ -168,7 +168,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
     $edit = [
       'multipleVariations' => TRUE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     \Drupal::entityTypeManager()->getStorage('commerce_product_type')->resetCache();
     $product_type = ProductType::load('default');
     $this->assertTrue($product_type->allowsMultipleVariations());
@@ -188,7 +188,7 @@ class ProductTypeTest extends ProductBrowserTestBase {
       'id' => 'default2',
       'multipleVariations' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('The product type Default2 has been successfully saved.');
 
     // Confirm that the original product type is unchanged.
@@ -231,8 +231,8 @@ class ProductTypeTest extends ProductBrowserTestBase {
 
     // Confirm that the type can't be deleted while there's a product.
     $this->drupalGet($product_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('@type is used by 1 product on your site. You cannot remove this product type until you have removed all of the @type products.', ['@type' => $product_type->label()]));
-    $this->assertSession()->pageTextNotContains(t('This action cannot be undone.'));
+    $this->assertSession()->pageTextContains($this->t('@type is used by 1 product on your site. You cannot remove this product type until you have removed all of the @type products.', ['@type' => $product_type->label()]));
+    $this->assertSession()->pageTextNotContains($this->t('This action cannot be undone.'));
 
     // Confirm that the delete page is not available when the type is locked.
     $product_type->lock();
@@ -245,8 +245,8 @@ class ProductTypeTest extends ProductBrowserTestBase {
     $product_type->unlock();
     $product_type->save();
     $this->drupalGet($product_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('Are you sure you want to delete the product type @type?', ['@type' => $product_type->label()]));
-    $this->assertSession()->pageTextContains(t('This action cannot be undone.'));
+    $this->assertSession()->pageTextContains($this->t('Are you sure you want to delete the product type @type?', ['@type' => $product_type->label()]));
+    $this->assertSession()->pageTextContains($this->t('This action cannot be undone.'));
     $this->submitForm([], 'Delete');
     $exists = (bool) ProductType::load($product_type->id());
     $this->assertEmpty($exists);

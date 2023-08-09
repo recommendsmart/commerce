@@ -8,19 +8,21 @@ use Drupal\user\UserInterface;
 use Drupal\Core\Routing\RouteObjectInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Laminas\Diactoros\Response\HtmlResponse;
+use GuzzleHttp\Psr7\Response as Psr7Response;
 
 /**
  * Controller routines for testing the routing system.
  */
 class TestControllers {
 
+  const LONG_TEXT = 'This is text long enough to trigger Apache mod_deflate to add a `vary: accept-encoding` header to the response.';
+
   public function test() {
     return new Response('test');
   }
 
   public function test1() {
-    return new Response('test1');
+    return new Response(self::LONG_TEXT);
   }
 
   public function test2() {
@@ -93,7 +95,7 @@ class TestControllers {
   }
 
   public function test23() {
-    return new HtmlResponse('test23');
+    return new Psr7Response(200, [], 'test23');
   }
 
   public function test24() {
@@ -133,7 +135,7 @@ class TestControllers {
     // Remove the exception logger from the event dispatcher. We are going to
     // throw an exception to check if it is properly escaped when rendered as a
     // backtrace. The exception logger does a call to error_log() which is not
-    // handled by the Simpletest error handler and would cause a test failure.
+    // handled by the test error handler and would cause a test failure.
     $event_dispatcher = \Drupal::service('event_dispatcher');
     $exception_logger = \Drupal::service('exception.logger');
     $event_dispatcher->removeSubscriber($exception_logger);

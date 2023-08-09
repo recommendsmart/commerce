@@ -25,7 +25,7 @@ class DownloadLimitWidget extends WidgetBase implements ContainerFactoryPluginIn
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    $value = isset($items[$delta]->value) ? $items[$delta]->value : NULL;
+    $value = $items[$delta]->value ?? NULL;
 
     $checkbox_parents = array_merge($form['#parents'], [$this->fieldDefinition->getName(), 0, 'limit']);
     $checkbox_path = array_shift($checkbox_parents);

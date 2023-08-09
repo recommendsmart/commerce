@@ -281,7 +281,7 @@
 		"name": "فجي ډالر"
 	},
 	"PHP": {
-		"name": "فلپاينۍ پسو",
+		"name": "فلپاينۍ پیسو",
 		"symbol": "₱"
 	},
 	"KZT": {
@@ -299,9 +299,6 @@
 	},
 	"KGS": {
 		"name": "کرغزستاني سوم"
-	},
-	"HRK": {
-		"name": "کروشيايي کونا"
 	},
 	"KHR": {
 		"name": "کمبوډي ريل"
@@ -485,14 +482,5 @@
 	},
 	"LSL": {
 		"name": "Lesotho Loti"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

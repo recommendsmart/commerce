@@ -227,9 +227,6 @@
 	"LAK": {
 		"name": "kip laotiano"
 	},
-	"HRK": {
-		"name": "kuna croata"
-	},
 	"MWK": {
 		"name": "kwacha malawiano"
 	},
@@ -468,9 +465,6 @@
 	"MNT": {
 		"name": "tugrik mongolo"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"VUV": {
 		"name": "vatu di Vanuatu"
 	},
@@ -484,6 +478,6 @@
 		"name": "yen giapponese"
 	},
 	"PLN": {
-		"name": "złoty polacco"
+		"name": "zloty polacco"
 	}
 }

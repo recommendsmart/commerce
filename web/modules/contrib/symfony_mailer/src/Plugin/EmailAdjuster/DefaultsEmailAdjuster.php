@@ -13,6 +13,7 @@ use Drupal\symfony_mailer\EmailInterface;
  *   id = "mailer_default_headers",
  *   label = @Translation("Default headers"),
  *   description = @Translation("Set default headers."),
+ *   automatic = TRUE,
  *   weight = 100,
  * )
  */

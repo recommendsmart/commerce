@@ -46,6 +46,9 @@ class BreadcrumbTest extends BrowserTestBase {
    */
   protected $profile = 'standard';
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 
@@ -220,16 +223,6 @@ class BreadcrumbTest extends BrowserTestBase {
     ];
     $this->drupalGet('node/' . $parent->id() . '/edit');
     $this->submitForm($edit, 'Save');
-    $expected = [
-      "node" => $link->getTitle(),
-    ];
-    $trail = $home + $expected;
-    $tree = $expected + [
-      'node/' . $parent->id() => $parent->menu['title'],
-    ];
-    $trail += [
-      'node/' . $parent->id() => $parent->menu['title'],
-    ];
 
     // Add a taxonomy term/tag to last node, and add a link for that term to the
     // Tools menu.
@@ -302,11 +295,7 @@ class BreadcrumbTest extends BrowserTestBase {
       // untranslated menu links automatically generated from menu router items
       // ('taxonomy/term/%') should never be translated and appear in any menu
       // other than the breadcrumb trail.
-      $elements = $this->xpath('//nav[contains(@class, :menu-class)]/descendant::a[@href=:href]', [
-        ':menu-class' => 'menu--tools',
-        ':href' => Url::fromUri('base:' . $link_path)->toString(),
-      ]);
-      $this->assertCount(1, $elements, "Link to {$link_path} appears only once.");
+      $this->assertSession()->elementsCount('xpath', '//nav[contains(@class, "menu--tools")]/descendant::a[@href="' . Url::fromUri('base:' . $link_path)->toString() . '"]', 1);
 
       // Next iteration should expect this tag as parent link.
       // Note: Term name, not link name, due to taxonomy_term_page().

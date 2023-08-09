@@ -112,7 +112,7 @@ class EuropeanUnionVat extends TaxNumberTypeWithVerificationBase {
       $element['error'] = [
         '#type' => 'item',
         '#title' => $this->t('Error'),
-        '#plain_text' => isset($errors[$error]) ? $errors[$error] : $error,
+        '#plain_text' => $errors[$error] ?? $error,
       ];
     }
     if (isset($data['name'])) {
@@ -185,7 +185,7 @@ class EuropeanUnionVat extends TaxNumberTypeWithVerificationBase {
   protected function getSoapClient() {
     if (!$this->soapClient) {
       ini_set('default_socket_timeout', 10);
-      $wsdl = 'http://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
+      $wsdl = 'https://ec.europa.eu/taxation_customs/vies/checkVatService.wsdl';
       $this->soapClient = new \SoapClient($wsdl, ['exceptions' => TRUE]);
     }
 

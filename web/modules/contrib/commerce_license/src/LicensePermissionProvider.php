@@ -2,8 +2,8 @@
 
 namespace Drupal\commerce_license;
 
-use Drupal\entity\UncacheableEntityPermissionProvider;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\entity\UncacheableEntityPermissionProvider;
 
 /**
  * Provides permissions for the License entity.
@@ -22,11 +22,11 @@ class LicensePermissionProvider extends UncacheableEntityPermissionProvider {
     $entity_type_id = $entity_type->id();
 
     // Mark the 'overview' permission as restricted.
-    $permissions["access {$entity_type_id} overview"]['restrict access'] = TRUE;
+    $permissions["access $entity_type_id overview"]['restrict access'] = TRUE;
 
     // Add a description to the 'create'  to make it clear that it only covers
     // admin creation, not creation via product purchase.
-    $permissions["create {$entity_type_id}"]['description'] = $this->t('Create licenses in administrative mode, bypassing the purchase of a product.');
+    $permissions["create $entity_type_id"]['description'] = $this->t('Create licenses in administrative mode, bypassing the purchase of a product.');
 
     return $permissions;
   }

@@ -41,16 +41,16 @@ class ExistingRightsResult {
    *
    * @param bool $status
    *   Whether the user has existing rights.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_owner
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_owner
    *   (optional) A translated message intended to be shown to the user, to
    *   explain that they already have these rights. This should not make
    *   reference to cart or product.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_other
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_other
    *   (optional) A translated message intended to be shown to a different user,
    *   such as an admin, to explain that the user being checked already has
    *   these rights. This should not make reference to cart or product.
    */
-  public function __construct($status, TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL) {
+  public function __construct(bool $status, TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL) {
     $this->status = $status;
     $this->messageOwner = $message_owner;
     $this->messageOther = $message_other;
@@ -61,38 +61,36 @@ class ExistingRightsResult {
    *
    * @param bool $condition
    *   The condition to evaluate.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_owner
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_owner
    *   (optional) A translated message intended to be shown to the user.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_other
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_other
    *   (optional) A translated message intended to be shown to a different user.
    *
    * @return \Drupal\commerce_license\ExistingRights\ExistingRightsResult
    *   The result object.
    */
-  public static function rightsExistIf($condition, TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL) {
+  public static function rightsExistIf(bool $condition, TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL): ExistingRightsResult {
     if ($condition) {
       return static::rightsExist(
         $message_owner,
         $message_other
       );
     }
-    else {
-      return static::rightsDoNotExist();
-    }
+    return static::rightsDoNotExist();
   }
 
   /**
    * Creates an ExistingRightsResult stating that rights exist.
    *
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_owner
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_owner
    *   (optional) A translated message intended to be shown to the user.
-   * @param \Drupal\Core\StringTranslation\TranslatableMarkup $message_other
+   * @param \Drupal\Core\StringTranslation\TranslatableMarkup|null $message_other
    *   (optional) A translated message intended to be shown to a different user.
    *
    * @return \Drupal\commerce_license\ExistingRights\ExistingRightsResult
    *   The result object.
    */
-  public static function rightsExist(TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL) {
+  public static function rightsExist(TranslatableMarkup $message_owner = NULL, TranslatableMarkup $message_other = NULL): ExistingRightsResult {
     return new static(
       TRUE,
       $message_owner,
@@ -106,7 +104,7 @@ class ExistingRightsResult {
    * @return \Drupal\commerce_license\ExistingRights\ExistingRightsResult
    *   The result object.
    */
-  public static function rightsDoNotExist() {
+  public static function rightsDoNotExist(): ExistingRightsResult {
     return new static(FALSE);
   }
 
@@ -116,7 +114,7 @@ class ExistingRightsResult {
    * @return bool
    *   Boolean indicating whether the checked user has existing rights.
    */
-  public function hasExistingRights() {
+  public function hasExistingRights(): bool {
     return $this->status;
   }
 
@@ -126,7 +124,7 @@ class ExistingRightsResult {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The translated message.
    */
-  public function getOwnerUserMessage() {
+  public function getOwnerUserMessage(): ?TranslatableMarkup {
     return $this->messageOwner;
   }
 
@@ -136,7 +134,7 @@ class ExistingRightsResult {
    * @return \Drupal\Core\StringTranslation\TranslatableMarkup
    *   The translated message.
    */
-  public function getOtherUserMessage() {
+  public function getOtherUserMessage(): ?TranslatableMarkup {
     return $this->messageOther;
   }
 

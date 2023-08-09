@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldFormatter\IntervalFormatterDefault.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldFormatter;
 
 /**

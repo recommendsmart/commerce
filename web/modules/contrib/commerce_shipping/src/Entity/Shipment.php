@@ -450,7 +450,7 @@ class Shipment extends ContentEntityBase implements ShipmentInterface {
     if (!$this->get('data')->isEmpty()) {
       $data = $this->get('data')->first()->getValue();
     }
-    return isset($data[$key]) ? $data[$key] : $default;
+    return $data[$key] ?? $default;
   }
 
   /**
@@ -502,6 +502,28 @@ class Shipment extends ContentEntityBase implements ShipmentInterface {
       if ($this->get($field)->isEmpty()) {
         throw new EntityMalformedException(sprintf('Required shipment field "%s" is empty.', $field));
       }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public static function postDelete(EntityStorageInterface $storage, array $entities) {
+    parent::postDelete($storage, $entities);
+
+    $profiles_to_delete = [];
+    // Delete the shipping profiles referenced by the shipments being deleted.
+    /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface $shipment */
+    foreach ($entities as $shipment) {
+      $shipping_profile = $shipment->getShippingProfile();
+      if ($shipping_profile && !$shipping_profile->getOwnerId()) {
+        $profiles_to_delete[] = $shipping_profile;
+      }
+    }
+    if ($profiles_to_delete) {
+      /** @var \Drupal\profile\ProfileStorageInterface $profile_storage */
+      $profile_storage = \Drupal::service('entity_type.manager')->getStorage('profile');
+      $profile_storage->delete($profiles_to_delete);
     }
   }
 
@@ -567,8 +589,8 @@ class Shipment extends ContentEntityBase implements ShipmentInterface {
     $fields['shipping_method'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Shipping method'))
       ->setRequired(TRUE)
-      ->setDescription(t('The shipping method'))
       ->setSetting('target_type', 'commerce_shipping_method')
+      ->setSetting('display_description', TRUE)
       ->setDisplayOptions('form', [
         'type' => 'commerce_shipping_rate',
         'weight' => 0,

@@ -16,12 +16,15 @@ abstract class TransportBase extends PluginBase implements TransportPluginInterf
    */
   public function getDsn() {
     $cfg = $this->configuration;
-    $query = !empty($cfg['query']) ? array_filter($cfg['query']) : [];
+    $default_cfg = $this->defaultConfiguration();
+
+    // Remove default values from query string.
+    $query = !empty($cfg['query']) ? array_diff_assoc($cfg['query'], $default_cfg['query']) : [];
 
     $dsn = $this->getPluginId() . '://' .
-      (isset($cfg['user']) ? urlencode($cfg['user']) : '') .
-      (isset($cfg['pass']) ? ':' . urlencode($cfg['pass']) : '') .
-      (isset($cfg['user']) ? '@' : '') .
+      (!empty($cfg['user']) ? urlencode($cfg['user']) : '') .
+      (!empty($cfg['pass']) ? ':' . urlencode($cfg['pass']) : '') .
+      (!empty($cfg['user']) ? '@' : '') .
       (urlencode($cfg['host'] ?? 'default')) .
       (isset($cfg['port']) ? ':' . $cfg['port'] : '') .
       ($query ? '?' . http_build_query($query) : '');

@@ -3,7 +3,7 @@
  * Javascript to generate Accept.js token in PCI-compliant way.
  */
 
-(function ($, Drupal, drupalSettings) {
+(function ($, Drupal, drupalSettings, once) {
 
   'use strict';
 
@@ -206,4 +206,4 @@
     });
   };
 
-})(jQuery, Drupal, drupalSettings);
+})(jQuery, Drupal, drupalSettings, once);

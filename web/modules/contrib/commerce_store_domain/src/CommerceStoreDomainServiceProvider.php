@@ -28,6 +28,10 @@ class CommerceStoreDomainServiceProvider extends ServiceProviderBase {
         new Reference('entity_type.manager'),
       ]);
     }
+    if (isset($modules['commerce_cart'])) {
+      $definition = $container->getDefinition('commerce_cart.cart_provider');
+      $definition->setClass(CartProvider::class);
+    }
   }
 
 }

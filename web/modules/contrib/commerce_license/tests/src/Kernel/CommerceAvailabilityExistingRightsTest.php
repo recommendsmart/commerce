@@ -3,6 +3,7 @@
 namespace Drupal\Tests\commerce_license\Kernel;
 
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Tests\commerce_cart\Kernel\CartKernelTestBase;
 
 /**
@@ -38,8 +39,7 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
-    'recurring_period',
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
   ];
@@ -49,6 +49,8 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
    */
   protected function setUp(): void {
     parent::setUp();
+
+    $this->installEntitySchema('commerce_license');
 
     $this->createUser();
 
@@ -64,7 +66,7 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
       'id' => 'license_order_item_type',
       'label' => $this->randomMachineName(),
       'purchasableEntityType' => 'commerce_product_variation',
-      'orderType' => 'license_order_type',
+      'orderType' => $order_type->id(),
       'traits' => ['commerce_license_order_item_type'],
     ]);
     $this->traitManager = \Drupal::service('plugin.manager.commerce_entity_trait');
@@ -119,7 +121,7 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
   /**
    * Tests a product is not to the cart when the user has existing rights.
    */
-  public function testAddToCart() {
+  public function testAddToCart(): void {
     $this->store = $this->createStore();
     $customer = $this->createUser();
     $cart_order = $this->container->get('commerce_cart.cart_provider')->createCart('license_order_type', $this->store, $customer);
@@ -133,9 +135,9 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
     $this->cartManager->addEntity($cart_order, $this->variation);
     $cart_order = $this->reloadEntity($cart_order);
 
-    $this->assertTrue(\Drupal::state()->get('commerce_license_test.called.checkUserHasExistingRights'), "The checkUserHasExistingRights() method was called on the license type plugin.");
+    $this->assertTrue(\Drupal::state()->get('commerce_license_test.called.checkUserHasExistingRights'), 'The checkUserHasExistingRights() method was called on the license type plugin.');
 
-    $this->assertCount(0, $cart_order->getItems(), "The product was not added to the cart.");
+    $this->assertCount(0, $cart_order->getItems(), 'The product was not added to the cart.');
 
     // Tell our test license type plugin to report that the user does not have
     // existing rights.
@@ -145,7 +147,7 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
     $this->cartManager->addEntity($cart_order, $this->variation);
     $cart_order = $this->reloadEntity($cart_order);
 
-    $this->assertCount(1, $cart_order->getItems(), "The product was added to the cart.");
+    $this->assertCount(1, $cart_order->getItems(), 'The product was added to the cart.');
   }
 
   /**
@@ -159,8 +161,10 @@ class CommerceAvailabilityExistingRightsTest extends CartKernelTestBase {
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   A new, saved entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createEntity($entity_type, array $values) {
+  protected function createEntity(string $entity_type, array $values): EntityInterface {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
     $storage = \Drupal::service('entity_type.manager')->getStorage($entity_type);
     $entity = $storage->create($values);

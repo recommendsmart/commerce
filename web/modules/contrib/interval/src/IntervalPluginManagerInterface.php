@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\IntervalPluginManagerInterface.
- */
-
 namespace Drupal\interval;
 
 use Drupal\Component\Plugin\PluginManagerInterface;

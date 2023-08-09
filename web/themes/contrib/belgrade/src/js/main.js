@@ -1,6 +1,6 @@
 /**
  * @file
- * Belgrade theme main JS file.
+ * belgrade theme main JS file.
  *
  */
 
@@ -11,7 +11,7 @@
   // Initiate all Toasts on page.
   Drupal.behaviors.belgradeToast = {
     attach: function (context, settings) {
-      $('.toast', context).once('initToast').each(function () {
+      $(once('initToast', '.toast', context)).each(function () {
         $(this).toast("show");
       });
     }
@@ -20,8 +20,7 @@
   // Accordion buttons containing Edit links.
   Drupal.behaviors.accordionButtonLinks = {
     attach: function (context, settings) {
-      $('.fieldset-legend.accordion-button a', context).once().on('click', function (event) {
-        window.location = $(this).attr('href');
+      $(once('.fieldset-legend.accordion-button', '.fieldset-legend.accordion-button a', context)).on('click', function (event) {
         event.preventDefault();
       });
     }
@@ -33,8 +32,8 @@
       var inputs = document.querySelectorAll('form .accordion input');
       [].forEach.call(inputs, function(input) {
         input.addEventListener('invalid',function(e){
-            var accordion = input.closest(".collapse");
-            $(accordion).collapse('show');
+          var accordion = input.closest(".collapse");
+          $(accordion).collapse('show');
         });
       });
     }

@@ -119,7 +119,7 @@ class Exporter implements ExporterInterface {
       $folder = dirname(dirname($destination));
       $this->contentFileStorage->writeEntity($folder, $return, $entity, basename($destination));
     }
-    $this->eventDispatcher->dispatch(DefaultContentEvents::EXPORT, new ExportEvent($entity));
+    $this->eventDispatcher->dispatch(new ExportEvent($entity), DefaultContentEvents::EXPORT);
 
     return $return;
   }

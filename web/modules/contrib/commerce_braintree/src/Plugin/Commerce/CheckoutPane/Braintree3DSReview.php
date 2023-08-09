@@ -79,7 +79,7 @@ class Braintree3DSReview extends CheckoutPaneBase {
       return FALSE;
     }
     $payment_method = $this->order->get('payment_method')->entity;
-    if (!$payment_method->isReusable() || $payment_method->getType()->getPluginId() !== 'credit_card') {
+    if (!$payment_method || !$payment_method->isReusable() || $payment_method->getType()->getPluginId() !== 'credit_card') {
       return FALSE;
     }
     return TRUE;

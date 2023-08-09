@@ -114,9 +114,6 @@
 	"CUC": {
 		"name": "क्यूवाली रूपान्तरणयोग्य पेसो"
 	},
-	"HRK": {
-		"name": "क्रोएशियाली कुना"
-	},
 	"GYD": {
 		"name": "गाइनिज डलर"
 	},
@@ -485,14 +482,5 @@
 	},
 	"HNL": {
 		"name": "होन्डुरान लेम्पिरा"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

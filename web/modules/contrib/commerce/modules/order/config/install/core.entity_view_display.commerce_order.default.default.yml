@@ -82,6 +82,14 @@ content:
       use_modal: true
     third_party_settings: {  }
     region: content
+  store_id:
+    type: entity_reference_label
+    label: inline
+    settings:
+      link: true
+    third_party_settings: {  }
+    weight: 5
+    region: content
   total_price:
     type: commerce_order_total_summary
     weight: 1
@@ -99,5 +107,4 @@ content:
 hidden:
   billing_profile: true
   order_number: true
-  store_id: true
   total_paid: true

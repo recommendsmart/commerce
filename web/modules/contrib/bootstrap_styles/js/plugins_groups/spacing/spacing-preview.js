@@ -3,13 +3,14 @@
  * Behaviors spacing plugin group.
  */
 
-(function ($, _, Drupal, drupalSettings) {
+(function ($, Drupal, once) {
   "use strict";
   
   // Spacing preview box.
   Drupal.behaviors.spacingPreview = {
-    attach: function (context) {
-      var spacing = drupalSettings.bootstrap_styles.spacing;
+    attach: function (context,settings) {
+      var spacing = settings.bootstrap_styles.spacing;
+      var breakpoints = settings.bootstrap_styles.breakpoints;
 
       var padding_box_shadow = $('.spacing-preview .padding-box').css('box-shadow');
       var margin_box_shadow = $('.spacing-preview .margin-box').css('box-shadow');
@@ -44,6 +45,9 @@
           padding_classes += padding_bottom_class + ' ';
         }
 
+        // Responsive.
+        padding_classes += getActiveBreakpointPaddingClasses();
+
         // Remove all classes.
         $('#bs_spacing_preview_calc').removeClass();
         // Then add the padding classes.
@@ -53,6 +57,48 @@
         $('.spacing-preview .padding-top').text(parseInt($('#bs_spacing_preview_calc').css('padding-top')));
         $('.spacing-preview .padding-right').text(parseInt($('#bs_spacing_preview_calc').css('padding-right')));
         $('.spacing-preview .padding-bottom').text(parseInt($('#bs_spacing_preview_calc').css('padding-bottom')));
+      }
+
+      // Responsive.
+      function getActiveBreakpointPaddingClasses() {
+        var padding_classes = '';
+        var active_breakpoint = $('.bs_responsive_spacing input:checked').val();
+
+        if (typeof active_breakpoint !== 'undefined') {
+          var i;
+          var padding_classes = '';
+          for (i = 0; i < breakpoints.length; i++) {
+            if (active_breakpoint == breakpoints[i]) {
+              var padding_val = $('input.bs-field-padding-' + breakpoints[i]).val();
+              var padding_left_val = $('input.bs-field-padding-left-' + breakpoints[i]).val();
+              var padding_top_val = $('input.bs-field-padding-top-' + breakpoints[i]).val();
+              var padding_right_val = $('input.bs-field-padding-right-' + breakpoints[i]).val();
+              var padding_bottom_val = $('input.bs-field-padding-bottom-' + breakpoints[i]).val();
+              var padding_class = spacing.padding_classes_options['padding_' + breakpoints[i]][padding_val];
+              if (padding_class != '_none') {
+                padding_classes += padding_class + ' ';
+              }
+              var padding_left_class = spacing.padding_classes_options['padding_left_' + breakpoints[i]][padding_left_val];
+              if (padding_left_class != '_none') {
+                padding_classes += padding_left_class + ' ';
+              }
+              var padding_top_class = spacing.padding_classes_options['padding_top_' + breakpoints[i]][padding_top_val];
+              if (padding_top_class != '_none') {
+                padding_classes += padding_top_class + ' ';
+              }
+              var padding_right_class = spacing.padding_classes_options['padding_right_' + breakpoints[i]][padding_right_val];
+              if (padding_right_class != '_none') {
+                padding_classes += padding_right_class + ' ';
+              }
+              var padding_bottom_class = spacing.padding_classes_options['padding_bottom_' + breakpoints[i]][padding_bottom_val];
+              if (padding_bottom_class != '_none') {
+                padding_classes += padding_bottom_class + ' ';
+              }
+            }
+          }
+        }
+
+        return padding_classes;
       }
 
       // Margin.
@@ -98,12 +144,12 @@
 
       // Calculate the padding on load.
       calcPadding();
-      // Calculate the maring on load.
+      // Calculate the margin on load.
       calcMargin();
 
       // Padding Actions
       // Calculate the padding on change.
-      $('input[class^="bs-field-padding"]', context).on('change', function() {
+      $('input[class^="bs-field-padding"], .bs_responsive_spacing input', context).on('change', function() {
         calcPadding();
       });
 
@@ -146,4 +192,4 @@
     }
   };
 
-})(window.jQuery, window._, window.Drupal, window.drupalSettings);
+})(jQuery, Drupal, once);

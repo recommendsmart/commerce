@@ -458,9 +458,6 @@
 	"HNL": {
 		"name": "хондурашка лемпира"
 	},
-	"HRK": {
-		"name": "хрватска куна"
-	},
 	"XAF": {
 		"name": "централноафрички франак",
 		"symbol": "FCFA"
@@ -486,8 +483,5 @@
 	"XPF": {
 		"name": "CFP франак",
 		"symbol": "CFPF"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	}
 }

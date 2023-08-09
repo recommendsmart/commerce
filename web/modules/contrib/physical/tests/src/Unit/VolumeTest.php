@@ -18,12 +18,12 @@ class VolumeTest extends UnitTestCase {
    *
    * @var \Drupal\physical\Volume
    */
-  protected $volume;
+  protected Volume $volume;
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->volume = new Volume('4', 'm3');

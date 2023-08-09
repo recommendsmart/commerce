@@ -3,6 +3,7 @@
 namespace Drupal\Tests\physical\Unit;
 
 use Drupal\physical\Length;
+use Drupal\physical\Measurement;
 use Drupal\Tests\UnitTestCase;
 
 /**
@@ -18,12 +19,12 @@ class MeasurementTest extends UnitTestCase {
    *
    * @var \Drupal\physical\Measurement
    */
-  protected $measurement;
+  protected Measurement $measurement;
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->measurement = new Length('10', 'm');

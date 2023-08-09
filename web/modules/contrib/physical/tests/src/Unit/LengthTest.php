@@ -18,12 +18,12 @@ class LengthTest extends UnitTestCase {
    *
    * @var \Drupal\physical\Length
    */
-  protected $length;
+  protected Length $length;
 
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
 
     $this->length = new Length('3', 'm');

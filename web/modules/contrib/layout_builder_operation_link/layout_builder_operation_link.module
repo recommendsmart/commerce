@@ -6,8 +6,10 @@
  */
 
 use Drupal\Core\Entity\EntityInterface;
+use Drupal\Core\Entity\FieldableEntityInterface;
 use Drupal\Core\Routing\RouteMatchInterface;
 use Drupal\Core\Url;
+use Drupal\layout_builder\Plugin\SectionStorage\OverridesSectionStorage;
 
 /**
  * Implements hook_entity_operation().
@@ -20,6 +22,7 @@ function layout_builder_operation_link_entity_operation(EntityInterface $entity)
   $route_parameters = [
     $entity_type_id => $entity->id(),
   ];
+  $route_options = [];
 
   // If current user has access to route, then add the operation link. The
   // access check will only return TRUE if the bundle is Layout Builder-
@@ -29,11 +32,21 @@ function layout_builder_operation_link_entity_operation(EntityInterface $entity)
     return;
   }
 
+  // Add entity's language as a route option if layouts are translatable
+  // (e.g. the Layout Builder Asymmetric Translation contrib module
+  // is installed).
+  if ($entity instanceof FieldableEntityInterface
+    && $entity->hasField(OverridesSectionStorage::FIELD_NAME)
+    && $entity->get(OverridesSectionStorage::FIELD_NAME)->getFieldDefinition()->isTranslatable()
+  ) {
+    $route_options['language'] = $entity->language();
+  }
+
   return [
     'layout' => [
       'title' => t('Layout'),
       'weight' => 50,
-      'url' => Url::fromRoute($route_name, $route_parameters),
+      'url' => Url::fromRoute($route_name, $route_parameters, $route_options),
     ],
   ];
 }

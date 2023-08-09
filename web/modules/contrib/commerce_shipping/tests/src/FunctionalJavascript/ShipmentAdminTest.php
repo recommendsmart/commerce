@@ -69,6 +69,13 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
   protected $shipmentUri;
 
   /**
+   * A test package type.
+   *
+   * @var \Drupal\commerce_shipping\Entity\PackageTypeInterface
+   */
+  protected $packageType;
+
+  /**
    * {@inheritdoc}
    */
   protected static $modules = [
@@ -150,8 +157,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
       'commerce_order' => $this->order->id(),
     ])->toString();
 
-    /** @var \Drupal\commerce_shipping\Entity\PackageType $package_type */
-    $package_type = $this->createEntity('commerce_package_type', [
+    $this->packageType = $this->createEntity('commerce_package_type', [
       'id' => 'package_type_a',
       'label' => 'Package Type A',
       'dimensions' => [
@@ -174,7 +180,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
       'plugin' => [
         'target_plugin_id' => 'flat_rate',
         'target_plugin_configuration' => [
-          'default_package_type' => 'commerce_package_type:' . $package_type->get('uuid'),
+          'default_package_type' => 'commerce_package_type:' . $this->packageType->uuid(),
           'rate_label' => 'Overnight shipping',
           'rate_description' => 'At your door tomorrow morning',
           'rate_amount' => [
@@ -326,11 +332,11 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $page->clickLink('Add shipment');
     $this->assertSession()->addressEquals($this->shipmentUri . '/add/default');
     $this->assertTrue($page->hasSelect('package_type'));
-    $this->assertSession()->optionExists('package_type', 'Custom box');
-    $this->assertSession()->optionExists('package_type', 'Package Type A');
+    $this->assertSession()->optionExists('package_type', 'custom_box');
+    $this->assertSession()->optionExists('package_type', 'commerce_package_type:' . $this->packageType->uuid());
     $this->assertTrue($page->hasButton('Recalculate shipping'));
     $this->assertSession()->pageTextContains('Shipment items');
-    list($order_item) = $this->order->getItems();
+    [$order_item] = $this->order->getItems();
     $this->assertSession()->pageTextContains($order_item->label());
 
     $this->assertRenderedAddress($this->defaultAddress, 'shipping_profile[0][profile]');
@@ -707,7 +713,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     $this->getSession()->getPage()->fillField('shipments[form][inline_entity_form][entities][0][form][shipping_profile][0][profile][select_address]', $this->defaultProfile->id());
     $this->assertSession()->assertWaitOnAjaxRequest();
     $this->submitForm([], 'Save', 'commerce-order-default-edit-form');
-    $this->assertSession()->pageTextContains("The order {$this->order->getOrderNumber()} has been successfully saved.");
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
 
     $rendered_shipping_information = $this->getSession()->getPage()->find('xpath', '//details//summary[contains(text(), "Shipping information")]');
     $rendered_shipping_information->getParent();
@@ -730,7 +736,7 @@ class ShipmentAdminTest extends CommerceWebDriverTestBase {
     // $ief->pressButton('Update shipment');
     // $this->assertSession()->assertWaitOnAjaxRequest();
     $this->submitForm([], 'Save', 'commerce-order-default-edit-form');
-    $this->assertSession()->pageTextContains("The order {$this->order->getOrderNumber()} has been successfully saved.");
+    $this->assertSession()->pageTextContains("{$this->order->label()} saved.");
 
     $rendered_shipping_information = $this->getSession()->getPage()->find('xpath', '//details//summary[contains(text(), "Shipping information")]');
     $rendered_shipping_information->getParent();

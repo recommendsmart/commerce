@@ -10,11 +10,11 @@ symfony_mailer.mailer_transport.collection:
   base_route: entity.mailer_policy.collection
   route_name: entity.mailer_transport.collection
 
-symfony_mailer.import.status:
-  title: Import
-  description: 'Import configuration.'
+symfony_mailer.override.status:
+  title: Override
+  description: 'Override status.'
   base_route: entity.mailer_policy.collection
-  route_name: symfony_mailer.import.status
+  route_name: symfony_mailer.override.status
 
 symfony_mailer.test:
   title: Test

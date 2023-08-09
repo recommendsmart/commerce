@@ -4,11 +4,11 @@ global:
     theme:
       dist/main.css: { weight: -1000 }
   js:
-    dist/bootstrap.bundle.js: { weight: -1000 }
+    dist/bootstrap.js: { weight: -1000 }
     dist/main.js: { weight: 0 }
   dependencies:
     - core/jquery
-    - core/jquery.once
+    - core/once
     - core/drupal
     - core/drupalSettings
     - belgrade/color
@@ -35,33 +35,33 @@ color.preview:
 local-tasks.fixed:
   css:
     component:
-      dist/components/local-tasks.fixed.css: {}
+      dist/theme/local-tasks.fixed.css: {}
 select2.theme:
   css:
     component:
-      dist/components/select2--belgrade-theme.css: {}
+      dist/theme/select2--belgrade-theme.css: {}
 
 # Layout Builder
 layout-builder.theme:
   css:
     component:
-      dist/components/layout-builder.theme.css: {}
+      dist/components/layout-builder/layout-builder.theme.css: {}
 cklb:
   css:
     component:
-      dist/components/cklb.css: {}
+      dist/components/layout-builder/cklb.css: {}
 cklb.cta:
   css:
     component:
-      dist/components/cklb.cta.css: {}
+      dist/components/layout-builder/cklb.cta.css: {}
 cklb.hero:
   css:
     component:
-      dist/components/cklb.hero.css: {}
+      dist/components/layout-builder/cklb.hero.css: {}
 cklb.slideshow:
   css:
     component:
-      dist/components/cklb.slideshow.css: {}
+      dist/components/layout-builder/cklb.slideshow.css: {}
 
 # Icons
 icons:
@@ -73,12 +73,12 @@ icons:
 demo.frontpage:
   css:
     theme:
-      dist/commerce/commerce-demo--frontpage.css: {}
+      dist/components/commerce/commerce-demo--frontpage.css: {}
 
 product.images:
   css:
     theme:
-      dist/commerce/product.images.css: {}
+      dist/components/commerce/product.images.css: {}
   js:
     dist/product.images.js: {}
 
@@ -92,12 +92,12 @@ frontpage:
 product-teaser.belgrade:
   css:
     theme:
-      dist/product-teaser/belgrade.css: {}
+      dist/components/product-teaser/belgrade.css: {}
 
 product-teaser.zoom:
   css:
     theme:
-      dist/product-teaser/zoom.css: {}
+      dist/components/product-teaser/zoom.css: {}
 
 # Font libraries
 font.ibm_plex_sans:

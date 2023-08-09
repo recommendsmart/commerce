@@ -35,6 +35,9 @@ class MeasurementDefaultWidget extends PhysicalWidgetBase {
       '#allow_unit_change' => $this->getSetting('allow_unit_change'),
       '#default_value' => $items[$delta]->getValue(),
     ] + $element;
+    if (array_filter($this->getSetting('available_units'))) {
+      $element['#available_units'] = $this->getSetting('available_units');
+    }
     if (!$this->getSetting('allow_unit_change')) {
       $element['#available_units'] = [$default_unit];
     }

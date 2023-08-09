@@ -73,6 +73,10 @@ class PromotionForm extends ContentEntityForm {
           $coupon_code = $coupons[0]->getCode();
         }
         $description = $this->formatPlural($coupons_count, 'There is one coupon defined for this promotion: @coupon_code.', 'There are @count coupons defined for this promotion.', ['@coupon_code' => $coupon_code]);
+        // When the promotion references coupons, regardless of the setting
+        // value, a coupon is required to apply the promotion.
+        $form['require_coupon']['widget']['value']['#default_value'] = TRUE;
+        $form['require_coupon']['widget']['value']['#disabled'] = TRUE;
       }
       $form['require_coupon']['widget']['value']['#description'] = $description;
     }

@@ -1,6 +1,6 @@
 services:
   symfony_mailer.commands:
     class: \Drupal\symfony_mailer\Commands\MailerCommands
-    arguments: ['@plugin.manager.email_builder']
+    arguments: ['@symfony_mailer.override_manager']
     tags:
       - { name: drush.command }

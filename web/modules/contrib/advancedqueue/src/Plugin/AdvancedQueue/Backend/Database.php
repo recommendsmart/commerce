@@ -2,6 +2,8 @@
 
 namespace Drupal\advancedqueue\Plugin\AdvancedQueue\Backend;
 
+use Drupal\advancedqueue\Entity\Queue;
+use Drupal\advancedqueue\Entity\QueueInterface;
 use Drupal\advancedqueue\Job;
 use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Database\Connection;
@@ -15,7 +17,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
  *   label = @Translation("Database"),
  * )
  */
-class Database extends BackendBase implements SupportsDeletingJobsInterface, SupportsListingJobsInterface, SupportsReleasingJobsInterface {
+class Database extends BackendBase implements SupportsDeletingJobsInterface, SupportsListingJobsInterface, SupportsReleasingJobsInterface, SupportsLoadingJobsInterface {
 
   /**
    * The database connection.
@@ -87,6 +89,58 @@ class Database extends BackendBase implements SupportsDeletingJobsInterface, Sup
       ->condition('expires', 0, '<>')
       ->condition('expires', $this->time->getCurrentTime(), '<')
       ->execute();
+
+    // Cleanup old queue items.
+    $this->cleanupQueueItems();
+  }
+
+  /**
+   * Cleanup old queue items.
+   */
+  protected function cleanupQueueItems() {
+    $queue = Queue::load($this->queueId);
+    $threshold = $queue->getThreshold();
+
+    if (empty($threshold['type']) || empty($threshold['limit'])) {
+      return;
+    }
+
+    // We always clean successfully.
+    // But we could as well failures.
+    $states = $threshold['state'] === 'all' ? [
+      Job::STATE_SUCCESS,
+      Job::STATE_FAILURE,
+    ] : [JOB::STATE_SUCCESS];
+
+    // Get limits.
+    $limit = $threshold['limit'];
+
+    // Specifics for each type of cleanups. For date based, calculate
+    // timestamp. For deletion based on count, get proper timestamp by querying.
+    if ($threshold['type'] == QueueInterface::QUEUE_THRESHOLD_DAYS) {
+      $limit = $threshold['limit'] * 60 * 60 * 24;
+      $delete_before = $this->time->getCurrentTime() - $limit;
+
+    }
+    else {
+      $delete_before = $this->connection
+        ->select('advancedqueue', 'a')
+        ->fields('a', ['processed'])
+        ->condition('state', $states, 'IN')
+        ->condition('queue_id', $this->queueId)
+        ->orderBy('processed', 'DESC')
+        ->range($limit - 1, 1)
+        ->execute()
+        ->fetchField();
+    }
+
+    if ($delete_before) {
+      $this->connection->delete('advancedqueue')
+        ->condition('queue_id', $this->queueId)
+        ->condition('processed', $delete_before, '<')
+        ->condition('state', $states, 'IN')
+        ->execute();
+    }
   }
 
   /**
@@ -169,7 +223,7 @@ class Database extends BackendBase implements SupportsDeletingJobsInterface, Sup
     // are no unclaimed jobs left.
     while (TRUE) {
       $query = 'SELECT * FROM {advancedqueue}
-        WHERE queue_id = :queue_id AND state = :state AND available <= :now AND expires = 0 
+        WHERE queue_id = :queue_id AND state = :state AND available <= :now AND expires = 0
         ORDER BY available, job_id ASC';
       $params = [
         ':queue_id' => $this->queueId,
@@ -199,12 +253,9 @@ class Database extends BackendBase implements SupportsDeletingJobsInterface, Sup
         ->condition('expires', 0);
       // If there are affected rows, the claim succeeded.
       if ($update->execute()) {
-        $job_definition['id'] = $job_definition['job_id'];
-        unset($job_definition['job_id']);
-        $job_definition['payload'] = json_decode($job_definition['payload'], TRUE);
         $job_definition['state'] = $state;
         $job_definition['expires'] = $expires;
-        return new Job($job_definition);
+        return $this->constructJobFromDefinition($job_definition);
       }
     }
   }
@@ -266,6 +317,38 @@ class Database extends BackendBase implements SupportsDeletingJobsInterface, Sup
       ])
       ->condition('job_id', $job->getId())
       ->execute();
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function loadJob($job_id) {
+    $query = 'SELECT * FROM {advancedqueue} WHERE queue_id = :queue_id AND job_id = :job_id';
+    $params = [
+      ':queue_id' => $this->queueId,
+      ':job_id' => $job_id,
+    ];
+    $job_definition = $this->connection->query($query, $params)->fetchAssoc();
+    if (!$job_definition) {
+      throw new \InvalidArgumentException(sprintf("Job with id %s not found.", $job_id));
+    }
+    return $this->constructJobFromDefinition($job_definition);
+  }
+
+  /**
+   * Constructs a job object from a stored job definition array.
+   *
+   * @param array $definition
+   *   The job definition array retrieved from the database.
+   *
+   * @return \Drupal\advancedqueue\Job
+   *   A new object representing the job.
+   */
+  protected function constructJobFromDefinition(array $definition) {
+    $definition['id'] = $definition['job_id'];
+    unset($definition['job_id']);
+    $definition['payload'] = json_decode($definition['payload'], TRUE);
+    return new Job($definition);
   }
 
 }

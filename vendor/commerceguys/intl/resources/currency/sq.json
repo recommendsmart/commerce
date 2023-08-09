@@ -245,9 +245,6 @@
 	"GTQ": {
 		"name": "Kuecali i Guatemalës"
 	},
-	"HRK": {
-		"name": "Kuna kroate"
-	},
 	"GEL": {
 		"name": "Laria gjeorgjiane"
 	},
@@ -398,9 +395,6 @@
 	"PKR": {
 		"name": "Rupia pakistaneze"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"GHS": {
 		"name": "Sejda ganeze"
 	},
@@ -482,14 +476,8 @@
 	"KPW": {
 		"name": "Uoni koreano-verior"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"VUV": {
 		"name": "Vatuja e Vanuatusë"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	},
 	"PLN": {
 		"name": "Zllota polake"

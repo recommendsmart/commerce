@@ -4,6 +4,7 @@ namespace Drupal\Tests\commerce_license\Kernel;
 
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Entity\EntityInterface;
 use Drupal\Tests\commerce_cart\Kernel\CartKernelTestBase;
 
 /**
@@ -63,9 +64,7 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
-    'interval',
-    'recurring_period',
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
   ];
@@ -148,9 +147,9 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
   /**
    * Tests a license is created when an order gets paid.
    */
-  public function testOrderPaid() {
+  public function testOrderPaid(): void {
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(0, $licenses, "There are no licenses yet.");
+    $this->assertCount(0, $licenses, 'There are no licenses yet.');
 
     $cart_order = $this->container->get('commerce_cart.cart_provider')->createCart('license_order_type', $this->store, $this->user);
     $this->cartManager->addEntity($cart_order, $this->variation);
@@ -165,10 +164,10 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
     // Check that the order item now refers to a new license which has been
     // created for the user.
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(1, $licenses, "One license was saved.");
+    $this->assertCount(1, $licenses, 'One license was saved.');
     $license = reset($licenses);
 
-    $this->assertEquals($license->id(), $order_item->license->entity->id(), "The order item has a reference to the saved license.");
+    $this->assertEquals($license->id(), $order_item->license->entity->id(), 'The order item has a reference to the saved license.');
 
     $this->assertEquals('commerce_license', $license->getEntityTypeId(), 'The order item has a license entity set in its license field.');
     $this->assertEquals('simple', $license->bundle(), 'The license entity is of the expected type.');
@@ -185,19 +184,19 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
   /**
    * Tests a license is created on order place.
    */
-  public function testCreateOnOrderPlace() {
+  public function testCreateOnOrderPlace(): void {
     $order = $this->container->get('commerce_cart.cart_provider')->createCart('license_order_type', $this->store, $this->user);
     $this->cartManager->addEntity($order, $this->variation);
     $order->getState()->applyTransitionById('place');
     $order->save();
 
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(1, $licenses, "One license was saved.");
+    $this->assertCount(1, $licenses, 'One license was saved.');
     /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
     $license = reset($licenses);
     // Get the order item. There should be only one in the order.
     $order_item = $order->getItems()[0];
-    $this->assertEquals($license->id(), $order_item->license->entity->id(), "The order item has a reference to the saved license.");
+    $this->assertEquals($license->id(), $order_item->license->entity->id(), 'The order item has a reference to the saved license.');
 
     $this->assertEquals('commerce_license', $license->getEntityTypeId(), 'The order item has a license entity set in its license field.');
     $this->assertEquals('simple', $license->bundle(), 'The license entity is of the expected type.');
@@ -212,7 +211,7 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
   /**
    * Tests a license is created and activate with the activate_on_place setting.
    */
-  public function testActivateOnOrderPlace() {
+  public function testActivateOnOrderPlace(): void {
     // Change the configuration of the order type to use validation.
     $this->orderType->set('workflow', 'order_default_validation');
     $this->orderType->save();
@@ -223,7 +222,7 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
     $this->variationType->save();
 
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(0, $licenses, "There are no licenses yet.");
+    $this->assertCount(0, $licenses, 'There are no licenses yet.');
 
     $cart_order = $this->container->get('commerce_cart.cart_provider')->createCart('license_order_type', $this->store, $this->user);
     $this->cartManager->addEntity($cart_order, $this->variation);
@@ -240,10 +239,10 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
     // Check that the order item now refers to a new license which has been
     // created for the user.
     $licenses = $this->licenseStorage->loadMultiple();
-    $this->assertCount(1, $licenses, "One license was saved.");
+    $this->assertCount(1, $licenses, 'One license was saved.');
     $license = reset($licenses);
 
-    $this->assertEquals($license->id(), $order_item->license->entity->id(), "The order item has a reference to the saved license.");
+    $this->assertEquals($license->id(), $order_item->license->entity->id(), 'The order item has a reference to the saved license.');
     $this->assertEquals('commerce_license', $license->getEntityTypeId(), 'The order item has a license entity set in its license field.');
     $this->assertEquals('simple', $license->bundle(), 'The license entity is of the expected type.');
     $this->assertEquals($this->user->id(), $license->getOwnerId(), 'The license entity has the expected owner.');
@@ -267,8 +266,10 @@ class CommerceOrderSyncTest extends CartKernelTestBase {
    *
    * @return \Drupal\Core\Entity\EntityInterface
    *   A new, saved entity.
+   *
+   * @throws \Drupal\Core\Entity\EntityStorageException
    */
-  protected function createEntity($entity_type, array $values) {
+  protected function createEntity(string $entity_type, array $values): EntityInterface {
     /** @var \Drupal\Core\Entity\EntityStorageInterface $storage */
     $storage = \Drupal::service('entity_type.manager')->getStorage($entity_type);
     $entity = $storage->create($values);

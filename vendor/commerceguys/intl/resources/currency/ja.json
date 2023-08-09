@@ -3,9 +3,6 @@
 		"name": "CFP フラン",
 		"symbol": "CFPF"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"ISK": {
 		"name": "アイスランド クローナ"
 	},
@@ -133,9 +130,6 @@
 	"KWD": {
 		"name": "クウェート ディナール"
 	},
-	"HRK": {
-		"name": "クロアチア クーナ"
-	},
 	"KYD": {
 		"name": "ケイマン諸島 ドル"
 	},
@@ -252,6 +246,9 @@
 	},
 	"TMT": {
 		"name": "トルクメニスタン マナト"
+	},
+	"TRY": {
+		"name": "トルコリラ"
 	},
 	"TOP": {
 		"name": "トンガ パ・アンガ"
@@ -452,9 +449,6 @@
 	"HKD": {
 		"name": "香港ドル",
 		"symbol": "HK$"
-	},
-	"TRY": {
-		"name": "新トルコリラ"
 	},
 	"TWD": {
 		"name": "新台湾ドル",

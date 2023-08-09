@@ -5,7 +5,6 @@ namespace Drupal\commerce_payment\Form;
 use Drupal\commerce\InlineFormManager;
 use Drupal\commerce_payment\PaymentOption;
 use Drupal\commerce_payment\PaymentOptionsBuilderInterface;
-use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OffsitePaymentGatewayInterface;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\SupportsStoredPaymentMethodsInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Component\Utility\NestedArray;
@@ -136,7 +135,7 @@ class PaymentAddForm extends FormBase implements ContainerInjectionInterface {
     // Allow on-site and manual payment gateways.
     $payment_gateways = array_filter($payment_gateways, function ($payment_gateway) {
       /** @var \Drupal\commerce_payment\Entity\PaymentGateway $payment_gateway */
-      return !($payment_gateway->getPlugin() instanceof OffsitePaymentGatewayInterface);
+      return $payment_gateway->getPlugin()->hasFormClass('add-payment');
     });
     // @todo Move this check to the access handler.
     if (count($payment_gateways) < 1) {
@@ -181,6 +180,7 @@ class PaymentAddForm extends FormBase implements ContainerInjectionInterface {
 
     $form['payment_option'] = [
       '#type' => 'radios',
+      '#required' => TRUE,
       '#title' => $this->t('Payment option'),
       '#options' => $option_labels,
       '#default_value' => $default_option->getId(),
@@ -339,14 +339,33 @@ class PaymentAddForm extends FormBase implements ContainerInjectionInterface {
       // Save payment gateway and method references on order entity.
       /** @var \Drupal\commerce_payment\Entity\PaymentInterface $payment */
       $payment = $form['payment']['#inline_form']->getEntity();
-      $order   = $payment->getOrder();
+      $order = $payment->getOrder();
       $order->set('payment_gateway', $payment->getPaymentGateway());
       if ($payment->getPaymentMethod()) {
-        $order->set('payment_method', $payment->getPaymentMethod());
+        $payment_method = $payment->getPaymentMethod();
+        $order->set('payment_method', $payment_method);
+
+        // Copy the billing information to the order.
+        $payment_method_profile = $payment_method->getBillingProfile();
+        if ($payment_method_profile) {
+          $billing_profile = $order->getBillingProfile();
+          if (!$billing_profile) {
+            $billing_profile = $this->entityTypeManager->getStorage('profile')->create([
+              'type' => 'customer',
+              'uid' => 0,
+            ]);
+          }
+          $billing_profile->populateFromProfile($payment_method_profile);
+          // The data field is not copied by default but needs to be.
+          // For example, both profiles need to have an address_book_profile_id.
+          $billing_profile->populateFromProfile($payment_method_profile, ['data']);
+          $billing_profile->save();
+          $order->setBillingProfile($billing_profile);
+        }
       }
-      $this->entityTypeManager->getStorage('commerce_order')->save($order);
+      $order->save();
       $this->messenger()->addMessage($this->t('Payment saved.'));
-      $form_state->setRedirect('entity.commerce_payment.collection', ['commerce_order' => $this->order->id()]);
+      $form_state->setRedirect('entity.commerce_payment.collection', ['commerce_order' => $order->id()]);
     }
   }
 

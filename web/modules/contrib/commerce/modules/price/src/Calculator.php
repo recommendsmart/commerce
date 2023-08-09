@@ -173,7 +173,7 @@ final class Calculator {
     // The rounding direction is based on the first decimal after $precision.
     $number_parts = explode('.', $number);
     $decimals = !empty($number_parts[1]) ? $number_parts[1] : '0';
-    $relevant_decimal = isset($decimals[$precision]) ? $decimals[$precision] : 0;
+    $relevant_decimal = $decimals[$precision] ?? 0;
     if ($relevant_decimal < 5) {
       $number = $rounded_down;
     }

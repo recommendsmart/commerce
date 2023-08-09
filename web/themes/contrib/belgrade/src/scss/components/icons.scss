@@ -113,7 +113,7 @@ $icon-size: 1.2rem;
   @include icon(
     $icon-size,
     '../../icons/#{get_icon("remove")}.svg',
-    var(--#{$variable-prefix}primary),
+    var(--#{$prefix}primary),
     $danger
   );
 }

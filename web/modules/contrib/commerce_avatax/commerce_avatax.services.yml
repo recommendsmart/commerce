@@ -12,7 +12,7 @@ services:
 
   commerce_avatax.avatax_lib:
     class: Drupal\commerce_avatax\AvataxLib
-    arguments: ['@plugin.manager.commerce_adjustment_type', '@commerce_avatax.chain_tax_code_resolver', '@commerce_avatax.client_factory', '@config.factory', '@event_dispatcher', '@logger.channel.commerce_avatax', '@module_handler', '@cache.commerce_avatax']
+    arguments: ['@plugin.manager.commerce_adjustment_type', '@entity_type.manager', '@commerce_avatax.chain_tax_code_resolver', '@commerce_avatax.client_factory', '@config.factory', '@event_dispatcher', '@logger.channel.commerce_avatax', '@module_handler', '@cache.commerce_avatax']
 
   commerce_avatax.client_factory:
     class: Drupal\commerce_avatax\ClientFactory

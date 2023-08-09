@@ -2,10 +2,13 @@
 
 namespace Drupal\pwa;
 
-use Drupal\Core\Config\ConfigFactoryInterface;
-use Drupal\Core\Language\LanguageManagerInterface;
 use Drupal\Component\Serialization\Json;
+use Drupal\Core\Config\ConfigFactoryInterface;
+use Drupal\Core\Extension\ModuleHandlerInterface;
+use Drupal\Core\Language\LanguageManagerInterface;
+use Drupal\Core\Theme\ThemeManagerInterface;
 use Drupal\Core\Url;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 /**
  * Manifest JSON building service.
@@ -13,7 +16,7 @@ use Drupal\Core\Url;
 class Manifest implements ManifestInterface {
 
   /**
-   * The configuration manager.
+   * The configuration factory.
    *
    * @var \Drupal\Core\Config\ConfigFactoryInterface
    */
@@ -27,11 +30,56 @@ class Manifest implements ManifestInterface {
   private $languageManager;
 
   /**
-   * Constructor.
+   * The module handler.
+   *
+   * @var \Drupal\Core\Extension\ModuleHandlerInterface
    */
-  public function __construct(ConfigFactoryInterface $config_factory, LanguageManagerInterface $language_manager) {
-    $this->configFactory = $config_factory;
-    $this->languageManager = $language_manager;
+  private $moduleHandler;
+
+  /**
+   * The Symfony request stack.
+   *
+   * @var \Symfony\Component\HttpFoundation\RequestStack
+   */
+  private $requestStack;
+
+  /**
+   * The theme manager.
+   *
+   * @var \Drupal\Core\Theme\ThemeManagerInterface
+   */
+  private $themeManager;
+
+  /**
+   * Constructor; saves dependencies.
+   *
+   * @param \Drupal\Core\Config\ConfigFactoryInterface $configFactory
+   *   The configuration factory.
+   *
+   * @param \Drupal\Core\Language\LanguageManagerInterface $languageManager
+   *   The language manager.
+   *
+   * @param \Drupal\Core\Extension\ModuleHandlerInterface $moduleHandler
+   *   The module handler.
+   *
+   * @param \Symfony\Component\HttpFoundation\RequestStack $requestStack
+   *   The Symfony request stack.
+   *
+   * @param \Drupal\Core\Theme\ThemeManagerInterface $themeManager
+   *   The theme manager.
+   */
+  public function __construct(
+    ConfigFactoryInterface    $configFactory,
+    LanguageManagerInterface  $languageManager,
+    ModuleHandlerInterface    $moduleHandler,
+    RequestStack              $requestStack,
+    ThemeManagerInterface     $themeManager
+  ) {
+    $this->configFactory    = $configFactory;
+    $this->languageManager  = $languageManager;
+    $this->moduleHandler    = $moduleHandler;
+    $this->requestStack     = $requestStack;
+    $this->themeManager     = $themeManager;
   }
 
   /**
@@ -66,23 +114,29 @@ class Manifest implements ManifestInterface {
       $manifest_data['icons'][0]['src'] = $values['image'];
       $manifest_data['icons'][0]['sizes'] = '512x512';
       $manifest_data['icons'][0]['type'] = 'image/png';
+      $manifest_data['icons'][0]['purpose'] = 'any maskable';
     }
     if (isset($values['image_small'])) {
       $manifest_data['icons'][1]['src'] = $values['image_small'];
       $manifest_data['icons'][1]['sizes'] = '192x192';
       $manifest_data['icons'][1]['type'] = 'image/png';
+      $manifest_data['icons'][1]['purpose'] = 'any maskable';
     }
     if (isset($values['image_very_small'])) {
       $manifest_data['icons'][2]['src'] = $values['image_very_small'];
       $manifest_data['icons'][2]['sizes'] = '144x144';
-      $manifest_data['icons'][2]['type'] = 'image/png';
+      $manifest_data['icons'][2]['purpose'] = 'any maskable';
+
     }
     if (isset($values['start_url'])) {
       $manifest_data['start_url'] = $values['start_url'];
     }
-    $manifest_data['scope'] = '/';
+    if (isset($values['scope'])) {
+      $manifest_data['scope'] = $values['scope'];
+    }
 
-    \Drupal::moduleHandler()->alter('pwa_manifest', $manifest_data);
+    $this->moduleHandler->alter('pwa_manifest', $manifest_data);
+    $this->themeManager->alter('pwa_manifest', $manifest_data);
 
     return Json::encode($manifest_data);
   }
@@ -110,21 +164,26 @@ class Manifest implements ManifestInterface {
    *
    * @return array
    *   Values from the configuration.
+   *
+   * @todo Can we use the injected 'theme.manager' service rather than
+   *   theme_get_setting() and then do
+   *   $this->themeManager->getActiveTheme()->getLogo()?
    */
   private function getCleanValues() {
     // Set defaults.
     $lang = $this->languageManager->getDefaultLanguage();
     $site_name = $this->configFactory->get('system.site')->get('name');
-    $path = \Drupal::request()->getSchemeAndHttpHost() . '/' . drupal_get_path('module', 'pwa');
+    $path = $this->requestStack->getCurrentRequest()->getSchemeAndHttpHost() .
+      '/' . $this->moduleHandler->getModule('pwa')->getPath();
     $output = [
       'site_name' => $site_name,
       'short_name' => $site_name,
       'background_color' => '#ffffff',
       'theme_color' => '#ffffff',
       'display' => 'standalone',
-      'image' => $path . '/assets/druplicon-512.png',
-      'image_small' => $path . '/assets/druplicon-192.png',
-      'image_very_small' => $path . '/assets/druplicon-144.png',
+      'image' => $path . '/assets/icon-512.png',
+      'image_small' => $path . '/assets/icon-192.png',
+      'image_very_small' => $path . '/assets/icon-144.png',
     ];
 
     $config = $this->configFactory->get('pwa.config');

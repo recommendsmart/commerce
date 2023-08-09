@@ -17,6 +17,7 @@ abstract class PhysicalWidgetBase extends WidgetBase {
     return [
       'default_unit' => '',
       'allow_unit_change' => TRUE,
+      'available_units' => [],
     ] + parent::defaultSettings();
   }
 
@@ -34,6 +35,17 @@ abstract class PhysicalWidgetBase extends WidgetBase {
       '#type' => 'checkbox',
       '#title' => $this->t('Allow the user to select a different unit of measurement on forms.'),
       '#default_value' => $this->getSetting('allow_unit_change'),
+    ];
+
+    /** @var \Drupal\physical\UnitInterface $unit_class */
+    $unit_class = $this->getUnitClass();
+
+    $element['available_units'] = [
+      '#title' => $this->t('Allowed units'),
+      '#description' => $this->t('Select the units to display, selecting none will display all.'),
+      '#type' => 'checkboxes',
+      '#options' => $unit_class::getLabels(),
+      '#default_value' => $this->getSetting('available_units') ?: [],
     ];
 
     return $element;
@@ -87,8 +99,8 @@ abstract class PhysicalWidgetBase extends WidgetBase {
   /**
    * Gets the unit class for the current field.
    *
-   * @return string
-   *   The fully qualified class name.
+   * @return \Drupal\physical\UnitInterface
+   *   The unit class.
    */
   abstract protected function getUnitClass();
 

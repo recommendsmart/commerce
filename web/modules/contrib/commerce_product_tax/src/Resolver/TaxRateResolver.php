@@ -39,7 +39,7 @@ class TaxRateResolver implements TaxRateResolverInterface, TaxTypeAwareInterface
       }
 
       foreach ($field_items as $tax_rate) {
-        list($zone_id, $rate_id) = explode('|', $tax_rate->value);
+        [$zone_id, $rate_id] = explode('|', $tax_rate->value);
         if ($zone->getId() != $zone_id) {
           continue;
         }

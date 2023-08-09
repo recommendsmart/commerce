@@ -3,13 +3,18 @@
 namespace Drupal\commerce_license\Entity;
 
 use Drupal\commerce\EntityOwnerTrait;
+use Drupal\commerce\Interval;
 use Drupal\commerce_license\Plugin\Commerce\LicenseType\LicenseTypeInterface;
 use Drupal\commerce_order\Entity\OrderInterface;
-use Drupal\Core\Entity\EntityStorageInterface;
-use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\commerce_product\Entity\ProductVariationType;
+use Drupal\Component\Render\FormattableMarkup;
+use Drupal\Core\Datetime\DrupalDateTime;
 use Drupal\Core\Entity\ContentEntityBase;
 use Drupal\Core\Entity\EntityChangedTrait;
+use Drupal\Core\Entity\EntityStorageInterface;
 use Drupal\Core\Entity\EntityTypeInterface;
+use Drupal\Core\Field\BaseFieldDefinition;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 
 /**
  * Defines the License entity.
@@ -30,6 +35,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *   bundle_plugin_type = "commerce_license_type",
  *   handlers = {
  *     "access" = "\Drupal\entity\UncacheableEntityAccessControlHandler",
+ *     "event" = "Drupal\commerce_license\Event\LicenseEvent",
  *     "permission_provider" = "\Drupal\commerce_license\LicensePermissionProvider",
  *     "list_builder" = "Drupal\commerce_license\LicenseListBuilder",
  *     "storage" = "Drupal\commerce_license\LicenseStorage",
@@ -43,6 +49,7 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "views_data" = "Drupal\commerce_license\LicenseViewsData",
  *     "route_provider" = {
  *       "html" = "Drupal\commerce_license\LicenseRouteProvider",
+ *       "delete-multiple" = "Drupal\entity\Routing\DeleteMultipleRouteProvider",
  *     },
  *   },
  *   base_table = "commerce_license",
@@ -61,7 +68,9 @@ use Drupal\Core\Entity\EntityTypeInterface;
  *     "add-form" = "/admin/commerce/licenses/add/{type}",
  *     "edit-form" = "/admin/commerce/licenses/{commerce_license}/edit",
  *     "delete-form" = "/admin/commerce/licenses/{commerce_license}/delete",
+ *     "delete-multiple-form" = "/admin/commerce/licenses/delete",
  *     "collection" = "/admin/commerce/licenses",
+ *     "state-transition-form" = "/admin/commerce/licenses/{commerce_license}/{field_name}/{transition_id}"
  *   },
  *   field_ui_base_route = "entity.commerce_license.field_ui_fields",
  * )
@@ -70,13 +79,26 @@ class License extends ContentEntityBase implements LicenseInterface {
 
   use EntityChangedTrait;
   use EntityOwnerTrait;
+  use StringTranslationTrait;
+
+  /**
+   * The renewal window start time.
+   *
+   * Calculated in the case of a renewable license.
+   *
+   * @var int|null
+   */
+  protected $renewalWindowStartTime;
 
   /**
    * {@inheritdoc}
    */
   public function label() {
     // Get the label for the license from the plugin.
-    return $this->getTypePlugin()->buildLabel($this);
+    return new FormattableMarkup('@title #@id', [
+      '@title' => $this->getTypePlugin()->buildLabel($this),
+      '@id' => $this->id(),
+    ]);
   }
 
   /**
@@ -95,9 +117,9 @@ class License extends ContentEntityBase implements LicenseInterface {
       // hook_entity_presave() to prevent saving, by throwing an exception, the
       // license entity will be unsaved, but the license plugin will have
       // granted the license, leaving it in an incorrect state.
-      // TODO: override doPreSave() in LicenseStorage to catch exceptions and
+      // @todo override doPreSave() in LicenseStorage to catch exceptions and
       // revert the grant if the save is cancelled.
-      if ($this->getState()->getId() == 'active') {
+      if ($this->getState()->getId() === 'active') {
         // The state is moved to 'active', or the license was created active:
         // the license activates.
         $this->getTypePlugin()->grantLicense($this);
@@ -111,9 +133,22 @@ class License extends ContentEntityBase implements LicenseInterface {
           $this->setGrantedTime($activation_time);
         }
         else {
-          // The license has previously been granted, and is therefore being
-          // re-activated after a lapse. Set the 'renewed' timestamp.
-          $this->setRenewedTime($activation_time);
+          if (isset($this->original) && $this->original->getState()->getId() !== 'renewal_cancelled') {
+            // The license has previously been granted, and is therefore being
+            // re-activated after a lapse. Set the 'renewed' timestamp.
+            $this->setRenewedTime($activation_time);
+          }
+        }
+
+        // Renewal completed.
+        if (isset($this->original) && $this->original->getState()->getId() === 'renewal_in_progress') {
+          $expires_time = $this->getExpiresTime();
+          if ($expires_time < $activation_time) {
+            $expires_time = $activation_time;
+          }
+          $this->setExpiresTime(
+            $this->calculateExpirationTime($expires_time)
+          );
         }
 
         // Set the expiry time on a new license, but allow licenses to be
@@ -124,23 +159,11 @@ class License extends ContentEntityBase implements LicenseInterface {
       }
 
       // The state is being moved away from 'active'.
-      if (isset($this->original) && $this->original->getState()->getId() == 'active') {
+      if (isset($this->original) && $this->original->getState()->getId() === 'active' && $this->getState()->getId() !== 'renewal_in_progress') {
         // The license is revoked.
         $this->getTypePlugin()->revokeLicense($this);
       }
     }
-  }
-
-  /**
-   * {@inheritdoc}
-   */
-  public function delete() {
-    // Revoke the license if it is active.
-    if ($this->getState()->getId() == 'active') {
-      $this->getTypePlugin()->revokeLicense($this);
-    }
-
-    parent::delete();
   }
 
   /**
@@ -183,7 +206,7 @@ class License extends ContentEntityBase implements LicenseInterface {
   /**
    * {@inheritdoc}
    */
-  public function setExpiresTime($timestamp) {
+  public function setExpiresTime(int $timestamp) {
     $this->set('expires', $timestamp);
     return $this;
   }
@@ -198,7 +221,7 @@ class License extends ContentEntityBase implements LicenseInterface {
   /**
    * {@inheritdoc}
    */
-  public function setGrantedTime($timestamp) {
+  public function setGrantedTime(int $timestamp) {
     $this->set('granted', $timestamp);
     return $this;
   }
@@ -213,7 +236,7 @@ class License extends ContentEntityBase implements LicenseInterface {
   /**
    * {@inheritdoc}
    */
-  public function setRenewedTime($timestamp) {
+  public function setRenewedTime(int $timestamp) {
     $this->set('renewed', $timestamp);
     return $this;
   }
@@ -228,9 +251,16 @@ class License extends ContentEntityBase implements LicenseInterface {
   /**
    * {@inheritdoc}
    */
-  public function setCreatedTime($timestamp) {
+  public function setCreatedTime(int $timestamp) {
     $this->set('created', $timestamp);
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getRenewalWindowStartTime() {
+    return $this->renewalWindowStartTime;
   }
 
   /**
@@ -241,11 +271,13 @@ class License extends ContentEntityBase implements LicenseInterface {
    *
    * @return int
    *   The expiry timestamp, or the value
-   *   \Drupal\recurring_period\Plugin\RecurringPeriod\RecurringPeriodInterface::UNLIMITED
+   *   \Drupal\commerce_license\Plugin\Commerce\LicensePeriod\LicensePeriodInterface::UNLIMITED
    *   if the license does not expire.
+   *
+   * @throws \Exception
    */
-  protected function calculateExpirationTime($start) {
-    /** @var \Drupal\recurring_period\Plugin\RecurringPeriod\RecurringPeriodInterface $expiration_type_plugin */
+  protected function calculateExpirationTime(int $start): int {
+    /** @var \Drupal\commerce_license\Plugin\Commerce\LicensePeriod\LicensePeriodInterface $expiration_type_plugin */
     $expiration_type_plugin = $this->getExpirationPlugin();
 
     // The recurring period plugin needs DateTimeImmutable objects in order
@@ -254,16 +286,15 @@ class License extends ContentEntityBase implements LicenseInterface {
     // expiration back into a UTC timestamp.
     $start_date = (new \DateTimeImmutable('@' . $start))
       ->setTimezone(new \DateTimeZone(commerce_license_get_user_timezone($this->getOwner())));
-    $expiration_date = $expiration_type_plugin->calculateDate($start_date);
+    $expiration_date = $expiration_type_plugin->calculateEnd($start_date);
 
     // The returned date is either \DateTimeImmutable or
-    // \Drupal\recurring_period\Plugin\RecurringPeriod\RecurringPeriodInterface::UNLIMITED.
+    // \Drupal\commerce_license\Plugin\Commerce\LicensePeriod\LicensePeriodInterface::UNLIMITED.
     if (is_object($expiration_date)) {
       return $expiration_date->format('U');
     }
-    else {
-      return $expiration_date;
-    }
+
+    return $expiration_date;
   }
 
   /**
@@ -346,25 +377,28 @@ class License extends ContentEntityBase implements LicenseInterface {
       ->setDescription(t('The license state.'))
       ->setRequired(TRUE)
       ->setSetting('max_length', 255)
-      ->setDisplayOptions('view', [
-        'label' => 'hidden',
-        'type' => 'state_transition_form',
-        'weight' => 10,
+      ->setDisplayOptions('form', [
+        'region' => 'hidden',
       ])
       ->setDisplayConfigurable('form', TRUE)
       ->setDisplayOptions('view', [
         'label' => 'hidden',
         'type' => 'state_transition_form',
-        'weight' => 50,
+        'settings' => [
+          'require_confirmation' => TRUE,
+          'use_modal' => TRUE,
+        ],
+        'weight' => 10,
       ])
       ->setDisplayConfigurable('view', TRUE)
-      ->setSetting('workflow_callback', ['\Drupal\commerce_license\Entity\License', 'getWorkflowId']);
+      ->setSetting('workflow_callback', [static::class, 'getWorkflowId']);
 
     $fields['product_variation'] = BaseFieldDefinition::create('entity_reference')
       ->setLabel(t('Licensed product variation'))
       ->setDescription(t('The licensed product variation.'))
       ->setRequired(TRUE)
       ->setSetting('target_type', 'commerce_product_variation')
+      ->setSetting('handler', 'commerce_license')
       ->setDisplayOptions('form', [
         'type' => 'entity_reference_autocomplete',
         'weight' => -1,
@@ -385,7 +419,7 @@ class License extends ContentEntityBase implements LicenseInterface {
       ])
       ->setDisplayConfigurable('view', TRUE);
 
-    $fields['expiration_type'] = BaseFieldDefinition::create('commerce_plugin_item:recurring_period')
+    $fields['expiration_type'] = BaseFieldDefinition::create('commerce_plugin_item:commerce_license_period')
       ->setLabel(t('Expiration type'))
       ->setDescription(t("The configuration for calculating the license's expiry."))
       ->setCardinality(1)
@@ -444,7 +478,16 @@ class License extends ContentEntityBase implements LicenseInterface {
 
     $fields['changed'] = BaseFieldDefinition::create('changed')
       ->setLabel(t('Changed'))
-      ->setDescription(t('The time that the license was last modified.'));
+      ->setDescription(t('The time that the license was last modified.'))
+      ->setDisplayOptions('view', [
+        'label' => 'inline',
+        'type' => 'timestamp',
+        'weight' => 19,
+        'settings' => [
+          'date_format' => 'medium',
+        ],
+      ])
+      ->setDisplayConfigurable('view', TRUE);
 
     $fields['expires'] = BaseFieldDefinition::create('timestamp')
       ->setLabel(t('Expires'))
@@ -469,6 +512,46 @@ class License extends ContentEntityBase implements LicenseInterface {
       ->setDisplayConfigurable('view', TRUE);
 
     return $fields;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function canRenew() {
+    if (!in_array($this->getState()->getId(), [
+      'active',
+      'renewal_in_progress',
+    ], TRUE)) {
+      return FALSE;
+    }
+
+    $variation = $this->getPurchasedEntity();
+    $product_variation_type_id = $variation->bundle();
+    $product_variation_type = ProductVariationType::load($product_variation_type_id);
+    assert($product_variation_type !== NULL, 'The product variation is NULL.');
+    $allow_renewal = $product_variation_type->getThirdPartySetting(
+        'commerce_license',
+        'allow_renewal',
+        FALSE
+    );
+    if (!$allow_renewal) {
+      return FALSE;
+    }
+
+    $allow_renewal_window_interval = $product_variation_type->getThirdPartySetting(
+        'commerce_license',
+        'interval'
+    );
+    $allow_renewal_window_period = $product_variation_type->getThirdPartySetting(
+        'commerce_license',
+        'period'
+    );
+
+    $interval_object = new Interval($allow_renewal_window_interval, $allow_renewal_window_period);
+
+    $renewal_window_start_time = new DrupalDateTime('@' . $this->getExpiresTime());
+    $this->renewalWindowStartTime = $interval_object->subtract($renewal_window_start_time)->getTimestamp();
+    return $this->renewalWindowStartTime < \Drupal::time()->getRequestTime();
   }
 
 }

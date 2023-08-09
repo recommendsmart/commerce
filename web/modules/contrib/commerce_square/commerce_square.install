@@ -69,7 +69,7 @@ function commerce_square_requirements($phase) {
       $requirements['commerce_square_authentication'] = [
         'title' => t('Commerce Square Connect'),
         'description' => t('Square Connect OAuth access token is not valid. Please reconnect by submitting the <a href=":url">Square settings form</a>.', [
-          ':url' => Url::fromRoute('commerce_square.settings'),
+          ':url' => Url::fromRoute('commerce_square.settings')->toString(),
         ]),
         'severity' => REQUIREMENT_ERROR,
       ];

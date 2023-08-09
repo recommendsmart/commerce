@@ -440,9 +440,6 @@
 	"FKP": {
 		"name": "фолкленд аралдарынын фунту"
 	},
-	"HRK": {
-		"name": "хорват кунасы"
-	},
 	"CZK": {
 		"name": "чех кронасы"
 	},
@@ -472,14 +469,5 @@
 	},
 	"JMD": {
 		"name": "ямайка доллары"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

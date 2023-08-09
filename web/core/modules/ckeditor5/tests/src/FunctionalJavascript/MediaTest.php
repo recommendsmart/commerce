@@ -6,6 +6,7 @@ use Drupal\Core\Entity\Entity\EntityViewDisplay;
 use Drupal\Core\Entity\Entity\EntityViewMode;
 use Drupal\Core\Database\Database;
 use Drupal\editor\Entity\Editor;
+use Drupal\field\Entity\FieldConfig;
 use Drupal\file\Entity\File;
 use Drupal\filter\Entity\FilterFormat;
 use Drupal\FunctionalJavascriptTests\WebDriverTestBase;
@@ -77,7 +78,7 @@ class MediaTest extends WebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'classy';
+  protected $defaultTheme = 'starterkit_theme';
 
   /**
    * {@inheritdoc}
@@ -374,16 +375,16 @@ class MediaTest extends WebDriverTestBase {
     // Wrap the existing drupal-media tag with a div and an a that include
     // attributes allowed via GHS.
     $original_value = $this->host->body->value;
-    $this->host->body->value = '<div data-bar="baz"><a href="https://drupal.org" data-foo="bar">' . $original_value . '</a></div>';
+    $this->host->body->value = '<div data-bar="baz"><a href="https://example.com" data-foo="bar">' . $original_value . '</a></div>';
     $this->host->save();
     $this->drupalGet($this->host->toUrl('edit-form'));
 
     // Confirm data-foo is present in the editing view.
-    $this->assertNotEmpty($link = $assert_session->waitForElementVisible('css', 'a[href="https://drupal.org"]'));
+    $this->assertNotEmpty($link = $assert_session->waitForElementVisible('css', 'a[href="https://example.com"]'));
     $this->assertEquals('bar', $link->getAttribute('data-foo'));
 
     // Confirm that the media is wrapped by the div on the editing view.
-    $assert_session->elementExists('css', 'div[data-bar="baz"] > .drupal-media > a[href="https://drupal.org"] > div[data-drupal-media-preview]');
+    $assert_session->elementExists('css', 'div[data-bar="baz"] > .drupal-media > a[href="https://example.com"] > div[data-drupal-media-preview]');
 
     // Confirm that drupal-media is wrapped by the div and a, and that GHS has
     // retained arbitrary HTML allowed by source editing.
@@ -438,18 +439,16 @@ class MediaTest extends WebDriverTestBase {
     $this->waitForEditor();
     $this->assertNotEmpty($assert_session->waitForElement('css', '.ck-widget.drupal-media .this-error-message-is-themeable'));
 
-    // Test when using the classy theme, an additional class is added in
-    // classy/templates/content/media-embed-error.html.twig.
-    $this->assertTrue($this->container->get('theme_installer')->install(['classy']));
+    // Test when using the starterkit_theme theme, an additional class is added
+    // to the error, which is supported by
+    // stable9/templates/content/media-embed-error.html.twig.
+    $this->assertTrue($this->container->get('theme_installer')->install(['starterkit_theme']));
     $this->config('system.theme')
-      ->set('default', 'classy')
+      ->set('default', 'starterkit_theme')
       ->save();
     $this->drupalGet($this->host->toUrl('edit-form'));
     $this->waitForEditor();
-    $this->assertNotEmpty($assert_session->waitForElement('css', '.ck-widget.drupal-media .this-error-message-is-themeable.media-embed-error--missing-source'));
-    // @todo Uncomment this in https://www.drupal.org/project/ckeditor5/issues/3194084.
-    // @codingStandardsIgnoreLine
-    //$assert_session->responseContains('classy/css/components/media-embed-error.css');
+    $this->assertNotEmpty($assert_session->waitForElement('css', '.ck-widget.drupal-media .this-error-message-is-themeable'));
 
     // Test that restoring a valid UUID results in the media embed preview
     // displaying.
@@ -476,8 +475,8 @@ class MediaTest extends WebDriverTestBase {
 
     // Configure a different default and admin theme, like on most Drupal sites.
     $this->config('system.theme')
-      ->set('default', 'stable')
-      ->set('admin', 'classy')
+      ->set('default', 'stable9')
+      ->set('admin', 'starterkit_theme')
       ->save();
 
     // Assert that when looking at an embedded entity in the CKEditor Widget,
@@ -488,7 +487,7 @@ class MediaTest extends WebDriverTestBase {
     $assert_session = $this->assertSession();
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', 'img[src*="image-test.png"]'));
     $element = $assert_session->elementExists('css', '[data-media-embed-test-active-theme]');
-    $this->assertSame('stable', $element->getAttribute('data-media-embed-test-active-theme'));
+    $this->assertSame('stable9', $element->getAttribute('data-media-embed-test-active-theme'));
     // Assert that the first preview request transferred >500 B over the wire.
     // Then toggle source mode on and off. This causes the CKEditor widget to be
     // destroyed and then reconstructed. Assert that during this reconstruction,
@@ -587,6 +586,7 @@ class MediaTest extends WebDriverTestBase {
     $this->assertVisibleBalloon('[aria-label="Drupal Media toolbar"]');
 
     // Type into the widget's caption element.
+    $this->selectTextInsideElement('.drupal-media figcaption');
     $figcaption->setValue('Llamas are the most awesome ever');
     $editor_dom = $this->getEditorDataAsDom();
     $this->assertEquals('Llamas are the most awesome ever', $editor_dom->getElementsByTagName('drupal-media')->item(0)->getAttribute('data-caption'));
@@ -612,27 +612,70 @@ class MediaTest extends WebDriverTestBase {
     $editor_dom = $this->getEditorDataAsDom();
     $this->assertEquals('Llamas are the most awesome ever', $editor_dom->getElementsByTagName('drupal-media')->item(0)->getAttribute('data-caption'));
 
+    // Ensure that caption can contain elements such as <br>.
+    $this->pressEditorButton('Source');
+    $source_text_area = $assert_session->waitForElement('css', '.ck-source-editing-area textarea');
+    $source_text = $source_text_area->getValue();
+    $source_text_area->setValue(str_replace('data-caption="Llamas are the most awesome ever"', 'data-caption="Llamas are the most<br>awesome ever"', $source_text));
+    // Click source again to make source inactive.
+    $this->pressEditorButton('Source');
+    // Check that the source mode is toggled off.
+    $assert_session->elementNotExists('css', '.ck-source-editing-area textarea');
+    // Put back the caption as it was before.
+    $this->pressEditorButton('Source');
+    $source_text_area = $assert_session->waitForElement('css', '.ck-source-editing-area textarea');
+    $source_text = $source_text_area->getValue();
+    $source_text_area->setValue(str_replace('data-caption="Llamas are the most&lt;br&gt;awesome ever"', 'data-caption="Llamas are the most awesome ever"', $source_text));
+    // Click source again to make source inactive.
+    $this->pressEditorButton('Source');
+    // Check that the source mode is toggled off.
+    $assert_session->elementNotExists('css', '.ck-source-editing-area textarea');
+
     // Ensure that caption can be linked.
     $this->assertNotEmpty($figcaption = $assert_session->waitForElement('css', '.drupal-media figcaption'));
+    $figcaption->click();
     $this->selectTextInsideElement('.drupal-media figcaption');
     $this->assertNotEmpty($assert_session->waitForElement('css', '.drupal-media figcaption.ck-editor__nested-editable'));
     $this->pressEditorButton('Link');
     $this->assertVisibleBalloon('.ck-link-form');
     $link_input = $page->find('css', '.ck-balloon-panel .ck-link-form input[type=text]');
-    $link_input->setValue('https://drupal.org');
+    $link_input->setValue('https://example.com');
     $page->find('css', '.ck-balloon-panel .ck-link-form button[type=submit]')->click();
     $this->assertNotEmpty($assert_session->waitForElement('css', '.drupal-media figcaption > a'));
-    $this->assertEquals('<a class="ck-link_selected" href="https://drupal.org">Llamas are the most awesome ever</a>', $figcaption->getHtml());
+    $this->assertEquals('<a class="ck-link_selected" href="https://example.com">Llamas are the most awesome ever</a>', $figcaption->getHtml());
     $editor_dom = $this->getEditorDataAsDom();
-    $this->assertEquals('<a href="https://drupal.org">Llamas are the most awesome ever</a>', $editor_dom->getElementsByTagName('drupal-media')->item(0)->getAttribute('data-caption'));
+    $this->assertEquals('<a href="https://example.com">Llamas are the most awesome ever</a>', $editor_dom->getElementsByTagName('drupal-media')->item(0)->getAttribute('data-caption'));
   }
 
   /**
-   * Tests the EditorMediaDialog's form elements' #access logic.
+   * Tests that the image media source's alt_field being disabled is respected.
+   *
+   * @see \Drupal\Tests\ckeditor5\Functional\MediaEntityMetadataApiTest::testApi()
    */
-  public function testDialogAccess() {
-    // @todo Port in https://www.drupal.org/project/ckeditor5/issues/3245720
-    $this->markTestSkipped('Blocked on https://www.drupal.org/project/ckeditor5/issues/3245720.');
+  public function testAltDisabled(): void {
+    // Disable the alt field for image media.
+    FieldConfig::loadByName('media', 'image', 'field_media_image')
+      ->setSetting('alt_field', FALSE)
+      ->save();
+
+    $assert_session = $this->assertSession();
+    $this->drupalGet($this->host->toUrl('edit-form'));
+    $this->waitForEditor();
+    // Wait for the media preview to load.
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.ck-widget.drupal-media img'));
+    // Test that by default no alt attribute is present on the drupal-media
+    // element.
+    $this->assertSourceAttributeSame('alt', NULL);
+    // Test that the preview shows the alt value from the media field's
+    // alt text.
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.ck-widget.drupal-media img[alt*="default alt"]'));
+    // Test that clicking the media widget triggers a CKEditor balloon panel
+    // with a single button to override the alt text.
+    $this->click('.ck-widget.drupal-media');
+    $this->assertVisibleBalloon('[aria-label="Drupal Media toolbar"]');
+    // Assert that no "Override media image alternative text" button is visible.
+    $override_alt_button = $this->getBalloonButton('Override media image alternative text');
+    $this->assertFalse($override_alt_button->isVisible());
   }
 
   /**
@@ -714,16 +757,14 @@ class MediaTest extends WebDriverTestBase {
 
     // Test that setting alt value to two double quotes will signal to the
     // MediaEmbed filter to unset the attribute on the media image field.
-    // We intentionally add a space space after the two double quotes to test
-    // the string is trimmed to two quotes.
+    // We intentionally add a space after the two double quotes to test that the
+    // string is trimmed to two quotes.
     $alt_override_input->setValue('"" ');
     $this->getBalloonButton('Save')->click();
     // Verify that the two double quote empty alt indicator ('""') set in
-    // the dialog has successfully resulted in a media image field with the
-    // alt attribute present but without a value.
-    // @todo Uncomment this in https://www.drupal.org/project/ckeditor5/issues/3206522.
-    // @codingStandardsIgnoreLine
-//    $this->assertNotEmpty($assert_session->waitForElementVisible('css', 'drupal-media img[alt=""]'));
+    // the alt text form balloon has successfully resulted in a media image
+    // field with the alt attribute present but without a value.
+    $this->assertNotEmpty($assert_session->waitForElementVisible('css', '[data-media-embed-test-view-mode] img[alt=""]'));
 
     // Test that the downcast drupal-media element's alt attribute now has the
     // empty string indicator.
@@ -1019,6 +1060,12 @@ class MediaTest extends WebDriverTestBase {
 
     $this->assertNotEmpty($drupalmedia = $assert_session->waitForElementVisible('css', '.ck-content .ck-widget.drupal-media'));
     $drupalmedia->click();
+    $this->assertVisibleBalloon('.ck-toolbar[aria-label="Drupal Media toolbar"]');
+
+    // Turn off caption, so we don't accidentally put our link in that text
+    // field instead of on the actual media.
+    $this->getBalloonButton('Toggle caption off')->click();
+    $assert_session->assertNoElementAfterWait('css', 'figure.drupal-media > figcaption');
 
     $this->assertVisibleBalloon('.ck-toolbar[aria-label="Drupal Media toolbar"]');
     $this->getBalloonButton('Link media')->click();
@@ -1091,7 +1138,7 @@ class MediaTest extends WebDriverTestBase {
     if ($can_use_format) {
       $this->waitForEditor();
       if ($media_embed_enabled) {
-        // The preview rendering, which in this test will use Classy's
+        // The preview rendering, which in this test will use Starterkit theme's
         // media.html.twig template, will fail without the CSRF token/header.
         // @see ::testEmbeddedMediaPreviewWithCsrfToken()
         $this->assertNotEmpty($assert_session->waitForElementVisible('css', 'article.media'));
@@ -1461,7 +1508,7 @@ class MediaTest extends WebDriverTestBase {
     $drupal_media_element = $editor_dom->getElementsByTagName('drupal-media')
       ->item(0);
     $this->assertFalse($drupal_media_element->hasAttribute('data-view-mode'));
-    $assert_session->elementExists('css', 'article.media--view-mode-view-mode-1');
+    $assert_session->waitForElement('css', 'article.media--view-mode-view-mode-1');
 
     // Test that setting allowed_view_modes back to two items restores the
     // field.
@@ -1504,7 +1551,7 @@ class MediaTest extends WebDriverTestBase {
     $this->assertVisibleBalloon('[aria-label="Drupal Media toolbar"]');
     $this->getBalloonButton('View Mode 1')->click();
     $this->getBalloonButton('View Mode 2 has Numeric ID')->click();
-    $assert_session->elementExists('css', 'article.media--view-mode-_2222');
+    $assert_session->waitForElement('css', 'article.media--view-mode-_2222');
     $this->assertEmpty($assert_session->waitForElementVisible('css', '.drupal-media figcaption'));
 
     // Test that a media with no view modes configured will be
@@ -1559,7 +1606,10 @@ class MediaTest extends WebDriverTestBase {
     $this->assertNotEmpty($assert_session->waitForElementVisible('css', '.ck-widget.drupal-media img'));
     $this->click('.ck-widget.drupal-media');
     $this->assertVisibleBalloon('[aria-label="Drupal Media toolbar"]');
-    $this->click('.ck-widget.drupal-media');
+
+    $this->assertNotEmpty($dropdown = $this->getBalloonButton('View Mode 1'));
+    $dropdown->click();
+
     // Check that all three view modes exist including the default view mode
     // that was not originally included in the allowed_view_modes.
     $this->assertNotEmpty($this->getBalloonButton('View Mode 1'));
@@ -1624,23 +1674,24 @@ JS;
   }
 
   /**
-   * Selects text inside an element.
-   *
-   * @param string $selector
-   *   A CSS selector for the element which contents should be selected.
+   * Ensure media preview isn't clickable.
    */
-  protected function selectTextInsideElement(string $selector): void {
-    $javascript = <<<JS
-(function() {
-  const el = document.querySelector("$selector");
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-})();
-JS;
-    $this->getSession()->evaluateScript($javascript);
+  public function testMediaPointerEvent() {
+    $entityViewDisplay = EntityViewDisplay::load('media.image.view_mode_1');
+    $thumbnail = $entityViewDisplay->getComponent('thumbnail');
+    $thumbnail['settings']['image_link'] = 'file';
+    $entityViewDisplay->setComponent('thumbnail', $thumbnail);
+    $entityViewDisplay->save();
+
+    $assert_session = $this->assertSession();
+    $page = $this->getSession()->getPage();
+    $url = $this->host->toUrl('edit-form');
+    $this->drupalGet($url);
+    $this->waitForEditor();
+    $assert_session->waitForLink('default alt');
+    $page->find('css', '.ck .drupal-media')->click();
+    // Assert that the media preview is not clickable by comparing the URL.
+    $this->assertEquals($url->toString(), $this->getUrl());
   }
 
 }

@@ -1,10 +1,3 @@
-pwa.admin_index:
-  path: '/admin/config/pwa'
-  defaults:
-    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
-    _title: 'Progressive web app'
-  requirements:
-    _permission: 'access administration pages'
 pwa.manifest:
   path: /manifest.json
   defaults:
@@ -22,6 +15,7 @@ pwa.offline_page:
   path: /offline
   defaults:
     _controller: '\Drupal\pwa\Controller\PWAController::pwa_offline_page'
+    _title: 'Offline'
   requirements:
     _permission: 'access content'
 pwa.module_active:
@@ -31,9 +25,23 @@ pwa.module_active:
   requirements:
     _permission: 'access content'
 pwa.config:
-  path: '/admin/config/pwa/settings'
+  path: '/admin/config/services/pwa'
   defaults:
-    _form: '\Drupal\pwa\Form\ConfigurationForm'
-    _title: 'Progressive Web Application'
+    _form: '\Drupal\pwa\Form\BasicConfigurationForm'
+    _title: 'Progressive Web App'
+  requirements:
+    _permission: 'administer pwa'
+pwa.config_manifest:
+  path: '/admin/config/services/pwa/manifest'
+  defaults:
+    _form: '\Drupal\pwa\Form\ManifestConfigurationForm'
+    _title: 'Manifest'
+  requirements:
+    _permission: 'administer pwa'
+pwa.config_serviceworker:
+  path: '/admin/config/services/pwa/serviceworker'
+  defaults:
+    _form: '\Drupal\pwa\Form\ServiceWorkerConfigurationForm'
+    _title: 'Service Worker'
   requirements:
     _permission: 'administer pwa'

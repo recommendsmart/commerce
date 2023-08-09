@@ -19,7 +19,7 @@ interface ExporterInterface {
    *   also export their files into the same folder.
    *
    * @return string
-   *   The rendered export as hal.
+   *   The rendered export.
    */
   public function exportContent($entity_type_id, $entity_id, $destination = NULL);
 

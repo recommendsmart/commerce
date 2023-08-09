@@ -1,3 +1,0 @@
-services:
-  advanced_pwa.push_notifications:
-    class: Drupal\advanced_pwa\Model\SubscriptionsDatastorage

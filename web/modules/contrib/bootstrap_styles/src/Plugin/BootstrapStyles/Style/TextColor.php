@@ -50,7 +50,6 @@ class TextColor extends StylePluginBase {
    * {@inheritdoc}
    */
   public function buildStyleFormElements(array &$form, FormStateInterface $form_state, $storage) {
-
     $form['text_color'] = [
       '#type' => 'radios',
       '#options' => $this->getStyleOptions('text_colors'),
@@ -72,11 +71,13 @@ class TextColor extends StylePluginBase {
    * {@inheritdoc}
    */
   public function submitStyleFormElements(array $group_elements) {
-    return [
+    $storage = [
       'text_color' => [
         'class' => $group_elements['text_color'],
       ],
     ];
+
+    return $storage;
   }
 
   /**

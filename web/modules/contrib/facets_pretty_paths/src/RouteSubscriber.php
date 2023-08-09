@@ -22,7 +22,7 @@ class RouteSubscriber extends RouteSubscriberBase {
   /**
    * Constructs a RouteSubscriber object.
    *
-   * @param Drupal\facets\FacetSource\FacetSourcePluginManager $facetSourcePluginManager
+   * @param \Drupal\facets\FacetSource\FacetSourcePluginManager $facetSourcePluginManager
    *   The plugin.manager.facets.facet_source service.
    */
   public function __construct(FacetSourcePluginManager $facetSourcePluginManager) {

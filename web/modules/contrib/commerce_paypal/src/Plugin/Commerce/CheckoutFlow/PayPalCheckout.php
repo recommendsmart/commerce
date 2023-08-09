@@ -42,13 +42,26 @@ class PayPalCheckout extends CheckoutFlowWithPanesBase {
    */
   public function getPanes() {
     $panes = parent::getPanes();
-    // Create a blacklist of panes we disallow adding to steps.
+    // Specify the list of panes to disable by default.
+    // Once the payment is approved, the customer shouldn't go through the
+    // payment gateway selection again, but hiding these panes by default
+    // instead of removing them still allows the merchant to use them if needed.
     $black_list = [
       'contact_information',
       'payment_information',
       'payment_process',
     ];
-    return array_diff_key($panes, array_combine($black_list, $black_list));
+    foreach ($panes as $id => $pane) {
+      if (!in_array($id, $black_list, TRUE)) {
+        continue;
+      }
+      // Ensure we don't override existing configuration for these panes.
+      if (!isset($this->configuration['panes'][$id])) {
+        $pane->setStepId('_disabled');
+      }
+    }
+
+    return $panes;
   }
 
   /**

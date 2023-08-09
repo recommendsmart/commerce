@@ -121,9 +121,6 @@
 	"CRC": {
 		"name": "කොස්ට රිකා කොලෝන්"
 	},
-	"HRK": {
-		"name": "ක්‍රොඒෂියානු කූනා"
-	},
 	"GYD": {
 		"name": "ගයනා ඩොලර්"
 	},
@@ -485,14 +482,5 @@
 	},
 	"FKP": {
 		"name": "ෆෝක්ලන්ඩ් දූපත් පවුම්"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

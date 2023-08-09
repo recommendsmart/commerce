@@ -28,8 +28,8 @@ class Flexible extends JobTypeBase {
     return new JobResult(
       $payload['expected_state'],
       $payload['expected_message'],
-      isset($payload['max_retries']) ? $payload['max_retries'] : NULL,
-      isset($payload['retry_delay']) ? $payload['retry_delay'] : NULL
+      $payload['max_retries'] ?? NULL,
+      $payload['retry_delay'] ?? NULL
     );
   }
 

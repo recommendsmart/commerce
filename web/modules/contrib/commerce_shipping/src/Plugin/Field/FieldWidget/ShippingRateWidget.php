@@ -229,9 +229,10 @@ class ShippingRateWidget extends WidgetBase implements ContainerFactoryPluginInt
     $response = new AjaxResponse();
 
     // Refresh the order summary if present.
-    if (isset($form['sidebar']['order_summary'])) {
-      $selector = sprintf('[data-drupal-selector="%s"]', $form['sidebar']['order_summary']['#attributes']['data-drupal-selector']);
-      $response->addCommand(new ReplaceCommand($selector, $form['sidebar']['order_summary']));
+    $order_summary = $form['sidebar']['order_summary'] ?? $form['order_summary'] ?? NULL;
+    if (isset($order_summary)) {
+      $selector = sprintf('[data-drupal-selector="%s"]', $order_summary['#attributes']['data-drupal-selector']);
+      $response->addCommand(new ReplaceCommand($selector, $order_summary));
     }
     if (isset($form['shipping_information']['shipments'])) {
       $response->addCommand(new ReplaceCommand('[data-drupal-selector="' . $form['shipping_information']['shipments']['#attributes']['data-drupal-selector'] . '"]', $form['shipping_information']['shipments']));

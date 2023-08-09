@@ -305,9 +305,6 @@
 	"CZK": {
 		"name": "Korunada Jeek"
 	},
-	"HRK": {
-		"name": "Kunada Korooshiya"
-	},
 	"GTQ": {
 		"name": "Kuwestalka Guwatemala"
 	},
@@ -425,9 +422,6 @@
 	"MVR": {
 		"name": "Rufiyada Maldifiya"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"GHS": {
 		"name": "Sedida Gana"
 	},
@@ -471,9 +465,6 @@
 	"MNT": {
 		"name": "Tugrikta Mongoliya"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"KRW": {
 		"name": "Wonka Koonfur Kuuriya",
 		"symbol": "₩"
@@ -492,8 +483,5 @@
 	"CNY": {
 		"name": "Yuwanta Shiinaha",
 		"symbol": "CN¥"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

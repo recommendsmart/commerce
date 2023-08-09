@@ -13,7 +13,7 @@ use Drupal\advancedqueue\Plugin\AdvancedQueue\JobType\JobTypeBase;
  *   id = "retry",
  *   label = @Translation("Retry"),
  *   max_retries = 1,
- *   retry_delay = 1,
+ *   retry_delay = 5,
  * )
  */
 class Retry extends JobTypeBase {

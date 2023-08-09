@@ -27,7 +27,7 @@ services:
 
   commerce_cart.cart_subscriber:
     class: Drupal\commerce_cart\EventSubscriber\CartEventSubscriber
-    arguments: ['@messenger', '@string_translation']
+    arguments: ['@messenger', '@string_translation', '@entity_type.manager']
     tags:
       - { name: event_subscriber }
 
@@ -36,6 +36,11 @@ services:
     arguments: ['@commerce_cart.cart_provider']
     tags:
       - { name: event_subscriber }
+
+  commerce_cart.order_label_subscriber:
+    class: Drupal\commerce_cart\EventSubscriber\OrderLabelSubscriber
+    tags:
+      - { name: event_subscriber, priority: -100 }
 
   commerce_cart.query_access_subscriber:
     class: Drupal\commerce_cart\EventSubscriber\QueryAccessSubscriber

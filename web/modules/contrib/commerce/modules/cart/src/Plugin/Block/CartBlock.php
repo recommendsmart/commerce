@@ -7,6 +7,7 @@ use Drupal\Core\Block\BlockBase;
 use Drupal\Core\Cache\Cache;
 use Drupal\Core\Cache\CacheableMetadata;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Extension\ModuleExtensionList;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
 use Drupal\Core\Url;
@@ -38,6 +39,13 @@ class CartBlock extends BlockBase implements ContainerFactoryPluginInterface {
   protected $entityTypeManager;
 
   /**
+   * The module extension list.
+   *
+   * @var \Drupal\Core\Extension\ModuleExtensionList
+   */
+  protected $moduleExtensionList;
+
+  /**
    * Constructs a new CartBlock.
    *
    * @param array $configuration
@@ -50,12 +58,19 @@ class CartBlock extends BlockBase implements ContainerFactoryPluginInterface {
    *   The cart provider.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Core\Extension\ModuleExtensionList|null $module_extension_list
+   *   The module extension list.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, CartProviderInterface $cart_provider, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, CartProviderInterface $cart_provider, EntityTypeManagerInterface $entity_type_manager, ModuleExtensionList $module_extension_list = NULL) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->cartProvider = $cart_provider;
     $this->entityTypeManager = $entity_type_manager;
+    if (!$module_extension_list) {
+      @trigger_error('Calling ' . __METHOD__ . '() without the $module_extension_list argument is deprecated in commerce:8.x-2.32 and is removed from commerce:3.x.');
+      $module_extension_list = \Drupal::service('extension.list.module');
+    }
+    $this->moduleExtensionList = $module_extension_list;
   }
 
   /**
@@ -67,7 +82,8 @@ class CartBlock extends BlockBase implements ContainerFactoryPluginInterface {
       $plugin_id,
       $plugin_definition,
       $container->get('commerce_cart.cart_provider'),
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('extension.list.module')
     );
   }
 
@@ -150,7 +166,7 @@ class CartBlock extends BlockBase implements ContainerFactoryPluginInterface {
       '#theme' => 'commerce_cart_block',
       '#icon' => [
         '#theme' => 'image',
-        '#uri' => drupal_get_path('module', 'commerce') . '/icons/ffffff/cart.png',
+        '#uri' => $this->moduleExtensionList->getPath('commerce') . '/icons/ffffff/cart.png',
         '#alt' => $this->t('Shopping cart'),
       ],
       '#count' => $count,

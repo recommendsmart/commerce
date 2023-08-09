@@ -30,7 +30,7 @@ class TransportAddForm extends TransportForm {
     }
 
     $form_state->setRedirect('entity.mailer_transport.collection');
-    parent::save($form, $form_state);
+    return parent::save($form, $form_state);
   }
 
 }

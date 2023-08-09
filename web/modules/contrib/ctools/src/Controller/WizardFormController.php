@@ -24,7 +24,7 @@ class WizardFormController extends FormController {
   /**
    * Tempstore Factory for keeping track of values in each step of the wizard.
    *
-   * @var \Drupal\Core\TempStore\PrivateTempStoreFactory
+   * @var \Drupal\Core\TempStore\SharedTempStoreFactory
    */
   protected $tempstore;
 
@@ -34,6 +34,13 @@ class WizardFormController extends FormController {
    * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
    */
   protected $dispatcher;
+
+  /**
+   * The wizard factory.
+   *
+   * @var \Drupal\ctools\Wizard\WizardFactoryInterface
+   */
+  protected $wizardFactory;
 
   /**
    * @param \Symfony\Component\HttpKernel\Controller\ArgumentResolverInterface $argument_resolver

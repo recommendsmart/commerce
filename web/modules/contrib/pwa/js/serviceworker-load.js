@@ -5,8 +5,12 @@
 
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', function () {
+      let scope = drupalSettings.path.baseUrl;
+      if (typeof drupalSettings.pwa.scope !== "undefined" && drupalSettings.pwa.scope !== null) {
+        scope = drupalSettings.pwa.scope;
+      }
       navigator.serviceWorker.register(drupalSettings.pwa.installPath, {
-        scope: drupalSettings.path.baseUrl
+        scope: scope
       }).then(function (registration) {
         console.log("Service Worker registered! Scope: ".concat(registration.scope));
       }).catch(function (err) {

@@ -70,7 +70,7 @@ class PluginSelectWidget extends WidgetBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
-    list(, $plugin_type) = explode(':', $configuration['field_definition']->getType());
+    [, $plugin_type] = explode(':', $configuration['field_definition']->getType());
 
     return new static(
       $plugin_id,
@@ -87,7 +87,7 @@ class PluginSelectWidget extends WidgetBase implements ContainerFactoryPluginInt
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    list(, $plugin_type) = explode(':', $this->fieldDefinition->getType());
+    [, $plugin_type] = explode(':', $this->fieldDefinition->getType());
 
     $definitions = $this->pluginManager->getDefinitions();
     $plugins = array_map(static function ($definition) {
@@ -132,7 +132,7 @@ class PluginSelectWidget extends WidgetBase implements ContainerFactoryPluginInt
       ];
 
       // Only build the configuration form once a plugin ID has been selected.
-      if ($target_plugin_id !== NULL) {
+      if (!empty($target_plugin_id)) {
         $inline_form = $this->inlineFormManager->createInstance('plugin_configuration', [
           'plugin_type' => $plugin_type,
           'plugin_id' => $target_plugin_id,

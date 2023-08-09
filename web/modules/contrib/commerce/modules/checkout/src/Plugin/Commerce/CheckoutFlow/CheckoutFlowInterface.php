@@ -68,6 +68,17 @@ interface CheckoutFlowInterface extends FormInterface, BaseFormIdInterface, Conf
   public function redirectToStep($step_id);
 
   /**
+   * Gets the checkout step to use.
+   *
+   * @param string $requested_step_id
+   *   The step ID that was requested.
+   *
+   * @return string|null
+   *   The step ID, or NULL if the plugin has no opinion.
+   */
+  public function getStepId($requested_step_id = NULL);
+
+  /**
    * Gets the defined steps.
    *
    * @return array

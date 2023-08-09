@@ -268,6 +268,35 @@ class ShippingTest extends ShippingKernelTestBase {
   }
 
   /**
+   * @covers ::applyEvery
+   */
+  public function testApplyEvery() {
+    $plugin = $this->taxType->getPlugin();
+    $plugin->setConfiguration([
+      'strategy' => 'every',
+    ]);
+    /** @var \Drupal\commerce_shipping\Entity\ShipmentInterface[] $shipments */
+    $shipments = $this->order->get('shipments')->referencedEntities();
+    $shipment = reset($shipments);
+
+    $plugin->apply($this->order);
+    $tax_adjustments = $shipment->getAdjustments(['tax']);
+    $this->assertCount(2, $tax_adjustments);
+
+    $this->assertEquals('eu_vat|fr|intermediate', $tax_adjustments[0]->getSourceId());
+    $this->assertEquals('VAT', $tax_adjustments[0]->getLabel());
+    $this->assertEquals(new Price('0.91', 'USD'), $tax_adjustments[0]->getAmount());
+    $this->assertEquals('0.1', $tax_adjustments[0]->getPercentage());
+    $this->assertTrue($tax_adjustments[0]->isIncluded());
+
+    $this->assertEquals('eu_vat|fr|standard', $tax_adjustments[1]->getSourceId());
+    $this->assertEquals('VAT', $tax_adjustments[1]->getLabel());
+    $this->assertEquals(new Price('1.67', 'USD'), $tax_adjustments[1]->getAmount());
+    $this->assertEquals('0.2', $tax_adjustments[1]->getPercentage());
+    $this->assertTrue($tax_adjustments[1]->isIncluded());
+  }
+
+  /**
    * @covers ::applyHighest
    */
   public function testApplyHighest() {

@@ -57,6 +57,9 @@ commerce_payment.commerce_payment_gateway.plugin.paypal_checkout:
     webhook_id:
       type: string
       label: 'The webhook ID'
+    enable_credit_card_icons:
+      type: boolean
+      label: 'Enable credit card icons'
 commerce_payment.commerce_payment_gateway.plugin.paypal_express_checkout:
   type: commerce_payment_gateway_configuration
   mapping:

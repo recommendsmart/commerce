@@ -7,6 +7,8 @@ layout_builder_form_style:
     js/components/tabs.js: { }
     js/components/inputs.js: { }
   dependencies:
+    - core/drupal
+    - core/once
     - bootstrap_styles/themes-overrides
 
 # Offcanvas Font
@@ -64,6 +66,11 @@ plugins_groups.spacing.spacing_preview:
 plugins_groups.border.border_preview:
   js:
     js/plugins_groups/border/border-preview.js: { }
+
+# shadow
+plugins_groups.shadow.shadow_preview:
+  js:
+    js/plugins_groups/shadow/shadow-preview.js: { }
 
 # Plugins.
 # background_color
@@ -150,8 +157,24 @@ plugin.border.build:
     theme:
       css/bs_example_classes/border-classes.css: { }
 
+# box_shadow
+plugin.box_shadow.layout_builder_form:
+  css:
+    theme:
+      css/bs_example_classes/box-shadow-classes.css: { }
+
+plugin.box_shadow.build:
+  css:
+    theme:
+      css/bs_example_classes/box-shadow-classes.css: { }
+
 # scroll_effects
 plugin.scroll_effects.build:
+  dependencies:
+    - bootstrap_styles/aos.remote
+
+# AOS remote library.
+aos.remote:
   remote: https://michalsnik.github.io/aos
   version: 1.x
   license:
@@ -159,8 +182,17 @@ plugin.scroll_effects.build:
     url: https://github.com/michalsnik/aos/blob/master/LICENSE
     gpl-compatible: true
   js:
-    https://unpkg.com/aos@2.3.1/dist/aos.js: { weight: -3, minified: true }
+    https://unpkg.com/aos@2.3.1/dist/aos.js: { type: external, weight: -3, minified: true }
     js/plugins/scroll_effects/build.js: { }
   css:
     theme:
       https://unpkg.com/aos@2.3.1/dist/aos.css: { }
+
+# AOS local library.
+aos.local:
+  js:
+    /libraries/aos/dist/aos.js: { weight: -3, minified: true }
+    js/plugins/scroll_effects/build.js: { }
+  css:
+    theme:
+      /libraries/aos/dist/aos.css: { minified: true }

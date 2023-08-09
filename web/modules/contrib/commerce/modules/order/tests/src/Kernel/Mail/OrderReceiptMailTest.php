@@ -114,7 +114,7 @@ class OrderReceiptMailTest extends OrderKernelTestBase {
     $email = end($emails);
     $this->assertEquals('text/html; charset=UTF-8;', $email['headers']['Content-Type']);
     $this->assertEquals('8Bit', $email['headers']['Content-Transfer-Encoding']);
-    $this->assertEquals($this->order->getStore()->getEmail(), $email['from']);
+    $this->assertEquals($this->order->getStore()->getEmailFromHeader(), $email['from']);
     $this->assertEquals('customer@example.com', $email['to']);
     $this->assertFalse(isset($email['headers']['Bcc']));
     $this->assertEquals('Order #2017/01 confirmed', $email['subject']);
@@ -130,7 +130,7 @@ class OrderReceiptMailTest extends OrderKernelTestBase {
     $email = end($emails);
     $this->assertEquals('text/html; charset=UTF-8;', $email['headers']['Content-Type']);
     $this->assertEquals('8Bit', $email['headers']['Content-Transfer-Encoding']);
-    $this->assertEquals($this->order->getStore()->getEmail(), $email['from']);
+    $this->assertEquals($this->order->getStore()->getEmailFromHeader(), $email['from']);
     $this->assertEquals('custom@example.com', $email['to']);
     $this->assertEquals('store@example.com', $email['headers']['Bcc']);
     $this->assertEquals('Order #2017/01 confirmed', $email['subject']);

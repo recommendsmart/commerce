@@ -47,6 +47,8 @@ class BreadcrumbManagerTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->moduleHandler = $this->createMock('Drupal\Core\Extension\ModuleHandlerInterface');
     $this->breadcrumbManager = new BreadcrumbManager($this->moduleHandler);
     $this->breadcrumb = new Breadcrumb();
@@ -86,7 +88,7 @@ class BreadcrumbManagerTest extends UnitTestCase {
 
     $builder->expects($this->once())
       ->method('applies')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
 
     $builder->expects($this->once())
       ->method('build')
@@ -122,7 +124,7 @@ class BreadcrumbManagerTest extends UnitTestCase {
     $this->breadcrumb->addCacheContexts(['baz'])->addCacheTags(['qux']);
     $builder2->expects($this->once())
       ->method('applies')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
     $builder2->expects($this->once())
       ->method('build')
       ->willReturn($this->breadcrumb);
@@ -150,7 +152,7 @@ class BreadcrumbManagerTest extends UnitTestCase {
     $builder1 = $this->createMock('Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface');
     $builder1->expects($this->once())
       ->method('applies')
-      ->will($this->returnValue(FALSE));
+      ->willReturn(FALSE);
     $builder1->expects($this->never())
       ->method('build');
 
@@ -160,7 +162,7 @@ class BreadcrumbManagerTest extends UnitTestCase {
     $this->breadcrumb->addCacheContexts(['baz'])->addCacheTags(['qux']);
     $builder2->expects($this->once())
       ->method('applies')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
     $builder2->expects($this->once())
       ->method('build')
       ->willReturn($this->breadcrumb);
@@ -188,10 +190,10 @@ class BreadcrumbManagerTest extends UnitTestCase {
     $builder = $this->createMock('Drupal\Core\Breadcrumb\BreadcrumbBuilderInterface');
     $builder->expects($this->once())
       ->method('applies')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
     $builder->expects($this->once())
       ->method('build')
-      ->will($this->returnValue('invalid_result'));
+      ->willReturn('invalid_result');
 
     $this->breadcrumbManager->addBuilder($builder, 0);
     $this->expectException(\UnexpectedValueException::class);

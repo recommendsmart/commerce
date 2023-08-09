@@ -168,7 +168,7 @@ class PromotionTest extends OrderKernelTestBase {
 
     $date_pattern = DateTimeItemInterface::DATETIME_STORAGE_FORMAT;
     $time = $this->container->get('datetime.time');
-    $default_start_date = gmdate($date_pattern, $time->getRequestTime());
+    $default_start_date = date($date_pattern, $time->getRequestTime());
     $this->assertEquals($default_start_date, $promotion->getStartDate()->format($date_pattern));
     $promotion->setStartDate(new DrupalDateTime('2017-01-01 12:12:12'));
     $this->assertEquals('2017-01-01 12:12:12 UTC', $promotion->getStartDate()->format('Y-m-d H:i:s T'));
@@ -188,8 +188,18 @@ class PromotionTest extends OrderKernelTestBase {
     $promotion->save();
     $this->assertEquals(0, $promotion->getOwnerId());
 
+    $promotion = Promotion::create([
+      'status' => FALSE,
+    ]);
     $this->assertFalse($promotion->requiresCoupon());
     $promotion->set('require_coupon', TRUE);
+    $this->assertTrue($promotion->requiresCoupon());
+    $promotion->set('require_coupon', FALSE);
+    $this->assertFalse($promotion->requiresCoupon());
+    // As soon as a promotion requires a coupon, applying a coupon is required
+    // in order for the promotion to apply.
+    $promotion->addCoupon($coupon1);
+    $promotion->save();
     $this->assertTrue($promotion->requiresCoupon());
   }
 

@@ -9,10 +9,11 @@ use Drupal\commerce_payment\Exception\HardDeclineException;
 use Drupal\commerce_payment\Exception\InvalidRequestException;
 use Drupal\commerce_payment\Exception\PaymentGatewayException;
 use Drupal\commerce_payment\Plugin\Commerce\PaymentGateway\OnsitePaymentGatewayBase;
+use Drupal\commerce_paypal\Event\PayflowRequestEvent;
+use Drupal\commerce_paypal\Event\PayPalEvents;
 use Drupal\commerce_price\Price;
 use Drupal\Core\Form\FormStateInterface;
 use GuzzleHttp\Exception\RequestException;
-use InvalidArgumentException;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -55,12 +56,20 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
   protected $rounder;
 
   /**
+   * The event dispatcher.
+   *
+   * @var \Symfony\Component\EventDispatcher\EventDispatcherInterface
+   */
+  protected $eventDispatcher;
+
+  /**
    * {@inheritdoc}
    */
   public static function create(ContainerInterface $container, array $configuration, $plugin_id, $plugin_definition) {
     $instance = parent::create($container, $configuration, $plugin_id, $plugin_definition);
     $instance->httpClient = $container->get('http_client');
     $instance->rounder = $container->get('commerce_price.rounder');
+    $instance->eventDispatcher = $container->get('event_dispatcher');
     return $instance;
   }
 
@@ -283,7 +292,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
 
     $result = [];
     foreach ($responseParts as $bodyPart) {
-      list($key, $value) = explode('=', $bodyPart, 2);
+      [$key, $value] = explode('=', $bodyPart, 2);
       $result[strtolower($key)] = $value;
     }
 
@@ -326,7 +335,7 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
 
     $payment_method = $payment->getPaymentMethod();
     if (empty($payment_method)) {
-      throw new InvalidArgumentException('The provided payment has no payment method referenced.');
+      throw new \InvalidArgumentException('The provided payment has no payment method referenced.');
     }
 
     switch ($payment_state) {
@@ -355,14 +364,19 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
     $this->validatePayment($payment, 'new');
 
     try {
-      $data = $this->executeTransaction([
+      $params = [
         'trxtype' => $capture ? 'S' : 'A',
         'amt' => $this->rounder->round($payment->getAmount())->getNumber(),
         'currencycode' => $payment->getAmount()->getCurrencyCode(),
         'origid' => $payment->getPaymentMethod()->getRemoteId(),
         'verbosity' => 'HIGH',
         // 'orderid' => $payment->getOrderId(),
-      ]);
+      ];
+
+      $event = new PayflowRequestEvent($payment->getOrder(), $params);
+      $this->eventDispatcher->dispatch($event, PayPalEvents::PAYFLOW_CREATE_PAYMENT);
+
+      $data = $this->executeTransaction($event->getParams());
       if ($data['result'] !== '0') {
         throw new HardDeclineException('Could not charge the payment method. Response: ' . $data['respmsg'], $data['result']);
       }
@@ -440,14 +454,12 @@ class Payflow extends OnsitePaymentGatewayBase implements PayflowInterface {
       $payment->save();
     }
     catch (RequestException $e) {
-      throw new InvalidArgumentException('Only payments in the "authorization" state can be voided.');
+      throw new \InvalidArgumentException('Only payments in the "authorization" state can be voided.');
     }
   }
 
   /**
    * {@inheritdoc}
-   *
-   * TODO: Find a way to store the capture ID.
    */
   public function refundPayment(PaymentInterface $payment, Price $amount = NULL) {
     $this->assertPaymentState($payment, ['completed', 'partially_refunded']);

@@ -222,9 +222,6 @@
 	"CRC": {
 		"name": "Kosta Rikos kolonas"
 	},
-	"HRK": {
-		"name": "Kroatijos kuna"
-	},
 	"CUC": {
 		"name": "Kubos konvertuojamasis pesas"
 	},
@@ -443,9 +440,6 @@
 	},
 	"UAH": {
 		"name": "Ukrainos grivina"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "Urugvajaus pesas"

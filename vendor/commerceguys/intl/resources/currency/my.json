@@ -50,9 +50,6 @@
 	"CDF": {
 		"name": "ကွန်ဂို ဖရန့်"
 	},
-	"HRK": {
-		"name": "ခရိုအေးရှား ခူးနာ"
-	},
 	"CLP": {
 		"name": "ချီလီ ပီဆို"
 	},
@@ -490,14 +487,5 @@
 	},
 	"DZD": {
 		"name": "အယ်လ်ဂျီးရီးယား ဒီနာ"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

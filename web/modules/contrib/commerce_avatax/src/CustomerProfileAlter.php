@@ -94,10 +94,13 @@ class CustomerProfileAlter implements CustomerProfileAlterInterface {
       ['query' => ['token' => $this->csrf->get('commerce-avatax/address-validator')]]
     )->setAbsolute();
 
+    // If no countries were checked in the admin, validate US & CA addresses.
+    $countries = $this->config->get('address_validation.countries');
+    $countries = !empty($countries) ? $countries : ['US' => 'US', 'CA' => 'CA'];
     // Set ID for JS more precise targeting.
     $js_data = [
       'inline_id' => $inline_form['#id'],
-      'countries' => $this->config->get('address_validation.countries'),
+      'countries' => $countries,
       'rendered' => $rendered,
       'endpoint' => $endpoint->toString(),
     ];
@@ -105,9 +108,13 @@ class CustomerProfileAlter implements CustomerProfileAlterInterface {
     $profile = $inline_form['#inline_form']->getEntity();
     if ($profile !== NULL) {
       $address = $profile->get('address')->first();
-      assert($address instanceof AddressItem);
-      $js_data['address'] = $address->toArray();
-      $js_data['country'] = $address->getCountryCode() ?? $inline_form['address']['widget'][0]['address']['#default_value']['country_code'];
+      if ($address instanceof AddressItem) {
+        $js_data['address'] = $address->toArray();
+        $js_data['country'] = !empty($address->getCountryCode()) ? $address->getCountryCode() : NULL;
+      }
+      if (!isset($js_data['country']) && isset($inline_form['address']['widget'][0]['address']['#default_value']['country_code'])) {
+        $js_data['country'] = $inline_form['address']['widget'][0]['address']['#default_value']['country_code'];
+      }
       $js_data['fields'] = [
         'address_line1',
         'address_line2',
@@ -141,14 +148,14 @@ class CustomerProfileAlter implements CustomerProfileAlterInterface {
 
     assert($inline_form['#inline_form'] instanceof CustomerProfile);
     $inline_form_values = $form_state->getValue($inline_form['#parents']);
-    $address_suggestion = $inline_form_values['address_suggestion'] ?? 'original';
-    if ($address_suggestion !== 'original') {
+    $address_suggestion = $inline_form_values['address_suggestion'] ?? NULL;
+    if ($address_suggestion && $address_suggestion !== 'original') {
       $profile = $inline_form['#inline_form']->getEntity();
 
       $address = $profile->get('address')->first();
       assert($address instanceof AddressItem);
       $suggestion = Json::decode(base64_decode($address_suggestion));
-      $values = array_merge($address->toArray(), $suggestion);
+      $values = array_merge($address->toArray(), (array) $suggestion);
       $address->setValue($values);
 
       $profile->save();

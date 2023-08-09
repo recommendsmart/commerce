@@ -5,6 +5,7 @@ namespace Drupal\Tests\commerce\Functional;
 use Drupal\commerce_price\Comparator\NumberComparator;
 use Drupal\commerce_price\Comparator\PriceComparator;
 use Drupal\commerce_store\StoreCreationTrait;
+use Drupal\Core\StringTranslation\StringTranslationTrait;
 use Drupal\Tests\block\Traits\BlockCreationTrait;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\commerce\Traits\CommerceBrowserTestTrait;
@@ -20,6 +21,7 @@ abstract class CommerceBrowserTestBase extends BrowserTestBase {
   use StoreCreationTrait;
   use CommerceBrowserTestTrait;
   use DeprecationSuppressionTrait;
+  use StringTranslationTrait;
 
   /**
    * The store entity.
@@ -80,7 +82,7 @@ abstract class CommerceBrowserTestBase extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     parent::tearDown();
     $this->restoreErrorHandler();
   }

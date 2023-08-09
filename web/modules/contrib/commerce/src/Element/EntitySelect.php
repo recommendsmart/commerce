@@ -34,7 +34,7 @@ use Drupal\Core\Render\Element\FormElement;
  *   '#multiple' => TRUE,
  * ];
  *
- * @end
+ * @endcode
  *
  * @FormElement("commerce_entity_select")
  */

@@ -28,7 +28,7 @@ class ExporterIntegrationTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = ['system', 'file', 'user'];
+  protected static $modules = ['system', 'file', 'user'];
 
   /**
    * The tested default content exporter.
@@ -90,7 +90,7 @@ class ExporterIntegrationTest extends KernelTestBase {
         'format' => 'plain_text',
       ]
     ];
-    $this->assertEqual($expected_description, $exported_decoded['default']['description']);
+    $this->assertEquals($expected_description, $exported_decoded['default']['description']);
 
     // Tests export of taxonomy parent field.
     $child_term = Term::create([
@@ -115,6 +115,7 @@ class ExporterIntegrationTest extends KernelTestBase {
 
     $role = Role::create([
       'id' => 'example_role',
+      'label' => 'Example',
     ]);
     $role->save();
 
@@ -137,11 +138,11 @@ class ExporterIntegrationTest extends KernelTestBase {
     $exported_by_entity_type = $this->exporter->exportContentWithReferences('node', $node->id());
 
     // Ensure that the node type is not tryed to be exported.
-    $this->assertEqual(array_keys($exported_by_entity_type), ['node', 'user']);
+    $this->assertEquals(array_keys($exported_by_entity_type), ['node', 'user']);
 
     // Ensure the right UUIDs are exported.
-    $this->assertEqual([$node->uuid()], array_keys($exported_by_entity_type['node']));
-    $this->assertEqual([$user->uuid()], array_keys($exported_by_entity_type['user']));
+    $this->assertEquals([$node->uuid()], array_keys($exported_by_entity_type['node']));
+    $this->assertEquals([$user->uuid()], array_keys($exported_by_entity_type['user']));
 
     // Compare the actual serialized data.
     $meta = [
@@ -315,7 +316,7 @@ class ExporterIntegrationTest extends KernelTestBase {
     /** @var \Drupal\file\FileInterface $file */
     $file = File::create([
       'uri' => $test_file->uri,
-      'status' => \FILE_STATUS_PERMANENT,
+      'status' => \Drupal\file\FileInterface::STATUS_PERMANENT,
     ]);
     $file->save();
 

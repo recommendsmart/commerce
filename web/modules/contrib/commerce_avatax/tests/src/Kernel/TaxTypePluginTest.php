@@ -40,7 +40,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'path',
     'commerce_tax',
     'commerce_avatax',
@@ -160,10 +160,9 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
       'shipping_tax_code' => 'FR020100',
       'address_validation' => [
         'enable' => FALSE,
-        'countries' => [
-        ],
-        'postal_code_match' => FALSE
-      ]
+        'countries' => [],
+        'postal_code_match' => FALSE,
+      ],
     ], $config);
   }
 
@@ -182,7 +181,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
    * Tests applying.
    */
   public function testApply() {
-    list($order_item) = $this->order->getItems();
+    $order_item = $this->order->getItems()[0];
     $this->mockResponse([
       new Response(200, [], Json::encode([
         'lines' => [
@@ -191,6 +190,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
             'tax' => 5.25,
             'details' => [
               [
+                'tax' => 5.25,
                 'taxName' => 'CA STATE TAX',
               ],
             ],
@@ -206,7 +206,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
     $adjustment = reset($adjustments);
     $this->assertEquals('tax', $adjustment->getType());
     $this->assertEquals('CA STATE TAX', $adjustment->getLabel());
-    $this->assertEquals('avatax|avatax', $adjustment->getSourceId());
+    $this->assertEquals('avatax|avatax|ca_state_tax', $adjustment->getSourceId());
     $this->assertEquals(new Price('5.25', 'USD'), $adjustment->getAmount());
 
     // Disable the tax calculation and ensure the tax type plugin no longer
@@ -345,7 +345,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
     $this->assertNull($request_body['lines'][0]['taxCode']);
     $variation2 = ProductVariation::create([
       'type' => 'default',
-      'sku' => 'TEST_' . strtolower($this->randomMachineName()),
+      'sku' => 'TEST_' . strtolower($this->randomMachineName(50)),
       'title' => $this->randomString(),
       'status' => 1,
       'price' => new Price('12.00', 'USD'),
@@ -364,6 +364,8 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
     $request_body = $avatax_lib->prepareTransactionsCreate($this->order);
     $this->assertNull($request_body['lines'][0]['taxCode']);
     $this->assertEquals('TESTCODE123', $request_body['lines'][1]['taxCode']);
+    $this->assertEquals($this->order->getItems()[0]->getPurchasedEntity()->getSku(), $request_body['lines'][0]['itemCode']);
+    $this->assertEquals($this->order->getItems()[1]->getPurchasedEntity()->uuid(), $request_body['lines'][1]['itemCode']);
   }
 
   /**
@@ -401,7 +403,7 @@ class TaxTypePluginTest extends OrderKernelTestBase implements ServiceModifierIn
     $tax_adjustment_total = NULL;
     foreach ($tax_adjustments as $adjustment) {
       $this->assertEquals('Sales tax', $adjustment->getLabel());
-      $this->assertEquals('avatax|avatax', $adjustment->getSourceId());
+      $this->assertEquals('avatax|avatax|sales_tax', $adjustment->getSourceId());
       $tax_adjustment_total = $tax_adjustment_total ? $tax_adjustment_total->add($adjustment->getAmount()) : $adjustment->getAmount();
     }
     $this->assertCount(2, $tax_adjustments);

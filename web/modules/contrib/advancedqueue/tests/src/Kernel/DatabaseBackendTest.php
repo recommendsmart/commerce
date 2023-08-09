@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\advancedqueue\Kernel;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\advancedqueue\Entity\Queue;
 use Drupal\advancedqueue\Job;
 use Drupal\Component\Datetime\TimeInterface;
@@ -12,6 +13,8 @@ use Drupal\KernelTests\KernelTestBase;
  * @group advancedqueue
  */
 class DatabaseBackendTest extends KernelTestBase {
+
+  use ProphecyTrait;
 
   /**
    * The first tested queue.
@@ -32,14 +35,14 @@ class DatabaseBackendTest extends KernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'advancedqueue',
   ];
 
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installSchema('advancedqueue', ['advancedqueue']);
@@ -220,6 +223,17 @@ class DatabaseBackendTest extends KernelTestBase {
     $job->setExpiresTime(635814000 + 6 + 5);
     $claimed_job = $this->firstQueue->getBackend()->claimJob();
     $this->assertEquals($job, $claimed_job);
+  }
+
+  /**
+   * @covers ::loadJob
+   */
+  public function testLoadJob() {
+    $job = Job::create('simple', ['test' => '1']);
+    $this->firstQueue->getBackend()->enqueueJob($job);
+    $claimed_job = $this->firstQueue->getBackend()->claimJob();
+    $loaded_job = $this->firstQueue->getBackend()->loadJob($claimed_job->getId());
+    $this->assertEquals($loaded_job, $claimed_job);
   }
 
   /**

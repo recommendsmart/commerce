@@ -110,7 +110,7 @@ class SearchQuery extends SelectExtender {
    * This is always used for the second step in the query, but is not part of
    * the preparation step unless $this->simple is FALSE.
    *
-   * @var Drupal\Core\Database\Query\ConditionInterface[]
+   * @var \Drupal\Core\Database\Query\ConditionInterface[]
    */
   protected $conditions;
 
@@ -521,7 +521,7 @@ class SearchQuery extends SelectExtender {
     // search expression. So, use string replacement to change this to a
     // calculated query expression, counting the number of occurrences so
     // in the execute() method we can add arguments.
-    while (strpos($score, 'i.relevance') !== FALSE) {
+    while (str_contains($score, 'i.relevance')) {
       $pieces = explode('i.relevance', $score, 2);
       $score = implode('((ROUND(:normalization_' . $this->relevance_count . ', 4)) * i.score * t.count)', $pieces);
       $this->relevance_count++;

@@ -26,6 +26,20 @@
  */
 #}
 
-{% extends "block--layout-builder.html.twig" %}
-
-{% do attributes.addClass(['fs-1', 'fw-bold']) %}
+{%
+  set classes = [
+    'block',
+    'block-' ~ configuration.provider|clean_class,
+    'block-' ~ plugin_id|clean_class,
+  ]
+%}
+<div class="fs-1 fw-bold">
+  <div{{ attributes.addClass(classes) }}>
+    {{ title_prefix }}
+    {% if label %}
+      <h2{{ title_attributes }}>{{ label }}</h2>
+    {% endif %}
+    {{ title_suffix }}
+    {{ content }}
+  </div>
+</div>

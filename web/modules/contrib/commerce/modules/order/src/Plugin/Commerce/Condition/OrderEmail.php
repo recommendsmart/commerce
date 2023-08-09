@@ -60,7 +60,7 @@ class OrderEmail extends ConditionBase {
     /** @var \Drupal\commerce_order\Entity\OrderInterface $order */
     $order = $entity;
 
-    return strcasecmp($this->configuration['mail'], $order->getEmail()) === 0;
+    return strcasecmp($this->configuration['mail'], (string) $order->getEmail()) === 0;
   }
 
 }

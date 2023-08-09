@@ -5,8 +5,8 @@
  * PWA hooks.
  */
 
+use Drupal\Core\Session\AccountInterface;
 use Drupal\Core\Url;
-use Drupal\pwa\Controller\PWAController;
 
 /**
  * Implements hook_page_attachments().
@@ -45,13 +45,22 @@ function pwa_page_attachments(array &$attachments) {
   ];
   $attachments['#attached']['html_head'][] = [$theme_color, 'theme_color'];
 
+  /** @var callable */
+  $getCacheVersionCallable = \Drupal::service('controller_resolver')
+    ->getControllerFromDefinition(
+      '\Drupal\pwa\Controller\PWAController::pwa_get_cache_version'
+    );
+
   // Add cache version to drupal settings.
-  $attachments['#attached']['drupalSettings']['pwa']['cache_version'] = PWAController::pwa_get_cache_version();
+  $attachments['#attached']['drupalSettings']['pwa']['cache_version'] =
+    \call_user_func($getCacheVersionCallable);
 
   $installPath = '/serviceworker-pwa';
   \Drupal::moduleHandler()->alter('pwa_install_path', $installPath);
 
   $attachments['#attached']['drupalSettings']['pwa']['installPath'] = $installPath;
+  $scope = $config->get('scope');
+  $attachments['#attached']['drupalSettings']['pwa']['scope'] = !empty($scope) ? $scope : NULL;
 }
 
 /**
@@ -69,7 +78,14 @@ function pwa_theme() {
  * Check data from input.
  */
 function pwa_str_to_list($string) {
-  $list = explode("\n", $string);
+  $list = $string ? explode("\n", $string) : [];
   $list = array_map('trim', $list);
   return array_filter($list, 'strlen');
+}
+
+/**
+ * Implements hook_user_login().
+ */
+function pwa_user_login(AccountInterface $account) {
+  \Drupal::service('session')->set('pwa_reset', TRUE);
 }

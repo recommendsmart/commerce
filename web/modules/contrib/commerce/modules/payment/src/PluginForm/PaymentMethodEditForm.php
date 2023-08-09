@@ -161,7 +161,7 @@ class PaymentMethodEditForm extends PaymentMethodFormBase {
   protected function validateCreditCardForm(array &$element, FormStateInterface $form_state) {
     $values = $form_state->getValue($element['#parents']);
     if (!CreditCard::validateExpirationDate($values['expiration']['month'], $values['expiration']['year'])) {
-      $form_state->setError($element['expiration'], t('You have entered an expired credit card.'));
+      $form_state->setError($element['expiration'], $this->t('You have entered an expired credit card.'));
     }
   }
 

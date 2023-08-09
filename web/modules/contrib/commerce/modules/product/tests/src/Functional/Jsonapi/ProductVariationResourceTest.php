@@ -90,7 +90,7 @@ class ProductVariationResourceTest extends ResourceTestBase {
   /**
    * {@inheritdoc}
    */
-  public function setUp() {
+  public function setUp(): void {
     parent::setUp();
     $factory = PhpUnitComparatorFactory::getInstance();
     $factory->register(new NumberComparator());

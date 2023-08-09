@@ -129,3 +129,16 @@ function commerce_shipping_update_8205() {
 function commerce_shipping_update_8206() {
   \Drupal::service('entity_field.manager')->clearCachedFieldDefinitions();
 }
+
+/**
+ * Uninstall the created / changed fields added by content_translation.
+ */
+function commerce_shipping_update_8207() {
+  $definition_update_manager = \Drupal::entityDefinitionUpdateManager();
+
+  foreach (['content_translation_created', 'content_translation_changed'] as $field_name) {
+    if ($field_storage_definition = $definition_update_manager->getFieldStorageDefinition($field_name, 'commerce_shipping_method')) {
+      $definition_update_manager->uninstallFieldStorageDefinition($field_storage_definition);
+    }
+  }
+}

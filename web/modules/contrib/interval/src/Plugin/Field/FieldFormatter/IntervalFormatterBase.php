@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldFormatter\IntervalFormatterBase.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldFormatter;
 
 use Drupal\Core\Field\FieldItemListInterface;
@@ -29,10 +24,10 @@ abstract class IntervalFormatterBase extends FormatterBase {
     $interval = $item->getIntervalPlugin();
     return $this->formatPlural(
       $item->getInterval(), '1 @singular', '@count @plural',
-      array(
+      [
         '@singular' => $interval['singular'],
         '@plural' => $interval['plural'],
-      )
+      ]
     );
   }
 
@@ -40,14 +35,14 @@ abstract class IntervalFormatterBase extends FormatterBase {
    * {@inheritdoc}
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
-    $element = array();
+    $element = [];
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
+      $element[$delta] = [
         '#type' => 'html_tag',
-        '#attributes' => array('class' => array('interval-value')),
+        '#attributes' => ['class' => ['interval-value']],
         '#tag' => 'div',
         '#value' => $this->formatInterval($item),
-      );
+      ];
     }
     return $element;
   }

@@ -24,9 +24,8 @@ class DefaultContentYamlImportTest extends KernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'taxonomy',
-    'hal',
     'node',
     'text',
     'filter',
@@ -103,7 +102,7 @@ class DefaultContentYamlImportTest extends KernelTestBase {
     $extensions['module'] = module_config_sort($extensions['module']);
     $sync->write('core.extension', $extensions);
     // Slightly hacky but we need the config from the test module too.
-    $module_storage = new FileStorage(drupal_get_path('module', 'default_content_test_yaml') . '/config/install');
+    $module_storage = new FileStorage(\Drupal::service('extension.list.module')->getPath('default_content_test_yaml') . '/config/install');
     foreach ($module_storage->listAll() as $name) {
       $sync->write($name, $module_storage->read($name));
     }

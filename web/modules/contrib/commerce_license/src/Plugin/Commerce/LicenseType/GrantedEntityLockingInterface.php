@@ -2,16 +2,16 @@
 
 namespace Drupal\commerce_license\Plugin\Commerce\LicenseType;
 
+use Drupal\commerce_license\Entity\LicenseInterface;
 use Drupal\Core\Entity\EntityInterface;
 use Drupal\Core\Form\FormStateInterface;
-use Drupal\commerce_license\Entity\LicenseInterface;
 
 /**
  * Interface for license types that lock an aspect of the entities they grant.
  *
  * This interface should be used by license types that are able to alter the
  * forms for entities they grant rights to. Typically, this will be to prevent
- * removal of something the licenes grants, and thus prevent the license and the
+ * removal of something the license grants, and thus prevent the license and the
  * entity getting out of sync.
  *
  * For example, the Role license type that grants a role to a user prevents the
@@ -44,6 +44,6 @@ interface GrantedEntityLockingInterface {
    *
    * @see commerce_license_form_alter()
    */
-  public function alterEntityOwnerForm(array &$form, FormStateInterface $form_state, $form_id, LicenseInterface $license, EntityInterface $form_entity);
+  public function alterEntityOwnerForm(array &$form, FormStateInterface $form_state, string $form_id, LicenseInterface $license, EntityInterface $form_entity);
 
 }

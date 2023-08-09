@@ -259,9 +259,6 @@
 	"SEK": {
 		"name": "korona szwedzka"
 	},
-	"HRK": {
-		"name": "kuna chorwacka"
-	},
 	"MWK": {
 		"name": "kwacha malawijska"
 	},
@@ -463,9 +460,6 @@
 	},
 	"MRU": {
 		"name": "ugija mauretańska"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"VUV": {
 		"name": "vatu wanuackie"

@@ -18,7 +18,7 @@ abstract class ProductTaxKernelTestBase extends CommerceKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_tax',
     'commerce_product',
     'commerce_product_tax',

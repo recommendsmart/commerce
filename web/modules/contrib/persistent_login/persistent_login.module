@@ -39,10 +39,68 @@ function persistent_login_user_login_form_submit(&$form, FormStateInterface $for
 }
 
 /**
+ * Implements hook_form_FORM_ID_alter().
+ */
+function persistent_login_form_user_form_alter(&$form, FormStateInterface $form_state, $form_id): void {
+  /** @var \Drupal\user\UserInterface $user */
+  $user = $form_state->getFormObject()->getEntity();
+  if (!$user || $user->isAnonymous() || $user->isNew()) {
+    return;
+  }
+
+  $newElement = [
+    '#type' => 'checkbox',
+    '#title' => ($user->id() == Drupal::currentUser()->id()) ? t('Logout all other devices.') : t('Logout all devices.'),
+    '#description' => t('After changing password, devices that selected the "Remember Me" option when logging in will have to log in again.'),
+    '#states' => [
+      'visible' => [
+        ':input[name="pass[pass1]"]' => ['!value' => ''],
+      ],
+    ],
+  ];
+
+  // Place the option to clear tokens after new password confirm element.
+  $passPosition = array_flip(array_keys($form['account']))['pass'];
+  $form['account'] = array_slice($form['account'], 0, $passPosition + 1, TRUE) +
+    ['persistent_login_logout' => $newElement] +
+    array_slice($form['account'], $passPosition + 1, NULL, TRUE);
+
+  $form['actions']['submit']['#submit'][] = 'persistent_login_user_edit_form_submit';
+}
+
+/**
+ * Submit handler for user edit form.
+ */
+function persistent_login_user_edit_form_submit(&$form, FormStateInterface $form_state): void {
+  if (
+    !$form_state->getValue('persistent_login_logout')
+    ||
+    !$form_state->getValue('pass')
+  ) {
+    return;
+  }
+
+  $uid = $form_state->getFormObject()->getEntity()->id();
+
+  Drupal::database()->delete('persistent_login')
+    ->condition('uid', $uid)
+    ->execute();
+
+  // Generate a new token for the current user if appropriate.
+  /** @var \Drupal\persistent_login\EventSubscriber\TokenHandler $tokenHandler */
+  $tokenHandler = Drupal::service('persistent_login.token_handler');
+  $currentToken = $tokenHandler->getTokenFromCookie(Drupal::request());
+  if ($uid === Drupal::currentUser()->id() && $currentToken) {
+    $tokenHandler->setNewSessionToken($uid);
+  }
+}
+
+/**
  * Implements hook_user_logout().
  */
 function persistent_login_user_logout($account) {
-  \Drupal::service('persistent_login.token_handler')->clearSessionToken();
+  \Drupal::service('persistent_login.token_handler')
+    ->clearSessionToken(\Drupal::request());
 }
 
 /**

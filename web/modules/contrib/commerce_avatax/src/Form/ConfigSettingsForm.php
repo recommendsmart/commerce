@@ -2,6 +2,7 @@
 
 namespace Drupal\commerce_avatax\Form;
 
+use Drupal\commerce_avatax\ClientFactory;
 use Drupal\Component\Serialization\Json;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Extension\ModuleHandlerInterface;
@@ -31,6 +32,13 @@ class ConfigSettingsForm extends ConfigFormBase {
   protected $moduleHandler;
 
   /**
+   * The Avatax client factory.
+   *
+   * @var \Drupal\commerce_avatax\ClientFactory
+   */
+  protected $clientFactory;
+
+  /**
    * Constructs a ConfigSettingsForm object.
    *
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
@@ -41,13 +49,16 @@ class ConfigSettingsForm extends ConfigFormBase {
    *   The module handler.
    * @param \Drupal\Core\StringTranslation\TranslationInterface $string_translation
    *   The string translation.
+   * @param \Drupal\commerce_avatax\ClientFactory $client_factory
+   *   The Avatax client factory.
    */
-  public function __construct(ConfigFactoryInterface $config_factory, MessengerInterface $messenger, ModuleHandlerInterface $module_handler, TranslationInterface $string_translation) {
+  public function __construct(ConfigFactoryInterface $config_factory, MessengerInterface $messenger, ModuleHandlerInterface $module_handler, TranslationInterface $string_translation, ClientFactory $client_factory) {
     parent::__construct($config_factory);
 
     $this->messenger = $messenger;
     $this->moduleHandler = $module_handler;
     $this->stringTranslation = $string_translation;
+    $this->clientFactory = $client_factory;
   }
 
   /**
@@ -58,7 +69,8 @@ class ConfigSettingsForm extends ConfigFormBase {
       $container->get('config.factory'),
       $container->get('messenger'),
       $container->get('module_handler'),
-      $container->get('string_translation')
+      $container->get('string_translation'),
+      $container->get('commerce_avatax.client_factory')
     );
   }
 
@@ -122,9 +134,16 @@ class ConfigSettingsForm extends ConfigFormBase {
     ];
 
     $form['configuration']['validate'] = [
-      '#type' => 'submit',
+      '#type' => 'button',
       '#value' => $this->t('Validate credentials'),
-      '#limit_validation_errors' => [],
+      '#validate' => [
+        [$this, 'validateForm'],
+      ],
+      '#limit_validation_errors' => [
+        ['account_id'],
+        ['license_key'],
+        ['company_code'],
+      ],
       '#ajax' => [
         'callback' => [$this, 'validateCredentials'],
         'wrapper' => 'configuration-wrapper',
@@ -257,16 +276,24 @@ class ConfigSettingsForm extends ConfigFormBase {
     $values = $form_state->getValues();
 
     try {
-      $client_factory = \Drupal::service('commerce_avatax.client_factory');
-      $client = $client_factory->createInstance($values);
-      $ping_request = $client->get('/api/v2/utilities/ping', [
+      $client = $this->clientFactory->createInstance($values);
+      $headers = [
         'headers' => [
           'Authorization' => 'Basic ' . base64_encode($values['account_id'] . ':' . $values['license_key']),
         ],
-      ]);
+      ];
+      $ping_request = $client->get('/api/v2/utilities/ping', $headers);
       $ping_request = Json::decode($ping_request->getBody()->getContents());
       if (!empty($ping_request['authenticated']) && $ping_request['authenticated'] === TRUE) {
-        $this->messenger->addMessage($this->t('AvaTax response confirmed using the account and license key above.'));
+        $companies_request = $client->get('/api/v2/companies', $headers);
+        $companies = $companies_request->getBody()->getContents();
+        $companies = Json::decode($companies);
+        if (empty($companies['value']) || !in_array($values['company_code'], array_column($companies['value'], 'companyCode'))) {
+          $form_state->setError($form['configuration']['company_code'], $this->t('Could not confirm the provided company code.'));
+        }
+        else {
+          $this->messenger->addMessage($this->t('AvaTax response confirmed using the account and license key above.'));
+        }
       }
       else {
         $form_state->setError($form['configuration']['account_id'], $this->t('Could not confirm the provided credentials.'));

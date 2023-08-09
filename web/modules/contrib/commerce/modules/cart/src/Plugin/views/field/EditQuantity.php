@@ -159,7 +159,9 @@ class EditQuantity extends FieldPluginBase {
           '#default_value' => round($order_item->getQuantity(), $precision),
           '#size' => 4,
           '#min' => 0,
-          '#max' => 9999,
+          // Setting a higher value would result in a WSOD as it'd be out of
+          // range.
+          '#max' => 999999999,
           '#step' => $step,
           '#required' => TRUE,
           '#attributes' => [
@@ -214,7 +216,10 @@ class EditQuantity extends FieldPluginBase {
       $order_item->setQuantity($quantity);
       $violations = $order_item
         ->validate()
-        ->filterByFields(array_diff(array_keys($order_item->getFieldDefinitions()), ['purchased_entity', 'quantity']));
+        ->filterByFields(array_diff(array_keys($order_item->getFieldDefinitions()), [
+          'purchased_entity',
+          'quantity',
+        ]));
 
       foreach ($violations as $violation) {
         /** @var \Symfony\Component\Validator\ConstraintViolationInterface $violation */

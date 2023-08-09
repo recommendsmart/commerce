@@ -30,7 +30,7 @@ abstract class NotConditionPluginBase extends ConditionPluginBase implements Con
   /**
    * The CurrentRouteMatch object.
    *
-   * @var CurrentRouteMatch
+   * @var \Drupal\Core\Routing\CurrentRouteMatch
    */
   protected $routeMatch;
 
@@ -60,9 +60,9 @@ abstract class NotConditionPluginBase extends ConditionPluginBase implements Con
    *   The plugin_id for the plugin instance.
    * @param mixed $plugin_definition
    *   The plugin implementation definition.
-   * @param EntityTypeManagerInterface $entity_type_manager
+   * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
-   * @param CurrentRouteMatch $route_match
+   * @param \Drupal\Core\Routing\CurrentRouteMatch $route_match
    *   The route match.
    *
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
@@ -71,7 +71,6 @@ abstract class NotConditionPluginBase extends ConditionPluginBase implements Con
     parent::__construct($configuration, $plugin_id, $plugin_definition);
     $this->entityTypeManager = $entity_type_manager;
     $this->routeMatch = $route_match;
-
 
     /** @var \Drupal\Core\Config\Entity\ConfigEntityType $contentEntityType */
     $this->contentEntityType = $this->entityTypeManager->getDefinition(static::CONTENT_ENTITY_TYPE);

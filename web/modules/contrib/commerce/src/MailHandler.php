@@ -76,7 +76,10 @@ class MailHandler implements MailHandlerInterface {
         'Content-Transfer-Encoding' => '8Bit',
       ],
       'id' => 'mail',
-      // The 'from' address will be set by commerce_store_mail_alter().
+      // For all user triggered emails, The 'from' address will be set by
+      // commerce_store_mail_alter(). In case an email could also be triggered
+      // externally e.g. by an administrator, the mailer should specify the
+      // 'from' address of the right store.
       'from' => '',
       'reply-to' => NULL,
       'subject' => $subject,

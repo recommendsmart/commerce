@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldWidget\IntervalWidget.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldWidget;
 
 use Drupal\Core\Field\FieldDefinitionInterface;
@@ -75,26 +70,26 @@ class IntervalWidget extends WidgetBase implements ContainerFactoryPluginInterfa
    * {@inheritdoc}
    */
   public static function defaultSettings() {
-    return array(
+    return [
       'allowed_periods' => [],
-    ) + parent::defaultSettings();
+    ] + parent::defaultSettings();
   }
 
   /**
    * {@inheritdoc}
    */
   public function formElement(FieldItemListInterface $items, $delta, array $element, array &$form, FormStateInterface $form_state) {
-    /* @var \Drupal\interval\Plugin\Field\FieldType\IntervalItem $item */
+    /** @var \Drupal\interval\Plugin\Field\FieldType\IntervalItem $item */
     $item = $items->get($delta);
 
-    $element += array(
+    $element += [
       '#type' => 'interval',
       '#periods' => array_keys(array_filter($this->getSetting('allowed_periods'))),
-      '#default_value' => array(
+      '#default_value' => [
         'interval' => $item->getInterval(),
         'period' => $item->getPeriod(),
-      ),
-    );
+      ],
+    ];
 
     return $element;
   }
@@ -109,13 +104,13 @@ class IntervalWidget extends WidgetBase implements ContainerFactoryPluginInterfa
       $options[$key] = $detail['plural'];
     }
 
-    $form['allowed_periods'] = array(
+    $form['allowed_periods'] = [
       '#type' => 'checkboxes',
       '#title' => t('Allowed periods'),
       '#options' => $options,
       '#description' => t('Select the periods you wish to be available in the dropdown. Selecting none will make all of them available.'),
       '#default_value' => $this->getSetting('allowed_periods'),
-    );
+    ];
 
     return $form;
   }
@@ -126,7 +121,7 @@ class IntervalWidget extends WidgetBase implements ContainerFactoryPluginInterfa
   public function settingsSummary() {
     $summary = [];
 
-    $summary[] = t('Allowed periods: @periods', array('@periods' => implode(', ', array_filter($this->getSetting('allowed_periods')))));
+    $summary[] = t('Allowed periods: @periods', ['@periods' => implode(', ', array_filter($this->getSetting('allowed_periods')))]);
 
     return $summary;
   }

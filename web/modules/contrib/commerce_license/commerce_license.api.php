@@ -10,7 +10,7 @@
  * @{
  * Information about the Commerce License API.
  *
- * TODO: Maybe some general background information can be provided here.
+ * @todo provide some general background information here.
  * @}
  */
 

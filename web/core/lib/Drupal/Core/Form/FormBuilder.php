@@ -108,8 +108,10 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
   protected $formCache;
 
   /**
-   * Defines element value callables which are safe to run even when the form
-   * state has an invalid CSRF token.
+   * Defines callables that are safe to run with invalid CSRF tokens.
+   *
+   * These Element value callables are safe to run even when the form state has
+   * an invalid CSRF token.
    *
    * Excluded from this list on purpose:
    *  - Drupal\file\Element\ManagedFile::valueCallback
@@ -193,8 +195,11 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
       $form_arg = $this->classResolver->getInstanceFromDefinition($form_arg);
     }
 
-    if (!is_object($form_arg) || !($form_arg instanceof FormInterface)) {
-      throw new \InvalidArgumentException("The form argument $form_arg is not a valid form.");
+    if (!is_object($form_arg)) {
+      throw new \InvalidArgumentException(("The form class $form_arg could not be found or loaded."));
+    }
+    elseif (!($form_arg instanceof FormInterface)) {
+      throw new \InvalidArgumentException('The form argument ' . $form_arg::class . ' must be an instance of \Drupal\Core\Form\FormInterface.');
     }
 
     // Add the $form_arg as the callback object and determine the form ID.
@@ -850,7 +855,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
 
     // Prevent cross site requests via the Form API by using an absolute URL
     // when the request uri starts with multiple slashes..
-    if (strpos($request_uri, '//') === 0) {
+    if (str_starts_with($request_uri, '//')) {
       $request_uri = $request->getUri();
     }
 
@@ -1171,7 +1176,7 @@ class FormBuilder implements FormBuilderInterface, FormValidatorInterface, FormS
       $name = array_shift($element['#parents']);
       $element['#name'] = $name;
       if ($element['#type'] == 'file') {
-        // To make it easier to handle files in file.inc, we place all
+        // To make it easier to handle files, we place all
         // file fields in the 'files' array. Also, we do not support
         // nested file names.
         // @todo Remove this files prefix now?

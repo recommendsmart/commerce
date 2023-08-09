@@ -1,8 +1,0 @@
-name: Symfony Mailer BC Test
-type: module
-package: Mail
-hidden: true
-core_version_requirement: ^9.1
-dependencies:
-  - symfony_mailer:symfony_mailer
-  - symfony_mailer:symfony_mailer_bc

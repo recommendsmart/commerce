@@ -218,7 +218,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->setItems([$first_order_item, $second_order_item, $third_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -239,7 +239,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->addItem($fourth_order_item);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item, $fourth_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item, $fourth_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -326,7 +326,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->setItems([$first_order_item, $second_order_item, $third_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -344,10 +344,11 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $fourth_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[2], [
       'quantity' => '3',
     ]);
+
     $this->order->addItem($fourth_order_item);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item, $fourth_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item, $fourth_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -397,7 +398,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->assertEquals('promotion', $adjustment->getType());
     $this->assertEquals('Buy X Get Y!', $adjustment->getLabel());
     $this->assertEquals(new Price('-6', 'USD'), $adjustment->getAmount());
-    $this->assertEquals(new Price('27', 'USD'), $fourth_order_item->getUnitPrice());
+    $this->assertEquals(new Price('28', 'USD'), $fourth_order_item->getUnitPrice());
     $this->assertEquals($this->promotion->id(), $adjustment->getSourceId());
   }
 
@@ -426,7 +427,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->addItem($order_item);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($order_item) = $this->order->getItems();
+    [$order_item] = $this->order->getItems();
 
     $this->assertCount(1, $order_item->getAdjustments());
     $adjustments = $order_item->getAdjustments();
@@ -471,7 +472,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->setItems([$first_order_item, $second_order_item, $third_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -532,7 +533,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->setItems([$first_order_item, $second_order_item, $third_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -571,7 +572,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->setItems([$first_order_item, $second_order_item, $third_order_item, $fourth_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item, $third_order_item, $fourth_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item, $third_order_item, $fourth_order_item] = $this->order->getItems();
 
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(0, $second_order_item->getAdjustments());
@@ -624,22 +625,28 @@ class BuyXGetYTest extends OrderKernelTestBase {
 
     /** @var \Drupal\commerce_order\OrderItemStorageInterface $order_item_storage */
     $order_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_order_item');
-    // Price of first order item: 10. Matches the first required quantity of the
-    // buy condition.
-    $first_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[0], [
+    // We add the same purchasable entity as the auto added one to test the
+    // trickier case.
+    $first_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[2], [
       'quantity' => '3',
     ]);
     $this->order->setItems([$first_order_item]);
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
 
+    $order_items = $this->order->getItems();
+    $this->assertCount(2, $order_items);
     // The offer automatically added a second order item.
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $order_items;
 
+    // Store the second order item ID to ensure it doesn't change after each
+    // refresh.
+    $second_order_item_id = $second_order_item->id();
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertCount(1, $second_order_item->getAdjustments());
     $this->assertEquals(1, $second_order_item->getQuantity());
     $this->assertEquals($this->variations[2]->id(), $second_order_item->getPurchasedEntityId());
+    $this->assertTrue($second_order_item->getData('owned_by_promotion'));
     $this->assertAdjustmentPrice($second_order_item->getAdjustments()[0], '-30');
 
     // Increase the quantity of the "buy" product to 4, the quantity of the
@@ -649,8 +656,9 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
 
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $this->order->getItems();
 
+    $this->assertEquals($second_order_item_id, $second_order_item->id());
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertEquals(4, $first_order_item->getQuantity());
     $this->assertCount(1, $second_order_item->getAdjustments());
@@ -663,8 +671,9 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
 
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $this->order->getItems();
 
+    $this->assertEquals($second_order_item_id, $second_order_item->id());
     $this->assertEquals(6, $first_order_item->getQuantity());
     $this->assertCount(0, $first_order_item->getAdjustments());
     $this->assertEquals(2, $second_order_item->getQuantity());
@@ -678,7 +687,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
 
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $this->order->getItems();
 
     $this->assertEquals(6, $first_order_item->getQuantity());
     $this->assertEquals(2, $second_order_item->getQuantity());
@@ -692,7 +701,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $this->order->save();
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
 
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $this->order->getItems();
 
     $this->assertEquals(5, $first_order_item->getQuantity());
     $this->assertEquals(1, $second_order_item->getQuantity());
@@ -706,9 +715,78 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $second_order_item->setQuantity('2');
     $first_order_item->setQuantity('1');
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list(, $second_order_item) = $this->order->getItems();
+    [, $second_order_item] = $this->order->getItems();
     $this->assertNull($second_order_item->getData('promotion:1:auto_add_quantity'));
     $this->assertEquals(1, $second_order_item->getQuantity());
+  }
+
+  /**
+   * Tests the "auto-add" behavior when the get item is already in the order.
+   */
+  public function testAutoAddWithGetProductInOrder() {
+    $offer = $this->promotion->getOffer();
+    $offer_configuration = $offer->getConfiguration();
+    // The customer purchases 3 quantities of any product.
+    $offer_configuration['buy_quantity'] = '3';
+    $offer_configuration['buy_conditions'] = [
+      [
+        'plugin' => 'order_item_purchased_entity:commerce_product_variation',
+        'configuration' => [
+          'entities' => [
+            $this->variations[0]->uuid(),
+          ],
+        ],
+      ],
+    ];
+    // The customer receives 1 specific product for free.
+    $offer_configuration['get_quantity'] = '1';
+    $offer_configuration['get_conditions'] = [
+      [
+        'plugin' => 'order_item_purchased_entity:commerce_product_variation',
+        'configuration' => [
+          'entities' => [
+            $this->variations[2]->uuid(),
+          ],
+        ],
+      ],
+    ];
+    $offer_configuration['get_auto_add'] = TRUE;
+    $offer_configuration['offer_type'] = 'percentage';
+    $offer_configuration['offer_percentage'] = '1';
+    $offer_configuration['offer_amount'] = NULL;
+    $offer->setConfiguration($offer_configuration);
+    $this->promotion->setOffer($offer);
+
+    /** @var \Drupal\commerce_order\OrderItemStorageInterface $order_item_storage */
+    $order_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_order_item');
+    // We add the same purchasable entity as the auto added one to test the
+    // trickier case.
+    $first_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[0], [
+      'quantity' => '2',
+    ]);
+    $second_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[2], [
+      'quantity' => '1',
+    ]);
+    $this->order->setItems([$first_order_item, $second_order_item]);
+    $this->order->save();
+
+    $first_order_item->setQuantity(3);
+    $first_order_item->save();
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+
+    $order_items = $this->order->getItems();
+    $this->assertCount(3, $order_items);
+    // The offer automatically added a third order item.
+    [$first_order_item, $second_order_item, $get_order_item] = $order_items;
+    $this->assertAdjustmentPrice($get_order_item->getAdjustments()[0], '-30');
+    $this->assertEquals('1', $get_order_item->getData("promotion:{$this->promotion->id()}:auto_add_quantity"));
+
+    $first_order_item->setQuantity(2);
+    $first_order_item->save();
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+
+    $order_items = $this->order->getItems();
+    $this->assertCount(2, $order_items);
   }
 
   /**
@@ -771,7 +849,7 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $first_order_item->save();
     $this->order->setItems([$first_order_item]);
     $this->container->get('commerce_order.order_refresh')->refresh($this->order);
-    list($first_order_item, $second_order_item) = $this->order->getItems();
+    [$first_order_item, $second_order_item] = $this->order->getItems();
 
     $this->assertEquals(2, $first_order_item->getQuantity());
     $this->assertEquals(2, $second_order_item->getQuantity());
@@ -813,6 +891,160 @@ class BuyXGetYTest extends OrderKernelTestBase {
     $order_items = $this->order->getItems();
     $this->assertCount(1, $order_items);
     $this->assertEquals(new Price('20', 'USD'), $order_items[0]->getTotalPrice());
+  }
+
+  /**
+   * Tests cumulating multiple BuyXGetY offers.
+   *
+   * @covers ::apply
+   * @covers ::clear
+   */
+  public function testMultipleOffers() {
+    $offer = $this->promotion->getOffer();
+    $offer_configuration = $offer->getConfiguration();
+    $offer_configuration['buy_quantity'] = '1';
+    $offer_configuration['offer_limit'] = '1';
+    $offer_configuration['buy_conditions'] = [
+      [
+        'plugin' => 'order_item_purchased_entity:commerce_product_variation',
+        'configuration' => [
+          'entities' => [
+            $this->variations[0]->uuid(),
+          ],
+        ],
+      ],
+    ];
+    // The customer receives 1 specific product for free.
+    $offer_configuration['get_quantity'] = '1';
+    $offer_configuration['get_conditions'] = [
+      [
+        'plugin' => 'order_item_purchased_entity:commerce_product_variation',
+        'configuration' => [
+          'entities' => [
+            $this->variations[1]->uuid(),
+          ],
+        ],
+      ],
+    ];
+    $offer_configuration['get_auto_add'] = TRUE;
+    $offer_configuration['offer_type'] = 'percentage';
+    $offer_configuration['offer_percentage'] = '1';
+    $offer_configuration['offer_amount'] = NULL;
+    $offer->setConfiguration($offer_configuration);
+    $this->promotion->setOffer($offer);
+
+    /** @var \Drupal\commerce_order\OrderItemStorageInterface $order_item_storage */
+    $order_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_order_item');
+    $first_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[0], [
+      'quantity' => '1',
+    ]);
+    $first_order_item->save();
+    $this->order->setItems([$first_order_item]);
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+    $order_items = $this->order->getItems();
+    $this->assertCount(2, $order_items);
+    [$first_order_item, $get_order_item] = $order_items;
+
+    $this->assertCount(1, $get_order_item->getAdjustments());
+    $this->assertEquals(1, $get_order_item->getQuantity());
+    $this->assertEquals($this->variations[1]->id(), $get_order_item->getPurchasedEntityId());
+    $this->assertAdjustmentPrice($get_order_item->getAdjustments()[0], '-20');
+    $this->assertEquals('1', $get_order_item->getData("promotion:{$this->promotion->id()}:auto_add_quantity"));
+
+    // Create another promotion targeting the same "get" product.
+    $another_promotion = $this->promotion->createDuplicate();
+    $offer_configuration['buy_conditions'] = [
+      [
+        'plugin' => 'order_item_purchased_entity:commerce_product_variation',
+        'configuration' => [
+          'entities' => [
+            $this->variations[2]->uuid(),
+          ],
+        ],
+      ],
+    ];
+    $another_promotion->setOffer($offer);
+    $another_promotion->save();
+
+    // Add the second variation to cart, that should give another "get" variation
+    // for free.
+    $another_order_item = $order_item_storage->createFromPurchasableEntity($this->variations[2], [
+      'quantity' => '1',
+    ]);
+    $another_order_item->save();
+    $this->order->setItems([$first_order_item, $another_order_item]);
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+
+    $order_items = $this->order->getItems();
+    $this->assertCount(3, $order_items);
+    [$first_order_item, $another_order_item, $get_order_item] = $order_items;
+    $this->assertEquals('2', $get_order_item->getQuantity());
+    $promotion_adjustments = $get_order_item->getAdjustments(['promotion']);
+    $this->assertCount(2, $promotion_adjustments);
+    $this->assertEquals(new Price('-20', 'USD'), $promotion_adjustments[0]->getAmount());
+    $this->assertEquals(new Price('-20', 'USD'), $promotion_adjustments[1]->getAmount());
+    $this->assertEquals('1', $get_order_item->getData("promotion:{$this->promotion->id()}:auto_add_quantity"));
+    $this->assertEquals('1', $get_order_item->getData("promotion:{$another_promotion->id()}:auto_add_quantity"));
+    $this->assertTrue($get_order_item->isLocked());
+
+    // Disable the second promotion to ensure the quantity of the "get" order
+    // item is adjusted.
+    $another_promotion->set('status', FALSE)->save();
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+
+    $order_items = $this->order->getItems();
+    $this->assertCount(3, $order_items);
+    [$first_order_item, $another_order_item, $get_order_item] = $order_items;
+    $this->assertEquals('1', $get_order_item->getQuantity());
+    $promotion_adjustments = $get_order_item->getAdjustments(['promotion']);
+    $this->assertCount(1, $promotion_adjustments);
+    $this->assertAdjustmentPrice($promotion_adjustments[0], '-20');
+  }
+
+  /**
+   * Tests the "display_inclusive" setting.
+   *
+   * @covers ::apply
+   * @covers ::clear
+   */
+  public function testDisplayInclusive() {
+    $offer = $this->promotion->getOffer();
+    $offer_configuration = $offer->getConfiguration();
+    $offer_configuration['buy_quantity'] = '1';
+    $offer_configuration['buy_conditions'] = [];
+    $offer_configuration['get_quantity'] = '1';
+    $offer_configuration['get_conditions'] = [];
+    $offer_configuration['offer_percentage'] = '1';
+    $offer_configuration['offer_type'] = 'percentage';
+    $offer_configuration['display_inclusive'] = TRUE;
+    $offer->setConfiguration($offer_configuration);
+    $this->promotion->setOffer($offer);
+
+    /** @var \Drupal\commerce_order\OrderItemStorageInterface $order_item_storage */
+    $order_item_storage = \Drupal::entityTypeManager()->getStorage('commerce_order_item');
+    $order_item = $order_item_storage->createFromPurchasableEntity($this->variations[0], [
+      'quantity' => '2',
+    ]);
+    $order_item->save();
+    $this->order->addItem($order_item);
+    $this->order->save();
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+    [$order_item] = $this->order->getItems();
+
+    $promotion_adjustments = $order_item->getAdjustments(['promotion']);
+    $this->assertCount(1, $promotion_adjustments);
+    $this->assertAdjustmentPrice($promotion_adjustments[0], '-10');
+    $this->assertEquals(new Price('5', 'USD'), $order_item->getUnitPrice());
+
+    $offer_configuration['offer_percentage'] = '0.1';
+    $offer->setConfiguration($offer_configuration);
+    $this->promotion->setOffer($offer);
+    $this->container->get('commerce_order.order_refresh')->refresh($this->order);
+    [$order_item] = $this->order->getItems();
+    $promotion_adjustments = $order_item->getAdjustments(['promotion']);
+    $this->assertCount(1, $promotion_adjustments);
+    $this->assertAdjustmentPrice($promotion_adjustments[0], '-1');
+    $this->assertEquals(new Price('9.5', 'USD'), $order_item->getUnitPrice());
   }
 
   /**

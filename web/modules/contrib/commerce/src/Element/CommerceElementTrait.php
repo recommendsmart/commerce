@@ -106,7 +106,7 @@ trait CommerceElementTrait {
       return TRUE;
     }
     $triggering_element = $form_state->getTriggeringElement();
-    $button_type = isset($triggering_element['#button_type']) ? $triggering_element['#button_type'] : '';
+    $button_type = $triggering_element['#button_type'] ?? '';
     if (in_array($button_type, ['primary', 'secondary'])) {
       // Invoke callbacks only for submit buttons with a known #button_type.
       // Buttons without a #button_type usually rebuild the form.

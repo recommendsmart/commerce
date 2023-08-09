@@ -13,7 +13,7 @@ use Symfony\Component\Validator\ConstraintViolation;
 
 /**
  * @coversDefaultClass \Drupal\ckeditor5\Plugin\CKEditor5Plugin\SourceEditing
- * @covers \Drupal\ckeditor5\Plugin\CKEditor5PluginManager::getCKEditor5PluginConfig()
+ * @covers \Drupal\ckeditor5\Plugin\CKEditor5PluginManager::getCKEditor5PluginConfig
  * @group ckeditor5
  * @internal
  */
@@ -320,7 +320,7 @@ JS;
       ],
 
       // Edge case: `style`.
-      // @todo https://www.drupal.org/project/drupal/issues/3260857
+      // @todo https://www.drupal.org/project/drupal/issues/3304832
 
       // Edge case: `type` attribute on lists.
       // @todo Remove in https://www.drupal.org/project/drupal/issues/3274635.

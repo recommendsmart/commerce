@@ -1,29 +1,30 @@
 @import "global";
 
-$primary: #41449f;
-$light: #f8f9fa;
-$dark: #272727;
+$primary:       #41449f;
+$primary-hover: #373a87;
+$light:         #f8f9fa;
+$dark:          #272727;
 
 $beo-colors: (
   "primary": $primary,
+  "primary-hover": $primary-hover,
   "light": $light,
   "dark": $dark
 );
 
 // Root.
 :root {
-  --#{$variable-prefix}body-bg: #fff;
-  --#{$variable-prefix}body-color: #333;
-  --#{$variable-prefix}primary-hover: #373a87;
+  --#{$prefix}body-bg: #fff;
+  --#{$prefix}body-color: #333;
   @each $color, $value in $beo-colors {
-    --#{$variable-prefix}#{$color}: #{$value};
+    --#{$prefix}#{$color}: #{$value};
   }
 }
 
 // Reboot.
 body {
-  background-color: var(--#{$variable-prefix}body-bg);
-  color: var(--#{$variable-prefix}body-color);
+  background-color: var(--#{$prefix}body-bg);
+  color: var(--#{$prefix}body-color);
 }
 
 // Text and link Color.
@@ -38,25 +39,19 @@ body {
 
 // Primary Button.
 .btn-primary {
-  background-color: var(--#{$variable-prefix}primary);
-  border-color: var(--#{$variable-prefix}primary);
-  &:focus,
-  &:hover {
-    background-color: var(--#{$variable-prefix}primary-hover);
-    border-color: var(--#{$variable-prefix}primary-hover);
-  }
+  --#{$prefix}btn-bg: #{$primary};
+  --#{$prefix}btn-border-color: #{$primary};
+  --#{$prefix}btn-hover-bg: #{$primary-hover};
+  --#{$prefix}btn-hover-border-color: #{$primary-hover};
 }
 
 .btn-outline-primary,
 .btn-outline-primary:focus {
-  border-color: var(--#{$variable-prefix}primary);
-  color: var(--#{$variable-prefix}primary);
-  &:active,
-  &:hover {
-    color: white;
-    background-color: var(--#{$variable-prefix}primary);
-    border-color: var(--#{$variable-prefix}primary);
-  }
+  --#{$prefix}btn-color: #{$primary};
+  --#{$prefix}btn-border-color: #{$primary};
+  --#{$prefix}btn-hover-color: #{$white};
+  --#{$prefix}btn-hover-bg: #{$primary-hover};
+  --#{$prefix}btn-hover-border-color: #{$primary-hover};
 }
 
 // Avoid box shadow on buttons

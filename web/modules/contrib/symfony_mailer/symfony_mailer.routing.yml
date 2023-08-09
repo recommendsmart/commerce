@@ -36,6 +36,7 @@ entity.mailer_transport.set_default:
     _controller: '\Drupal\symfony_mailer\Controller\SymfonyMailerController::setAsDefault'
   requirements:
     _permission: 'administer mailer'
+    _csrf_token: 'TRUE'
 
 entity.mailer_policy.collection:
   path: '/admin/config/system/mailer'
@@ -76,6 +77,8 @@ entity.mailer_policy.delete_form:
   requirements:
     _entity_access: 'mailer_policy.delete'
 
+# @deprecated in symfony_mailer:1.3.0 and is removed from symfony_mailer:2.0.0.
+# Instead you should use symfony_mailer.override.status.
 symfony_mailer.import.status:
   path: '/admin/config/system/mailer/import'
   defaults:
@@ -84,27 +87,19 @@ symfony_mailer.import.status:
   requirements:
     _permission: 'administer mailer'
 
-symfony_mailer.import.all:
-  path: '/admin/config/system/mailer/import-all'
+symfony_mailer.override.status:
+  path: '/admin/config/system/mailer/override'
   defaults:
-    _controller: '\Drupal\symfony_mailer\Controller\SymfonyMailerController::importAll'
-    _title: 'Import all'
+    _controller: '\Drupal\symfony_mailer\Controller\SymfonyMailerController::overrideStatus'
+    _title: 'Override status'
   requirements:
     _permission: 'administer mailer'
 
-symfony_mailer.import.import:
-  path: '/admin/config/system/mailer/import/{id}'
+symfony_mailer.override.action:
+  path: '/admin/config/system/mailer/override/{id}/{action}'
   defaults:
-    _controller: '\Drupal\symfony_mailer\Controller\SymfonyMailerController::import'
-    _title: 'Import'
-  requirements:
-    _permission: 'administer mailer'
-
-symfony_mailer.import.skip:
-  path: '/admin/config/system/mailer/import/{id}/skip'
-  defaults:
-    _controller: '\Drupal\symfony_mailer\Controller\SymfonyMailerController::skip'
-    _title: 'Skip'
+    _form: '\Drupal\symfony_mailer\Form\OverrideActionForm'
+    _title: 'Override action'
   requirements:
     _permission: 'administer mailer'
 

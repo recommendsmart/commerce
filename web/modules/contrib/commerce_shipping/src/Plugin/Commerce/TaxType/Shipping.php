@@ -113,6 +113,7 @@ class Shipping extends TaxTypeBase {
       '#title' => $this->t('Strategy'),
       '#options' => [
         'default' => $this->t("Apply the default (standard) rate of the order's tax type"),
+        'every' => $this->t("Apply every rate found on the order"),
         'highest' => $this->t('Apply the highest rate found on the order'),
         'proportional' => $this->t("Apply each order item's rate proportionally"),
       ],
@@ -218,6 +219,9 @@ class Shipping extends TaxTypeBase {
     if ($this->configuration['strategy'] == 'default') {
       $this->applyDefault($order, $tax_adjustments);
     }
+    elseif ($this->configuration['strategy'] === 'every') {
+      $this->applyEvery($order, $tax_adjustments);
+    }
     elseif ($this->configuration['strategy'] == 'highest') {
       $this->applyHighest($order, $tax_adjustments);
     }
@@ -237,7 +241,7 @@ class Shipping extends TaxTypeBase {
   protected function applyDefault(OrderInterface $order, array $tax_adjustments) {
     // Assume that all tax adjustments have the same tax type and zone ID.
     $tax_adjustment = reset($tax_adjustments);
-    list($tax_type_id, $zone_id, $rate_id) = explode('|', $tax_adjustment->getSourceId());
+    [$tax_type_id, $zone_id, $rate_id] = explode('|', $tax_adjustment->getSourceId());
     $tax_type_storage = $this->entityTypeManager->getStorage('commerce_tax_type');
     /** @var \Drupal\commerce_tax\Entity\TaxTypeInterface $tax_type */
     $tax_type = $tax_type_storage->load($tax_type_id);
@@ -267,6 +271,57 @@ class Shipping extends TaxTypeBase {
         'source_id' => $tax_type->id() . '|' . $zone->getId() . '|' . $default_rate->getId(),
         'included' => $display_inclusive,
       ]));
+    }
+  }
+
+  /**
+   * Applies every tax rate found on the order.
+   *
+   * @param \Drupal\commerce_order\Entity\OrderInterface $order
+   *   The order.
+   * @param \Drupal\commerce_order\Adjustment[] $tax_adjustments
+   *   The tax adjustments.
+   */
+  protected function applyEvery(OrderInterface $order, array $tax_adjustments) {
+    // Group adjustments by source ID.
+    $grouped_adjustments = [];
+    foreach ($tax_adjustments as $adjustment) {
+      if (isset($grouped_adjustments[$adjustment->getSourceId()])) {
+        continue;
+      }
+      $grouped_adjustments[$adjustment->getSourceId()] = $adjustment;
+    }
+    $tax_type_storage = $this->entityTypeManager->getStorage('commerce_tax_type');
+
+    foreach ($this->getShipments($order) as $shipment) {
+      foreach ($grouped_adjustments as $source_id => $tax_adjustment) {
+        [$tax_type_id, $zone_id, $rate_id] = explode('|', $source_id);
+        /** @var \Drupal\commerce_tax\Entity\TaxTypeInterface $tax_type */
+        $tax_type = $tax_type_storage->load($tax_type_id);
+        if (!$tax_type) {
+          continue;
+        }
+        $tax_type_plugin = $tax_type->getPlugin();
+        if (!($tax_type_plugin instanceof LocalTaxTypeInterface)) {
+          continue;
+        }
+        $zones = $tax_type_plugin->getZones();
+        $zone = $zones[$zone_id];
+        $rate = $zone->getRate($rate_id);
+        $percentage = $rate->getPercentage($order->getCalculationDate());
+        $display_inclusive = $tax_type_plugin->isDisplayInclusive();
+        $tax_amount = $this->calculateTaxAmount($shipment, $percentage->getNumber(), $display_inclusive);
+        $tax_amount = $this->rounder->round($tax_amount);
+
+        $shipment->addAdjustment(new Adjustment([
+          'type' => 'tax',
+          'label' => $zone->getDisplayLabel(),
+          'amount' => $tax_amount,
+          'percentage' => $tax_adjustment->getPercentage(),
+          'source_id' => $source_id,
+          'included' => $display_inclusive,
+        ]));
+      }
     }
   }
 
@@ -418,7 +473,7 @@ class Shipping extends TaxTypeBase {
   protected function calculateTaxAmount(ShipmentInterface $shipment, $percentage, $included = FALSE) {
     $shipment_amount = $shipment->getAdjustedAmount(['shipping_promotion']);
     $tax_amount = $shipment_amount->multiply($percentage);
-    if ($included) {
+    if ($included && !$tax_amount->isZero()) {
       $divisor = Calculator::add('1', $percentage);
       $tax_amount = $tax_amount->divide($divisor);
     }

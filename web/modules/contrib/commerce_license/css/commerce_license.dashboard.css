@@ -1,0 +1,9 @@
+/**
+ * @file
+ * Styles for the dashboard page.
+ */
+
+.commerce-license.system-status-report .system-status-report__row {
+  display: flex;
+  border-bottom: 1px solid #d3d4d9;
+}

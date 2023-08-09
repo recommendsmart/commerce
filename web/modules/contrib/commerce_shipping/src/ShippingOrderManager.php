@@ -71,7 +71,7 @@ class ShippingOrderManager implements ShippingOrderManagerInterface {
    */
   public function getProfile(OrderInterface $order) {
     $profiles = $order->collectProfiles();
-    return isset($profiles['shipping']) ? $profiles['shipping'] : NULL;
+    return $profiles['shipping'] ?? NULL;
   }
 
   /**
@@ -108,7 +108,7 @@ class ShippingOrderManager implements ShippingOrderManagerInterface {
       $profile = $this->getProfile($order) ?: $this->createProfile($order);
     }
     $shipments = $order->get('shipments')->referencedEntities();
-    list($shipments, $removed_shipments) = $this->packerManager->packToShipments($order, $profile, $shipments);
+    [$shipments, $removed_shipments] = $this->packerManager->packToShipments($order, $profile, $shipments);
     // Delete any shipments that are no longer used.
     if (!empty($removed_shipments)) {
       $shipment_storage = $this->entityTypeManager->getStorage('commerce_shipment');

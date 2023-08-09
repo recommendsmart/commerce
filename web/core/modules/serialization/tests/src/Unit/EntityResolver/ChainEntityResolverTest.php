@@ -36,6 +36,8 @@ class ChainEntityResolverTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->testNormalizer = $this->createMock('Symfony\Component\Serializer\Normalizer\NormalizerInterface');
     $this->testData = new \stdClass();
   }
@@ -140,7 +142,7 @@ class ChainEntityResolverTest extends UnitTestCase {
       $mock->expects($this->once())
         ->method('resolve')
         ->with($this->testNormalizer, $this->testData, $this->testEntityType)
-        ->will($this->returnValue($return));
+        ->willReturn($return);
     }
     else {
       $mock->expects($this->never())

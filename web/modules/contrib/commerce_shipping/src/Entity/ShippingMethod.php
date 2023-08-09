@@ -242,12 +242,12 @@ class ShippingMethod extends ContentEntityBase implements ShippingMethodInterfac
       return $condition->getEntityTypeId() == 'commerce_shipment';
     });
     $operator = $this->getConditionOperator();
-    $order_conditions = new ConditionGroup($order_conditions, $operator);
-    $shipment_conditions = new ConditionGroup($shipment_conditions, $operator);
+    $order_conditions_group = new ConditionGroup($order_conditions, $operator);
+    $shipment_conditions_group = new ConditionGroup($shipment_conditions, $operator);
 
     return $operator === 'OR'
-      ? $order_conditions->evaluate($shipment->getOrder()) || $shipment_conditions->evaluate($shipment)
-      : $order_conditions->evaluate($shipment->getOrder()) && $shipment_conditions->evaluate($shipment);
+      ? ($order_conditions && $order_conditions_group->evaluate($shipment->getOrder())) || ($shipment_conditions && $shipment_conditions_group->evaluate($shipment))
+      : $order_conditions_group->evaluate($shipment->getOrder()) && $shipment_conditions_group->evaluate($shipment);
   }
 
   /**

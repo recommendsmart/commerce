@@ -2,11 +2,10 @@ name: Commerce AvaTax Test
 type: module
 description: Testing module for Commerce AvaTax
 package: Testing
-core_version_requirement: ^8.7.7 || ^9
 dependencies:
   - commerce_avatax:commerce_avatax
 
-# Information added by Drupal.org packaging script on 2021-11-02
-version: '8.x-1.0-rc2'
+# Information added by Drupal.org packaging script on 2023-01-23
+version: '8.x-1.1'
 project: 'commerce_avatax'
-datestamp: 1635839690
+datestamp: 1674461512

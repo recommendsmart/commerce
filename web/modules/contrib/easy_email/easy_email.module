@@ -281,9 +281,13 @@ function template_preprocess_easy_email_type_preview(array &$variables) {
       ];
     }
   }
+  $recipients = $easy_email->getRecipientAddresses() ?? [];
+  if (!is_array($recipients)) {
+    $recipients = [$recipients];
+  }
   $variables['headers'][] = [
     'name' => 'To',
-    'value' => implode(', ', $easy_email->getRecipientAddresses()),
+    'value' => implode(', ', $recipients),
   ];
   $variables['headers'][] = [
     'name' => 'Subject',
@@ -301,7 +305,14 @@ function template_preprocess_easy_email_type_preview(array &$variables) {
   $attachment_evalutator = \Drupal::service('easy_email.attachment_evaluator');
   $attachment_evalutator->evaluateAttachments($easy_email, FALSE);
   foreach ($easy_email->getEvaluatedAttachments() as $file) {
-    $attachments[] = Link::fromTextAndUrl($file->filename, Url::fromUri(\Drupal::service('file_url_generator')->generateAbsoluteString($file->uri), ['attributes' => ['target' => '_blank']]));
+    if (is_object($file)) {
+      $file = (array) $file;
+    }
+    if (empty($file) || (empty($file['uri']) && empty($file['filepath']))) {
+      continue;
+    }
+    $uri = !empty($file['uri']) ? $file['uri'] : $file['filepath'];
+    $attachments[] = Link::fromTextAndUrl($file['filename'], Url::fromUri(\Drupal::service('file_url_generator')->generateAbsoluteString($uri), ['attributes' => ['target' => '_blank']]));
   }
 
   if (!empty($attachments)) {

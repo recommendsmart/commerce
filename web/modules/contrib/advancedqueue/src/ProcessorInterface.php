@@ -36,4 +36,9 @@ interface ProcessorInterface {
    */
   public function processJob(Job $job, QueueInterface $queue);
 
+  /**
+   * Stops the processing of the queue.
+   */
+  public function stop();
+
 }

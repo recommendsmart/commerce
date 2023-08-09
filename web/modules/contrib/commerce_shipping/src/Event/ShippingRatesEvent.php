@@ -2,16 +2,16 @@
 
 namespace Drupal\commerce_shipping\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_shipping\Entity\ShipmentInterface;
 use Drupal\commerce_shipping\Entity\ShippingMethodInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the event for reacting to shipping rate calculation.
  *
  * @see \Drupal\commerce_shipping\Event\ShippingEvents
  */
-class ShippingRatesEvent extends Event {
+class ShippingRatesEvent extends EventBase {
 
   /**
    * The shipping rates.

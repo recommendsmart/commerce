@@ -18,6 +18,7 @@ use Drupal\Core\Plugin\PluginDependencyTrait;
  *
  * @ingroup entity_api
  */
+#[\AllowDynamicProperties]
 abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterface {
 
   use PluginDependencyTrait {
@@ -284,6 +285,7 @@ abstract class ConfigEntityBase extends EntityBase implements ConfigEntityInterf
    * {@inheritdoc}
    */
   public function preSave(EntityStorageInterface $storage) {
+    /** @var \Drupal\Core\Config\Entity\ConfigEntityStorageInterface $storage */
     parent::preSave($storage);
 
     if ($this instanceof EntityWithPluginCollectionInterface) {

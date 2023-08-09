@@ -155,9 +155,6 @@
 		"name": "Hongkongi dollar",
 		"symbol": "HK$"
 	},
-	"HRK": {
-		"name": "Horvaatia kuna"
-	},
 	"XCD": {
 		"name": "Ida-Kariibi dollar",
 		"symbol": "EC$"
@@ -459,9 +456,6 @@
 	},
 	"UYU": {
 		"name": "Uruguay peeso"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"USD": {
 		"name": "USA dollar",

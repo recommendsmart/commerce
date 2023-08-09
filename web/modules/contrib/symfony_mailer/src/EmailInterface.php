@@ -27,6 +27,8 @@ interface EmailInterface extends BaseEmailInterface {
    * Must not trigger any rendering because cannot yet rely on the correct
    * language, theme, and account. For example, must not cast a translatable
    * string into a plain string, or replace tokens.
+   *
+   * @see \Drupal\symfony_mailer\Processor\EmailProcessorInterface::build()
    */
   const PHASE_BUILD = 1;
 
@@ -35,6 +37,8 @@ interface EmailInterface extends BaseEmailInterface {
    *
    * Not normally needed. Only if there is a rendering step that needs to be
    * done before the main rendering call.
+   *
+   * @see \Drupal\symfony_mailer\Processor\EmailProcessorInterface::preRender()
    */
   const PHASE_PRE_RENDER = 2;
 
@@ -42,11 +46,15 @@ interface EmailInterface extends BaseEmailInterface {
    * Post-render phase: adjusting of rendered output.
    *
    * Act on the rendered HTML, or any header.
+   *
+   * @see \Drupal\symfony_mailer\Processor\EmailProcessorInterface::postRender()
    */
   const PHASE_POST_RENDER = 3;
 
   /**
    * Post-send phase: no further alterations allowed.
+   *
+   * @see \Drupal\symfony_mailer\Processor\EmailProcessorInterface::postSend()
    */
   const PHASE_POST_SEND = 4;
 
@@ -364,5 +372,13 @@ interface EmailInterface extends BaseEmailInterface {
    *   Transport DSN.
    */
   public function getTransportDsn();
+
+  /**
+   * Gets the error message from sending the email.
+   *
+   * @return string
+   *   Error message, or NULL if there is no error.
+   */
+  public function getError();
 
 }

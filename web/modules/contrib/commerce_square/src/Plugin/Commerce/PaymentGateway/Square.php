@@ -88,8 +88,8 @@ class Square extends OnsitePaymentGatewayBase implements SquareInterface {
     $form = parent::buildConfigurationForm($form, $form_state);
 
     if (empty($this->connect->getAppId(Environment::SANDBOX)) && empty($this->connect->getAccessToken(Environment::SANDBOX))) {
-      $this->messenger()->addError($this->t('Square has not been configured, please go to :link', [
-        ':link' => Link::fromTextAndUrl($this->t('the settings form'), Url::fromRoute('commerce_square.settings')),
+      $this->messenger()->addError($this->t('Square has not been configured, please go to <a href=":link">the settings form</a>', [
+        ':link' => Url::fromRoute('commerce_square.settings')->toString(),
       ]));
     }
 
@@ -329,7 +329,7 @@ class Square extends OnsitePaymentGatewayBase implements SquareInterface {
    */
   public function createPaymentMethod(PaymentMethodInterface $payment_method, array $payment_details) {
     $required_keys = [
-      'payment_method_nonce', 'card_type', 'last4',
+      'payment_token', 'card_type', 'last4',
     ];
     foreach ($required_keys as $required_key) {
       if (empty($payment_details[$required_key])) {
@@ -345,7 +345,7 @@ class Square extends OnsitePaymentGatewayBase implements SquareInterface {
     $payment_method->card_number = $payment_details['last4'];
     $payment_method->card_exp_month = $payment_details['exp_month'];
     $payment_method->card_exp_year = $payment_details['exp_year'];
-    $remote_id = $payment_details['payment_method_nonce'];
+    $remote_id = $payment_details['payment_token'];
     $payment_method->setRemoteId($remote_id);
 
     // Nonces expire after 24h. We reduce that time by 5s to account for the

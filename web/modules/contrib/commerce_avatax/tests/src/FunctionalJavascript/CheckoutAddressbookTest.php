@@ -2,6 +2,7 @@
 
 namespace Drupal\Tests\commerce_avatax\FunctionalJavascript;
 
+use Drupal\commerce_checkout\Entity\CheckoutFlow;
 use Drupal\commerce_order\Entity\Order;
 use Drupal\commerce_order\Entity\OrderType;
 use Drupal\commerce_payment\Entity\PaymentGateway;
@@ -34,7 +35,7 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_avatax',
     'commerce_avatax_test',
     'commerce_product',
@@ -45,11 +46,6 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
     'commerce_shipping_test',
     'views_ui',
   ];
-
-  /**
-   * {@inheritdoc}
-   */
-  protected $defaultTheme = 'classy';
 
   /**
    * {@inheritdoc}
@@ -163,6 +159,11 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
         ],
       ],
     ]);
+    $checkout_flow = CheckoutFlow::load('shipping');
+    $checkout_flow_configuration = $checkout_flow->get('configuration');
+    $checkout_flow_configuration['panes']['shipping_information']['auto_recalculate'] = FALSE;
+    $checkout_flow->set('configuration', $checkout_flow_configuration);
+    $checkout_flow->save();
   }
 
   /**
@@ -199,12 +200,14 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
       $page->fillField($address_prefix . '[' . $property . ']', $value);
     }
 
-    $this->assertSession()->waitForText('Shipping method');
+    $page->findButton('Recalculate shipping')->click();
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertSession()->pageTextContains('Shipping method');
     $this->submitForm([], 'Continue to review');
 
-    $this->assertSession()->waitForText('Confirm your shipping address', 45);
-    $this->assertSession()->pageTextContains('Use recommended');
+    $this->assertSession()->waitForText('Confirm your shipping address');
 
+    $this->assertSession()->pageTextContains('Use recommended');
     $this->assertSession()
       ->pageTextContains('Your shipping address is different from the post office records. We suggest you accept the recommended address to avoid shipping delays.');
     $this->getSession()->getPage()->findButton('Use recommended')->click();
@@ -232,8 +235,8 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
     /** @var \Drupal\address\Plugin\Field\FieldType\AddressItem $address */
     $address = $shipping->get('address')->first();
 
-    $this->assert('2000 Main St', $address->getAddressLine1());
-    $this->assert('92614-7202', $address->getPostalCode());
+    $this->assertEquals('2000 Main St', $address->getAddressLine1());
+    $this->assertEquals('92614-7202', $address->getPostalCode());
   }
 
   /**
@@ -298,7 +301,7 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
 
     $this->submitForm([], 'Continue to review');
 
-    $this->assertSession()->waitForText('Confirm your shipping address', 45);
+    $this->assertSession()->waitForText('Confirm your shipping address');
     $this->assertSession()->pageTextContains('Use recommended');
 
     $this->assertSession()
@@ -324,7 +327,7 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
 
     $this->submitForm([], 'Continue to review');
 
-    $this->assertSession()->waitForText('Confirm your shipping address', 45);
+    $this->assertSession()->waitForText('Confirm your shipping address');
     $this->assertSession()->pageTextContains('Use as entered');
     $this->assertSession()->pageTextContains('512 S Mangum St');
     $this->assertSession()->pageTextContains('27701-3973');
@@ -342,6 +345,54 @@ class CheckoutAddressbookTest extends CommerceWebDriverTestBase {
     $this->assertSession()->pageTextContains('Durham, NC 27001');
 
     $this->submitForm([], 'Pay and complete purchase');
+    $this->assertSession()
+      ->pageTextContains('Your order number is 1. You can view your order on your account page when logged in.');
+    $this->assertSession()->pageTextContains('0 items');
+  }
+
+  /**
+   * Tests anonymous checkout shipping to a non-Avatax country.
+   */
+  public function testNonAvataxCheckout() {
+    $this->drupalLogout();
+    $this->drupalGet($this->product->toUrl());
+    $this->submitForm([], 'Add to cart');
+    $this->assertSession()->pageTextContains('1 item');
+    $cart_link = $this->getSession()->getPage()->findLink('your cart');
+    $cart_link->click();
+    $this->submitForm([], 'Checkout');
+    $this->assertSession()->pageTextNotContains('Order Summary');
+
+    $this->submitForm([], 'Continue as Guest');
+
+    $address = [
+      'given_name' => 'Jean',
+      'family_name' => 'Dupont',
+      'address_line1' => 'Rue de Sébastopol',
+      'locality' => 'Toulouse',
+      'postal_code' => '31000',
+      'sorting_code' => '1',
+    ];
+    $address_prefix = 'shipping_information[shipping_profile][address][0][address]';
+    $page = $this->getSession()->getPage();
+    $page->fillField('contact_information[email]', 'guest@example.com');
+    $page->fillField($address_prefix . '[country_code]', 'FR');
+
+    $this->assertSession()->waitForField($address_prefix . '[sorting_code]');
+    foreach ($address as $property => $value) {
+      $page->fillField($address_prefix . '[' . $property . ']', $value);
+    }
+    $page->findButton('Recalculate shipping')->click();
+    $this->assertSession()->assertWaitOnAjaxRequest();
+    $this->assertSession()->pageTextContains('Shipping method');
+
+    $this->submitForm([], 'Continue to review');
+
+    $this->assertSession()->pageTextContains('Contact information');
+    $this->assertSession()->pageTextContains('Payment information');
+    $this->assertSession()->pageTextContains('Order Summary');
+    $this->submitForm([], 'Pay and complete purchase');
+
     $this->assertSession()
       ->pageTextContains('Your order number is 1. You can view your order on your account page when logged in.');
     $this->assertSession()->pageTextContains('0 items');

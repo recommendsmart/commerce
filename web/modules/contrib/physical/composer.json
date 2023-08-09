@@ -2,7 +2,10 @@
     "name": "drupal/physical",
     "type": "drupal-module",
     "description": "Physical supplies such fields as physical weight and dimensions.",
-    "homepage": "http://drupal.org/project/physical",
-    "license": "GPL-2.0+",
-    "minimum-stability": "dev"
+    "homepage": "https://drupal.org/project/physical",
+    "license": "GPL-2.0-or-later",
+    "minimum-stability": "dev",
+    "require": {
+        "php": "^8.0"
+    }
 }

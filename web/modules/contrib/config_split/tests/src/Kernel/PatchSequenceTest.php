@@ -17,7 +17,7 @@ class PatchSequenceTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'config_split',
     'config_split_sequence_test',
   ];

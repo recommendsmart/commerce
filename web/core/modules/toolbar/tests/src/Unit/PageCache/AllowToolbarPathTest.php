@@ -20,7 +20,12 @@ class AllowToolbarPathTest extends UnitTestCase {
    */
   protected $policy;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->policy = new AllowToolbarPath();
   }
 

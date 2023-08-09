@@ -14,6 +14,8 @@ interface EmailSenderInterface {
    *   The email.
    * @param \Drupal\Core\Entity\ContentEntityInterface $entity
    *   The entity.
+   * @param \Drupal\Core\Entity\ContentEntityInterface[] $related_entities
+   *   The related entities.
    *
    * @return bool
    *   TRUE if the email was sent successfully, FALSE otherwise.
@@ -21,6 +23,6 @@ interface EmailSenderInterface {
    * @throws \InvalidArgumentException
    *   Thrown when given an entity that doesn't match the email event.
    */
-  public function send(EmailInterface $email, ContentEntityInterface $entity);
+  public function send(EmailInterface $email, ContentEntityInterface $entity, array $related_entities = []);
 
 }

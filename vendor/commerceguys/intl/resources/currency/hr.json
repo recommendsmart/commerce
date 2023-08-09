@@ -113,7 +113,8 @@
 		"name": "etiopski bir"
 	},
 	"EUR": {
-		"name": "euro"
+		"name": "euro",
+		"symbol": "€"
 	},
 	"FKP": {
 		"name": "falklandska funta"
@@ -153,10 +154,6 @@
 	},
 	"HKD": {
 		"name": "hongkonški dolar"
-	},
-	"HRK": {
-		"name": "hrvatska kuna",
-		"symbol": "kn"
 	},
 	"INR": {
 		"name": "indijska rupija"
@@ -448,9 +445,6 @@
 	},
 	"UAH": {
 		"name": "ukrajinska hrivnja"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "urugvajski pezo"

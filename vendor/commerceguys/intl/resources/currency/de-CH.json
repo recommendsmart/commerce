@@ -220,9 +220,6 @@
 	"BAM": {
 		"name": "Konvertible Mark Bosnien und Herzegowina"
 	},
-	"HRK": {
-		"name": "Kroatischer Kuna"
-	},
 	"CUP": {
 		"name": "Kubanischer Peso"
 	},
@@ -463,9 +460,6 @@
 	},
 	"HUF": {
 		"name": "Ungarischer Forint"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "Uruguayischer Peso"

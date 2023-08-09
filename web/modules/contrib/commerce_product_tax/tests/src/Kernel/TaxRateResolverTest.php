@@ -6,7 +6,6 @@ use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\ProductVariation;
 use Drupal\commerce_store\Entity\Store;
-use Drupal\commerce_tax\Entity\TaxType;
 use Drupal\commerce_tax\Resolver\TaxRateResolverInterface;
 use Drupal\profile\Entity\Profile;
 
@@ -22,7 +21,7 @@ class TaxRateResolverTest extends ProductTaxKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'entity_reference_revisions',
     'profile',
     'state_machine',

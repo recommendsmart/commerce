@@ -166,9 +166,6 @@
 	"CLP": {
 		"name": "chilské peso"
 	},
-	"HRK": {
-		"name": "chorvatská kuna"
-	},
 	"INR": {
 		"name": "indická rupie"
 	},
@@ -462,9 +459,6 @@
 	},
 	"UAH": {
 		"name": "ukrajinská hřivna"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "uruguayské peso"

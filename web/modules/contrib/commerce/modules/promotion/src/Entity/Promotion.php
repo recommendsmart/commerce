@@ -651,6 +651,11 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
         $translation->setOwnerId(0);
       }
     }
+    // The promotion references at least a coupon code, therefore it is now
+    // required to apply a coupon in order for the promotion to apply.
+    if ($this->hasCoupons()) {
+      $this->set('require_coupon', TRUE);
+    }
   }
 
   /**
@@ -923,7 +928,7 @@ class Promotion extends CommerceContentEntityBase implements PromotionInterface 
    */
   public static function getDefaultStartDate() {
     $timestamp = \Drupal::time()->getRequestTime();
-    return gmdate(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $timestamp);
+    return date(DateTimeItemInterface::DATETIME_STORAGE_FORMAT, $timestamp);
   }
 
   /**

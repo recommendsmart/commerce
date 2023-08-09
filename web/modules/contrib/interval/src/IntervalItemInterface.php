@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\IntervalItemInterface.
- */
-
 namespace Drupal\interval;
 
 interface IntervalItemInterface {
@@ -20,7 +15,7 @@ interface IntervalItemInterface {
   /**
    * Gets the period value for this item.
    *
-   * @return int
+   * @return string
    *   The period for this item
    */
   public function getPeriod();

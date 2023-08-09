@@ -11,7 +11,7 @@ final class Locale
      *
      * @var array
      */
-    protected static $aliases = [
+    protected static array $aliases = [
         'az-AZ' => 'az-Latn-AZ',
         'bs-BA' => 'bs-Latn-BA',
         'ha-GH' => 'ha-Latn-GH',
@@ -62,7 +62,7 @@ final class Locale
      *
      * @var array
      */
-    protected static $parents = [
+    protected static array $parents = [
         'en-150' => 'en-001',
         'en-AG' => 'en-001',
         'en-AI' => 'en-001',
@@ -110,6 +110,7 @@ final class Locale
         'en-MS' => 'en-001',
         'en-MT' => 'en-001',
         'en-MU' => 'en-001',
+        'en-MV' => 'en-001',
         'en-MW' => 'en-001',
         'en-MY' => 'en-001',
         'en-NA' => 'en-001',
@@ -155,6 +156,7 @@ final class Locale
         'en-NL' => 'en-150',
         'en-SE' => 'en-150',
         'en-SI' => 'en-150',
+        'hi-Latn' => 'en-IN',
         'es-AR' => 'es-419',
         'es-BO' => 'es-419',
         'es-BR' => 'es-419',
@@ -177,8 +179,10 @@ final class Locale
         'es-US' => 'es-419',
         'es-UY' => 'es-419',
         'es-VE' => 'es-419',
+        'ht' => 'fr-HT',
         'nb' => 'no',
         'nn' => 'no',
+        'no-NO' => 'no',
         'pt-AO' => 'pt-PT',
         'pt-CH' => 'pt-PT',
         'pt-CV' => 'pt-PT',
@@ -195,29 +199,23 @@ final class Locale
         'bal-Latn' => 'und',
         'blt-Latn' => 'und',
         'bs-Cyrl' => 'und',
-        'byn-Latn' => 'und',
         'en-Dsrt' => 'und',
         'en-Shaw' => 'und',
-        'hi-Latn' => 'und',
         'iu-Latn' => 'und',
         'kk-Arab' => 'und',
         'ks-Deva' => 'und',
         'ku-Arab' => 'und',
         'ky-Arab' => 'und',
         'ky-Latn' => 'und',
-        'ml-Arab' => 'und',
         'mn-Mong' => 'und',
         'mni-Mtei' => 'und',
         'ms-Arab' => 'und',
         'pa-Arab' => 'und',
-        'sat-Deva' => 'und',
-        'sd-Deva' => 'und',
-        'sd-Khoj' => 'und',
-        'sd-Sind' => 'und',
         'so-Arab' => 'und',
         'sr-Latn' => 'und',
         'sw-Arab' => 'und',
         'tg-Arab' => 'und',
+        'ug-Cyrl' => 'und',
         'uz-Arab' => 'und',
         'uz-Cyrl' => 'und',
         'yue-Hans' => 'und',
@@ -233,12 +231,8 @@ final class Locale
      *
      * @return bool TRUE if the locales match, FALSE otherwise.
      */
-    public static function match($firstLocale, $secondLocale)
+    public static function match(string $firstLocale, string $secondLocale): bool
     {
-        if (empty($firstLocale) || empty($secondLocale)) {
-            return false;
-        }
-
         return self::canonicalize($firstLocale) === self::canonicalize($secondLocale);
     }
 
@@ -255,12 +249,8 @@ final class Locale
      *
      * @return bool TRUE if there is a common candidate, FALSE otherwise.
      */
-    public static function matchCandidates($firstLocale, $secondLocale)
+    public static function matchCandidates(string $firstLocale, string $secondLocale): bool
     {
-        if (empty($firstLocale) || empty($secondLocale)) {
-            return false;
-        }
-
         $firstLocale = self::canonicalize($firstLocale);
         $secondLocale = self::canonicalize($secondLocale);
         $firstLocaleCandidates = self::getCandidates($firstLocale);
@@ -281,13 +271,13 @@ final class Locale
      *
      * @param array  $availableLocales The available locales.
      * @param string $locale           The requested locale (i.e. fr-FR).
-     * @param string $fallbackLocale   A fallback locale (i.e "en").
+     * @param string|null $fallbackLocale   A fallback locale (i.e "en").
      *
      * @return string
      *
      * @throws UnknownLocaleException
      */
-    public static function resolve(array $availableLocales, $locale, $fallbackLocale = null)
+    public static function resolve(array $availableLocales, string $locale, string $fallbackLocale = null): string
     {
         $locale = self::canonicalize($locale);
         $resolvedLocale = null;
@@ -315,7 +305,7 @@ final class Locale
      *
      * @return string The canonicalized locale.
      */
-    public static function canonicalize($locale)
+    public static function canonicalize(string $locale): string
     {
         if (empty($locale)) {
             return $locale;
@@ -354,11 +344,11 @@ final class Locale
      * 2) sr
      *
      * @param string $locale         The locale (i.e. fr-FR).
-     * @param string $fallbackLocale A fallback locale (i.e "en").
+     * @param string|null $fallbackLocale A fallback locale (i.e "en").
      *
      * @return array An array of all variants of a locale.
      */
-    public static function getCandidates($locale, $fallbackLocale = null)
+    public static function getCandidates(string $locale, string $fallbackLocale = null): array
     {
         $locale = self::replaceAlias($locale);
         $candidates = [$locale];
@@ -386,7 +376,7 @@ final class Locale
      * @return string|null
      *   The parent, or null if none found.
      */
-    public static function getParent($locale)
+    public static function getParent(string $locale): ?string
     {
         $parent = null;
         if (isset(self::$parents[$locale])) {
@@ -414,7 +404,7 @@ final class Locale
      *
      * @return string The locale.
      */
-    public static function replaceAlias($locale)
+    public static function replaceAlias(string $locale): string
     {
         if (!empty($locale) && isset(self::$aliases[$locale])) {
             $locale = self::$aliases[$locale];

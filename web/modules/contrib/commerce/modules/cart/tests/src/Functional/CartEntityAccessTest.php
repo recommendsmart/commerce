@@ -35,7 +35,10 @@ class CartEntityAccessTest extends CartBrowserTestBase {
    * Tests that users with the view permission can view their own carts.
    */
   public function testViewAccess() {
-    $customer = $this->drupalCreateUser(['access checkout', 'view own commerce_order']);
+    $customer = $this->drupalCreateUser([
+      'access checkout',
+      'view own commerce_order',
+    ]);
 
     // Ensure that vaccess checks are respected even if anonymous users have
     // permission to view their own orders.

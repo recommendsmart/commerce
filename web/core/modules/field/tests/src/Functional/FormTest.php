@@ -31,6 +31,7 @@ class FormTest extends FieldTestBase {
     'options',
     'entity_test',
     'locale',
+    'field_ui',
   ];
 
   /**
@@ -66,12 +67,16 @@ class FormTest extends FieldTestBase {
    */
   protected $field;
 
+  /**
+   * {@inheritdoc}
+   */
   protected function setUp(): void {
     parent::setUp();
 
     $web_user = $this->drupalCreateUser([
       'view test entity',
       'administer entity_test content',
+      'administer entity_test fields',
     ]);
     $this->drupalLogin($web_user);
 
@@ -267,6 +272,11 @@ class FormTest extends FieldTestBase {
       ->getFormDisplay($this->field['entity_type'], $this->field['bundle'])
       ->setComponent($field_name)
       ->save();
+
+    // Verify that only one "Default value" field
+    // exists on the Manage field display.
+    $this->drupalGet("entity_test/structure/entity_test/fields/entity_test.entity_test.{$field_name}");
+    $this->assertSession()->elementsCount('xpath', "//table[@id='field-unlimited-values']/tbody/tr//input[contains(@class, 'form-text')]", 1);
 
     // Display creation form -> 1 widget.
     $this->drupalGet('entity_test/add');

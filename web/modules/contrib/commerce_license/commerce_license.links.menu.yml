@@ -7,5 +7,17 @@ entity.commerce_license.collection:
 entity.commerce_license.license_types:
   title: 'License types'
   route_name: 'entity.commerce_license.license_types'
-  parent: 'commerce.configuration'
+  parent: 'commerce_license.configuration'
   description: 'Manage fields, form and display settings for your licenses.'
+
+commerce_license.configuration:
+  title: 'Licenses'
+  route_name: 'commerce_license.configuration'
+  parent: 'commerce.configuration'
+  weight: -20
+
+commerce_license.dashboard:
+  title: 'License dashboard'
+  route_name: 'commerce_license.dashboard'
+  parent: 'commerce_license.configuration'
+  weight: -30

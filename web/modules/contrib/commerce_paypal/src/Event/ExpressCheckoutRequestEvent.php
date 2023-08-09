@@ -2,15 +2,15 @@
 
 namespace Drupal\commerce_paypal\Event;
 
+use Drupal\commerce\EventBase;
 use Drupal\commerce_order\Entity\OrderInterface;
-use Symfony\Component\EventDispatcher\Event;
 
 /**
  * Defines the Express Checkout request event.
  *
  * @see \Drupal\commerce_paypal\Event\CommercePaypalEvents
  */
-class ExpressCheckoutRequestEvent extends Event {
+class ExpressCheckoutRequestEvent extends EventBase {
 
   /**
    * The NVP API data array.

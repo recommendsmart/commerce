@@ -8,6 +8,21 @@ services:
     class: Drupal\commerce_license\LicenseTypeManager
     parent: default_plugin_manager
 
+  plugin.manager.commerce_license_period:
+    class: Drupal\commerce_license\LicensePeriodManager
+    parent: default_plugin_manager
+
+  commerce_license.license_subscriber:
+    class: Drupal\commerce_license\EventSubscriber\LicenseSubscriber
+    tags:
+      - { name: event_subscriber }
+
+  commerce_license.log_subscriber:
+    class: Drupal\commerce_license\EventSubscriber\LogEventSubscriber
+    arguments: ['@entity_type.manager', '@module_handler']
+    tags:
+      - { name: event_subscriber }
+
   commerce_license.order_subscriber:
     class: Drupal\commerce_license\EventSubscriber\OrderSubscriber
     arguments: ['@entity_type.manager']
@@ -20,17 +35,28 @@ services:
 
   commerce_license.multiple_license_order_processor:
     class: Drupal\commerce_license\LicenseOrderProcessorMultiples
+    arguments: ['@messenger', '@entity_type.manager', '@uuid']
     tags:
       - { name: commerce_order.order_processor }
 
+  commerce_license.license_renewal_cart_event_subscriber:
+    class: Drupal\commerce_license\EventSubscriber\LicenseRenewalCartEventSubscriber
+    arguments:
+      - '@entity_type.manager'
+      - '@messenger'
+      - '@date.formatter'
+    tags:
+      - { name: event_subscriber }
+
   commerce_license.license_multiples_cart_event_subscriber:
     class: Drupal\commerce_license\EventSubscriber\LicenseMultiplesCartEventSubscriber
+    arguments: ['@messenger']
     tags:
       - { name: event_subscriber }
 
   commerce_license.license_availability_checker_existing:
     class: Drupal\commerce_license\LicenseAvailabilityCheckerExistingRights
-    arguments: ['@current_user', '@entity_type.manager']
+    arguments: ['@current_user', '@entity_type.manager', '@date.formatter']
     tags:
       - { name: commerce_order.availability_checker }
 

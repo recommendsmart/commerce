@@ -181,17 +181,17 @@ class PaymentMethodAddForm extends PaymentMethodFormBase {
     $values = $form_state->getValue($element['#parents']);
     $card_type = CreditCard::detectType($values['number']);
     if (!$card_type) {
-      $form_state->setError($element['number'], t('You have entered a credit card number of an unsupported card type.'));
+      $form_state->setError($element['number'], $this->t('You have entered a credit card number of an unsupported card type.'));
       return;
     }
     if (!CreditCard::validateNumber($values['number'], $card_type)) {
-      $form_state->setError($element['number'], t('You have entered an invalid credit card number.'));
+      $form_state->setError($element['number'], $this->t('You have entered an invalid credit card number.'));
     }
     if (!CreditCard::validateExpirationDate($values['expiration']['month'], $values['expiration']['year'])) {
-      $form_state->setError($element['expiration'], t('You have entered an expired credit card.'));
+      $form_state->setError($element['expiration'], $this->t('You have entered an expired credit card.'));
     }
     if (!CreditCard::validateSecurityCode($values['security_code'], $card_type)) {
-      $form_state->setError($element['security_code'], t('You have entered an invalid CVV.'));
+      $form_state->setError($element['security_code'], $this->t('You have entered an invalid CVV.'));
     }
 
     // Persist the detected card type.

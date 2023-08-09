@@ -23,5 +23,8 @@
     },
     "type": "drupal-module",
     "license": "GPL-2.0+",
-    "require": {}
+    "require": {},
+    "require-dev": {
+        "drupal/webform": "6.2.x-dev@dev"
+    }
 }

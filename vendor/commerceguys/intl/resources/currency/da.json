@@ -232,9 +232,6 @@
 	"KGS": {
 		"name": "kirgisisk som"
 	},
-	"HRK": {
-		"name": "kroatisk kuna"
-	},
 	"KWD": {
 		"name": "kuwaitisk dinar"
 	},
@@ -462,9 +459,6 @@
 	},
 	"HUF": {
 		"name": "ungarsk forint"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "uruguayansk peso"

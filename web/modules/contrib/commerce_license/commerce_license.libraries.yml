@@ -1,0 +1,11 @@
+form:
+  version: VERSION
+  css:
+    layout:
+      css/commerce_license.form.css: {}
+
+dashboard:
+  version: VERSION
+  css:
+    layout:
+      css/commerce_license.dashboard.css: {}

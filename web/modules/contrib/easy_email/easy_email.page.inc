@@ -61,7 +61,7 @@ function template_preprocess_easy_email(array &$variables) {
   }
   $variables['headers'][] = [
     'name' => 'To',
-    'value' => implode(', ', $easy_email->getRecipientAddresses()),
+    'value' => implode(', ', $easy_email->getRecipientAddresses() ?? []),
   ];
   $variables['headers'][] = [
     'name' => 'Subject',

@@ -87,9 +87,7 @@ class TestEmailForm extends FormBase {
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
     $to = $form_state->getValue('recipient') ?: $this->currentUser();
-    $this->emailFactory->newModuleEmail('symfony_mailer', 'test')
-      ->setTo($to)
-      ->send();
+    $this->emailFactory->sendTypedEmail('symfony_mailer', 'test', $to);
     $message = is_object($to) ?
       $this->t('An attempt has been made to send an email to you.') :
       $this->t('An attempt has been made to send an email to @to.', ['@to' => $to]);

@@ -1,10 +1,5 @@
 <?php
 
-/**
- * @file
- * Contains \Drupal\interval\Plugin\Field\FieldFormatter\IntervalFormatterPhp.
- */
-
 namespace Drupal\interval\Plugin\Field\FieldFormatter;
 
 use Drupal\Component\Render\HtmlEscapedText;
@@ -32,11 +27,11 @@ class IntervalFormatterPhp extends IntervalFormatterBase {
    */
   public function viewElements(FieldItemListInterface $items, $langcode) {
     /** @var \Drupal\interval\IntervalItemInterface $item */
-    $element = array();
+    $element = [];
     foreach ($items as $delta => $item) {
-      $element[$delta] = array(
+      $element[$delta] = [
         '#markup' => new HtmlEscapedText($item->buildPHPString()),
-      );
+      ];
     }
     return $element;
   }

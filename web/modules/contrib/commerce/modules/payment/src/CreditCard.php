@@ -158,7 +158,7 @@ final class CreditCard {
       return substr($number, 0, strlen($prefix)) == $prefix;
     }
     else {
-      list($start, $end) = explode('-', $prefix);
+      [$start, $end] = explode('-', $prefix);
       $number = substr($number, 0, strlen($start));
       return $number >= $start && $number <= $end;
     }

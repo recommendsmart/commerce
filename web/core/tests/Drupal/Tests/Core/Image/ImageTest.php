@@ -47,6 +47,8 @@ class ImageTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     // Use the Druplicon image.
     $this->source = __DIR__ . '/../../../../../misc/druplicon.png';
   }
@@ -73,7 +75,7 @@ class ImageTest extends UnitTestCase {
    *
    * @param string $class_name
    *   The name of the GD toolkit operation class to be mocked.
-   * @param \Drupal\Core\Image\ImageToolkitInterface $toolkit
+   * @param \Drupal\Core\ImageToolkit\ImageToolkitInterface $toolkit
    *   The image toolkit object.
    *
    * @return \PHPUnit\Framework\MockObject\MockObject
@@ -108,7 +110,7 @@ class ImageTest extends UnitTestCase {
 
     $this->toolkit->expects($this->any())
       ->method('getPluginId')
-      ->will($this->returnValue('gd'));
+      ->willReturn('gd');
 
     if (!$load_expected) {
       $this->toolkit->expects($this->never())
@@ -135,11 +137,11 @@ class ImageTest extends UnitTestCase {
 
     $this->toolkit->expects($this->any())
       ->method('getPluginId')
-      ->will($this->returnValue('gd'));
+      ->willReturn('gd');
 
     $this->toolkit->expects($this->any())
       ->method('getToolkitOperation')
-      ->will($this->returnValue($this->toolkitOperation));
+      ->willReturn($this->toolkitOperation);
 
     $this->image = new Image($this->toolkit, $this->source);
 
@@ -212,7 +214,7 @@ class ImageTest extends UnitTestCase {
     $toolkit = $this->getToolkitMock();
     $toolkit->expects($this->once())
       ->method('save')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
 
     $image = new Image($toolkit, $this->image->getSource());
 
@@ -240,7 +242,7 @@ class ImageTest extends UnitTestCase {
     // This will fail if save() method isn't called on the toolkit.
     $this->toolkit->expects($this->once())
       ->method('save')
-      ->will($this->returnValue(FALSE));
+      ->willReturn(FALSE);
 
     $this->assertFalse($this->image->save());
   }
@@ -254,7 +256,7 @@ class ImageTest extends UnitTestCase {
     $toolkit = $this->getToolkitMock();
     $toolkit->expects($this->once())
       ->method('save')
-      ->will($this->returnValue(TRUE));
+      ->willReturn(TRUE);
 
     $image = new Image($toolkit, $this->image->getSource());
 
@@ -279,7 +281,7 @@ class ImageTest extends UnitTestCase {
    */
   public function testParseFileFails() {
     $toolkit = $this->getToolkitMock();
-    $image = new Image($toolkit, 'magic-foobars.png');
+    $image = new Image($toolkit, 'magic-foobar.png');
 
     $this->assertFalse($image->isValid());
     $this->assertFalse($image->save());

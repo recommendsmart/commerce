@@ -3,6 +3,9 @@
 namespace Drupal\commerce_tax\Entity;
 
 use Drupal\commerce\CommerceSinglePluginCollection;
+use Drupal\commerce\ConditionGroup;
+use Drupal\commerce\Plugin\Commerce\Condition\ParentEntityAwareInterface;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\Core\Config\Entity\ConfigEntityBase;
 use Drupal\Core\Config\Entity\ConfigEntityInterface;
 
@@ -45,13 +48,16 @@ use Drupal\Core\Config\Entity\ConfigEntityInterface;
  *     "label",
  *     "plugin",
  *     "configuration",
+ *     "conditions",
+ *     "conditionOperator",
  *   },
  *   links = {
  *     "add-form" = "/admin/commerce/config/tax-types/add",
  *     "edit-form" = "/admin/commerce/config/tax-types/manage/{commerce_tax_type}",
  *     "delete-form" = "/admin/commerce/config/tax-types/manage/{commerce_tax_type}/delete",
  *     "collection" =  "/admin/commerce/config/tax-types"
- *   }
+ *   },
+ *   static_cache = true
  * )
  */
 class TaxType extends ConfigEntityBase implements TaxTypeInterface {
@@ -83,6 +89,20 @@ class TaxType extends ConfigEntityBase implements TaxTypeInterface {
    * @var array
    */
   protected $configuration = [];
+
+  /**
+   * The conditions.
+   *
+   * @var array
+   */
+  protected $conditions = [];
+
+  /**
+   * The condition operator.
+   *
+   * @var string
+   */
+  protected $conditionOperator = 'AND';
 
   /**
    * The plugin collection that holds the tax type plugin.
@@ -129,6 +149,58 @@ class TaxType extends ConfigEntityBase implements TaxTypeInterface {
     $this->configuration = $configuration;
     $this->pluginCollection = NULL;
     return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConditions() {
+    /** @var \Drupal\commerce\ConditionManager $plugin_manager */
+    $plugin_manager = \Drupal::service('plugin.manager.commerce_condition');
+    $conditions = [];
+    foreach ($this->conditions as $condition) {
+      if (empty($condition['plugin'])) {
+        continue;
+      }
+      $condition = $plugin_manager->createInstance($condition['plugin'], (array) $condition['configuration']);
+      if ($condition instanceof ParentEntityAwareInterface) {
+        $condition->setParentEntity($this);
+      }
+      $conditions[] = $condition;
+    }
+    return $conditions;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function getConditionOperator() {
+    return $this->conditionOperator;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function setConditionOperator($condition_operator) {
+    $this->conditionOperator = $condition_operator;
+    return $this;
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function applies(OrderInterface $order) {
+    $conditions = $this->getConditions();
+    if (!$conditions) {
+      return TRUE;
+    }
+    $order_conditions = array_filter($conditions, function ($condition) {
+      /** @var \Drupal\commerce\Plugin\Commerce\Condition\ConditionInterface $condition */
+      return $condition->getEntityTypeId() == 'commerce_order';
+    });
+    $order_conditions = new ConditionGroup($order_conditions, $this->getConditionOperator());
+
+    return $order_conditions->evaluate($order);
   }
 
   /**

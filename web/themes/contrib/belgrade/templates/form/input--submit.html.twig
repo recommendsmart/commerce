@@ -10,4 +10,10 @@
  * @see template_preprocess_input()
  */
 #}
-<input{{ attributes }} />{{ children }}
+
+{% if submit_button %}
+	<button{{attributes}}>{{ safe_value_label | raw }}</button>{{ children }}
+{% else %}
+	<input{{attributes}}/>{{ children }}
+{% endif %}
+

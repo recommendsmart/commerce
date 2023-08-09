@@ -228,9 +228,6 @@
 	"NOK": {
 		"name": "Krone Norway"
 	},
-	"HRK": {
-		"name": "Kuna Croatia"
-	},
 	"MWK": {
 		"name": "Kwacha Malawi"
 	},
@@ -424,9 +421,6 @@
 	"IDR": {
 		"name": "Rupiah Indonesia"
 	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
 	"PEN": {
 		"name": "Sol Peru"
 	},
@@ -466,9 +460,6 @@
 	},
 	"MNT": {
 		"name": "Tugrik Mongolia"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"VUV": {
 		"name": "Vatu Vanuatu"

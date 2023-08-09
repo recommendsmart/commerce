@@ -30,7 +30,7 @@ function belgrade_preprocess_region(&$variables) {
     $variables['navigation_backdrop'] = "false";
 
     if (theme_get_setting('navigation_logo') === 1) {
-      $variables['site_logo'] = file_url_transform_relative(file_create_url(theme_get_setting('logo.url')));
+      $variables['site_logo'] = \Drupal::service('file_url_generator')->generateString(theme_get_setting('logo.url'));
       $logo_path_info = pathinfo($variables['site_logo']);
       if (theme_get_setting('inline_logo') === 1 && $logo_path_info['extension'] === 'svg') {
         $variables['inline_logo'] = true;

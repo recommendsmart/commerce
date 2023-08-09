@@ -23,11 +23,13 @@
     <div class="coupon-redemption-form__coupons coupon-redemption-form__coupons--multiple">
       <h5 class="mb-3"> {{ 'Applied coupons'|t }} </h5>
       <table class="table bg-white">
-        {% for key, coupon in form.coupons if key|first != '#' %}
+        {% for key, coupon in form.coupons %}
+        {% if key|first != '#' %}
           <tr>
             <td class="w-100"> {{ coupon.code }} </td>
             <td> {{ coupon.remove_button }} </td>
           </tr>
+        {% endif %}
         {% endfor %}
       </table>
     </div>

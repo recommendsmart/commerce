@@ -3,13 +3,15 @@
 namespace Drupal\commerce_avatax\Plugin\Commerce\TaxType;
 
 use Drupal\commerce_avatax\AvataxLibInterface;
-use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Adjustment;
+use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_tax\Plugin\Commerce\TaxType\RemoteTaxTypeBase;
+use Drupal\Component\Transliteration\TransliterationInterface;
 use Drupal\Component\Utility\Html;
 use Drupal\Core\Config\ConfigFactoryInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
+use Drupal\Core\Language\LanguageInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 
@@ -38,6 +40,13 @@ class Avatax extends RemoteTaxTypeBase {
   protected $configFactory;
 
   /**
+   * Transliteration library.
+   *
+   * @var \Drupal\Component\Transliteration\TransliterationInterface
+   */
+  protected $transliteration;
+
+  /**
    * Constructs a new AvaTax object.
    *
    * @param array $configuration
@@ -54,12 +63,15 @@ class Avatax extends RemoteTaxTypeBase {
    *   The AvaTax library.
    * @param \Drupal\Core\Config\ConfigFactoryInterface $config_factory
    *   The config factory.
+   * @param \Drupal\Component\Transliteration\TransliterationInterface $transliteration
+   *   The transliteration library.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EventDispatcherInterface $event_dispatcher, AvataxLibInterface $avatax_lib, ConfigFactoryInterface $config_factory) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, EventDispatcherInterface $event_dispatcher, AvataxLibInterface $avatax_lib, ConfigFactoryInterface $config_factory, TransliterationInterface $transliteration) {
     parent::__construct($configuration, $plugin_id, $plugin_definition, $entity_type_manager, $event_dispatcher);
 
     $this->avataxLib = $avatax_lib;
     $this->configFactory = $config_factory;
+    $this->transliteration = $transliteration;
   }
 
   /**
@@ -73,7 +85,8 @@ class Avatax extends RemoteTaxTypeBase {
       $container->get('entity_type.manager'),
       $container->get('event_dispatcher'),
       $container->get('commerce_avatax.avatax_lib'),
-      $container->get('config.factory')
+      $container->get('config.factory'),
+      $container->get('transliteration'),
     );
   }
 
@@ -107,45 +120,95 @@ class Avatax extends RemoteTaxTypeBase {
     $currency_code = $order->getTotalPrice() ? $order->getTotalPrice()->getCurrencyCode() : $order->getStore()->getDefaultCurrencyCode();
     $adjustments = [];
     $applied_adjustments = [];
-    foreach ($response_body['lines'] as $tax_adjustment) {
-      $label = isset($tax_adjustment['details'][0]['taxName']) ? Html::escape($tax_adjustment['details'][0]['taxName']) : $this->t('Sales tax');
-      $adjustments[$tax_adjustment['lineNumber']] = [
-        'amount' => $tax_adjustment['tax'],
-        'label' => $label,
-      ];
+    foreach ($response_body['lines'] as $line) {
+      $line_number = $line['lineNumber'];
+      if (array_key_exists('details', $line)) {
+        // Use details, if present. Per Avalara:
+        // Tax details represent taxes being charged by various tax authorities.
+        // Taxes that appear in the details collection are intended to be
+        // displayed to the customer and charged as a 'tax' on the invoice.
+        foreach ($line['details'] as $detail) {
+          $label = isset($detail['taxName']) ? Html::escape($detail['taxName']) : $this->t('Sales tax');
+          $values = [
+            'amount' => $detail['tax'],
+            'label' => $label,
+          ];
+          if (array_key_exists('rate', $detail)) {
+            $values['rate'] = (string) $detail['rate'];
+          }
+          $adjustments[$line_number][] = $values;
+        }
+      }
+      else {
+        // If there are no details, fall back to the tax on the line.
+        $adjustments[$line_number][] = [
+          'amount' => $line['tax'],
+          'label' => $this->t('Sales tax'),
+        ];
+      }
     }
 
     // Add tax adjustments to order items.
     foreach ($order->getItems() as $order_item) {
-      if (!isset($adjustments[$order_item->uuid()])) {
+      $uuid = $order_item->uuid();
+      if (!isset($adjustments[$uuid])) {
         continue;
       }
-      $order_item->addAdjustment(new Adjustment([
-        'type' => 'tax',
-        'label' => $adjustments[$order_item->uuid()]['label'],
-        'amount' => new Price((string) $adjustments[$order_item->uuid()]['amount'], $currency_code),
-        'source_id' => $this->pluginId . '|' . $this->parentEntity->id(),
-      ]));
-      $applied_adjustments[$order_item->uuid()] = $order_item->uuid();
+      $adjustment = $adjustments[$uuid];
+      foreach ($adjustment as $adjustment_detail) {
+        $label = $adjustment_detail['label'];
+        $values = [
+          'type' => 'tax',
+          'label' => $label,
+          'amount' => new Price((string) $adjustment_detail['amount'], $currency_code),
+          'source_id' => $this->pluginId . '|' . $this->parentEntity->id() . '|' . $this->sanitizeString($label),
+        ];
+        if (array_key_exists('rate', $adjustment_detail)) {
+          $values['percentage'] = $adjustment_detail['rate'];
+        }
+        $order_item->addAdjustment(new Adjustment($values));
+      }
+      $applied_adjustments[$order_item->uuid()] = $uuid;
     }
 
-    // If we still have Tax adjustments to apply, add a single one to the order.
+    // If we still have Tax adjustments to apply, add them to the order.
     $remaining_adjustments = array_diff_key($adjustments, $applied_adjustments);
     if (!$remaining_adjustments) {
       return;
     }
-    $tax_adjustment_total = NULL;
-    // Calculate the total Tax adjustment to add.
+    // Add adjustments not associated with a specific order item.
+    // e.g. taxes on shipping, handling, freight, etc...
     foreach ($remaining_adjustments as $remaining_adjustment) {
-      $adjustment_amount = new Price((string) $remaining_adjustment['amount'], $currency_code);
-      $tax_adjustment_total = $tax_adjustment_total ? $tax_adjustment_total->add($adjustment_amount) : $adjustment_amount;
+      foreach ($remaining_adjustment as $adjustment_detail) {
+        $label = $adjustment_detail['label'];
+        $values = [
+          'type' => 'tax',
+          'label' => $label,
+          'amount' => new Price((string) $adjustment_detail['amount'], $currency_code),
+          'source_id' => $this->pluginId . '|' . $this->parentEntity->id() . '|' . $this->sanitizeString($label),
+        ];
+        if (array_key_exists('rate', $adjustment_detail)) {
+          $values['percentage'] = $adjustment_detail['rate'];
+        }
+        $order->addAdjustment(new Adjustment($values));
+      }
     }
-    $order->addAdjustment(new Adjustment([
-      'type' => 'tax',
-      'label' => $this->t('Sales tax'),
-      'amount' => $tax_adjustment_total,
-      'source_id' => $this->pluginId . '|' . $this->parentEntity->id(),
-    ]));
+  }
+
+  /**
+   * Sanitizes a string, cloned from machine name.
+   *
+   * @param string $value
+   *   The string to sanitize.
+   *
+   * @return string|null
+   *   The sanitized string.
+   */
+  protected function sanitizeString(string $value): ?string {
+    $new_value = $this->transliteration->transliterate($value, LanguageInterface::LANGCODE_DEFAULT, '_');
+    $new_value = strtolower($new_value);
+    $new_value = preg_replace('/[^a-z0-9_]+/', '_', $new_value);
+    return preg_replace('/_+/', '_', $new_value);
   }
 
 }

@@ -11,6 +11,7 @@ use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\File\FileSystemInterface;
 use Drupal\Core\Form\FormBase;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\StreamWrapper\PrivateStream;
 use Drupal\Core\Url;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Component\Utility\Environment;
@@ -106,7 +107,9 @@ class PriceListItemImportForm extends FormBase {
         'file_validate_extensions' => ['csv'],
         'file_validate_size' => [Environment::getUploadMaxSize()],
       ],
-      '#upload_location' => 'temporary://',
+      // Use the private stream when available, otherwise fallback to the
+      // temporary directory.
+      '#upload_location' => PrivateStream::basePath() ? 'private://' : 'temporary://',
     ];
 
     $form['mapping'] = [
@@ -209,13 +212,25 @@ class PriceListItemImportForm extends FormBase {
     elseif (!$all_files['csv']->isValid()) {
       $form_state->setErrorByName('csv', $this->t('The provided CSV file is invalid.'));
     }
+    else {
+      $file = file_save_upload('csv', $form['csv']['#upload_validators'], $form['csv']['#upload_location'], 0, FileSystemInterface::EXISTS_RENAME);
+
+      if (!$file) {
+        $form_state->setErrorByName('csv', $this->t('An error occurred while trying to upload the CSV file, please try again later.'));
+      }
+      else {
+        $form_state->set('csv_file', $file->id());
+      }
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function submitForm(array &$form, FormStateInterface $form_state) {
-    $file = file_save_upload('csv', $form['csv']['#upload_validators'], 'temporary://', 0, FileSystemInterface::EXISTS_RENAME);
+    $file_storage = $this->entityTypeManager->getStorage('file');
+    /** @var \Drupal\file\FileInterface $file */
+    $file = $file_storage->load($form_state->get('csv_file'));
     $values = $form_state->getValues();
 
     $batch = [
@@ -271,7 +286,6 @@ class PriceListItemImportForm extends FormBase {
     if (empty($context['sandbox'])) {
       $context['sandbox']['delete_total'] = count($price_list_item_ids);
       $context['sandbox']['delete_count'] = 0;
-      $context['results']['delete_count'] = 0;
     }
 
     $total_items = $context['sandbox']['delete_total'];
@@ -374,6 +388,7 @@ class PriceListItemImportForm extends FormBase {
       $price_list_item = NULL;
       if (!$delete_existing) {
         $result = $price_list_item_storage->getQuery()
+          ->accessCheck(FALSE)
           ->condition('type', $price_list->bundle())
           ->condition('price_list_id', $price_list->id())
           ->condition('purchasable_entity', $purchasable_entity->id())
@@ -430,7 +445,9 @@ class PriceListItemImportForm extends FormBase {
    */
   public static function batchDeleteUploadedFile($file_id, array &$context) {
     $file_storage = \Drupal::entityTypeManager()->getStorage('file');
+    /** @var \Drupal\file\FileInterface $file */
     $file = $file_storage->load($file_id);
+    unlink($file->getFileUri());
     $file->delete();
     $context['message'] = t('Removing uploaded CSV.');
     $context['finished'] = 1;
@@ -528,7 +545,6 @@ class PriceListItemImportForm extends FormBase {
     $price = new Price($row['price'], $currency_code);
     $price_list_item->setPrice($price);
 
-    $list_price = NULL;
     if (isset($row['list_price']) && $row['list_price'] !== '') {
       $row['list_price'] = str_replace(' ', '', $row['list_price']);
       $list_price = new Price($row['list_price'], $currency_code);

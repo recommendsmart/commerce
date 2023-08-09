@@ -9,8 +9,6 @@ use Drupal\commerce_order\Entity\OrderItem;
 use Drupal\commerce_price\Price;
 use Drupal\commerce_product\Entity\Product;
 use Drupal\commerce_product\Entity\ProductVariation;
-use Drupal\Core\DependencyInjection\ContainerBuilder;
-use Drupal\Core\DependencyInjection\ServiceModifierInterface;
 use Symfony\Component\Validator\ConstraintViolationInterface;
 
 /**
@@ -19,7 +17,7 @@ use Symfony\Component\Validator\ConstraintViolationInterface;
  * @group commerce_order
  * @coversDefaultClass \Drupal\commerce_order\Plugin\Validation\Constraint\PurchasedEntityAvailableConstraintValidator
  */
-final class PurchasedEntityConstraintValidatorTest extends OrderKernelTestBase implements ServiceModifierInterface {
+final class PurchasedEntityConstraintValidatorTest extends OrderKernelTestBase {
 
   /**
    * Modules to enable.
@@ -29,14 +27,6 @@ final class PurchasedEntityConstraintValidatorTest extends OrderKernelTestBase i
   protected static $modules = [
     'commerce_order_test',
   ];
-
-  /**
-   * {@inheritdoc}
-   */
-  public function alter(ContainerBuilder $container) {
-    // We're focusing on testing the test availability checker.
-    $container->removeDefinition('commerce_order.entity_accessible_availability_checker');
-  }
 
   /**
    * Tests the availability constraint.
@@ -53,9 +43,8 @@ final class PurchasedEntityConstraintValidatorTest extends OrderKernelTestBase i
    * @dataProvider dataProviderCheckerData
    * @covers ::validate
    */
-  public function testAvailabilityConstraint($sku, $order_state, AvailabilityResult $expected_check_result, bool $expected_constraint) {
+  public function testAvailabilityConstraint($sku, $order_state, AvailabilityResult $expected_check_result, $expected_constraint) {
     $context = new Context($this->createUser(), $this->store);
-    /** @var \Drupal\commerce_order\AvailabilityManagerInterface $availability_manager */
     $availability_manager = $this->container->get('commerce_order.availability_manager');
 
     $product_variation = $this->createTestProductVariation([
@@ -218,18 +207,18 @@ final class PurchasedEntityConstraintValidatorTest extends OrderKernelTestBase i
    * @throws \Drupal\Core\Entity\EntityStorageException
    */
   protected function createTestProductVariation(array $variation_data) {
-    /** @var \Drupal\commerce_product\Entity\ProductVariation $product_variation */
-    $product_variation = ProductVariation::create($variation_data + [
-      'type' => 'default',
-    ]);
-    $product_variation->save();
     /** @var \Drupal\commerce_product\Entity\Product $product */
     $product = Product::create([
       'title' => 'test product',
       'type' => 'default',
       'stores' => [$this->store->id()],
-      'variations' => [$product_variation],
     ]);
+    /** @var \Drupal\commerce_product\Entity\ProductVariation $product_variation */
+    $product_variation = ProductVariation::create($variation_data + [
+      'type' => 'default',
+    ]);
+    $product_variation->save();
+    $product->addVariation($product_variation);
     $product->save();
     return $this->reloadEntity($product_variation);
   }

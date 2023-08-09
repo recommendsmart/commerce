@@ -108,11 +108,11 @@
 	"FKP": {
 		"name": "falklenskt pund"
 	},
-	"FJD": {
-		"name": "fidjeyskur dalur"
-	},
 	"PHP": {
 		"name": "filippseyskur pesi"
+	},
+	"FJD": {
+		"name": "fídjískur dalur"
 	},
 	"GMD": {
 		"name": "gambískur dalasi"
@@ -170,7 +170,8 @@
 		"name": "íranskt ríal"
 	},
 	"ISK": {
-		"name": "íslensk króna"
+		"name": "íslensk króna",
+		"symbol": "kr."
 	},
 	"JMD": {
 		"name": "jamaískur dalur"
@@ -218,9 +219,6 @@
 	},
 	"KMF": {
 		"name": "kómoreyskur franki"
-	},
-	"HRK": {
-		"name": "króatísk kúna"
 	},
 	"CUP": {
 		"name": "kúbverskur pesi"
@@ -439,7 +437,7 @@
 		"name": "Trínidad og Tóbagó-dalur"
 	},
 	"TND": {
-		"name": "túnískur denari"
+		"name": "túniskur denari"
 	},
 	"TMT": {
 		"name": "túrkmenskt manat"
@@ -449,9 +447,6 @@
 	},
 	"HUF": {
 		"name": "ungversk fórinta"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UGX": {
 		"name": "úgandskur skildingur"
@@ -477,8 +472,5 @@
 	},
 	"VND": {
 		"name": "víetnamskt dong"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

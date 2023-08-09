@@ -115,7 +115,7 @@ class CheckoutSdk implements CheckoutSdkInterface {
   public function createOrder(OrderInterface $order, AddressInterface $billing_address = NULL) {
     $params = $this->prepareOrderRequest($order, $billing_address);
     $event = new CheckoutOrderRequestEvent($order, $params);
-    $this->eventDispatcher->dispatch(PayPalEvents::CHECKOUT_CREATE_ORDER_REQUEST, $event);
+    $this->eventDispatcher->dispatch($event, PayPalEvents::CHECKOUT_CREATE_ORDER_REQUEST);
     return $this->client->post('/v2/checkout/orders', ['json' => $event->getRequestBody()]);
   }
 
@@ -139,7 +139,7 @@ class CheckoutSdk implements CheckoutSdkInterface {
       ],
     ];
     $event = new CheckoutOrderRequestEvent($order, $update_params);
-    $this->eventDispatcher->dispatch(PayPalEvents::CHECKOUT_UPDATE_ORDER_REQUEST, $event);
+    $this->eventDispatcher->dispatch($event, PayPalEvents::CHECKOUT_UPDATE_ORDER_REQUEST);
     return $this->client->patch(sprintf('/v2/checkout/orders/%s', $remote_id), ['json' => $event->getRequestBody()]);
   }
 
@@ -257,7 +257,6 @@ class CheckoutSdk implements CheckoutSdkInterface {
   protected function prepareOrderRequest(OrderInterface $order, AddressInterface $billing_address = NULL) {
     $items = [];
     $item_total = NULL;
-    $tax_total = NULL;
     foreach ($order->getItems() as $order_item) {
       $item_total = $item_total ? $item_total->add($order_item->getTotalPrice()) : $order_item->getTotalPrice();
       $item = [
@@ -276,6 +275,13 @@ class CheckoutSdk implements CheckoutSdkInterface {
       $items[] = $item;
     }
 
+    $skipped_adjustment_types = [
+      'tax',
+      'shipping',
+      'promotion',
+      'commerce_giftcard',
+      'shipping_promotion',
+    ];
     // Now, pass adjustments that are not "supported" by PayPal such as fees
     // and "custom" adjustments.
     // We could pass fees under "handling", but we can't make that assumption.
@@ -285,7 +291,7 @@ class CheckoutSdk implements CheckoutSdkInterface {
       // Skip included adjustments and the adjustment types we're handling
       // below such as "shipping" and "tax".
       if ($adjustment->isIncluded() ||
-        in_array($adjustment->getType(), ['tax', 'shipping', 'promotion', 'commerce_giftcard'])) {
+        in_array($adjustment->getType(), $skipped_adjustment_types, TRUE)) {
         continue;
       }
       $item_total = $item_total ? $item_total->add($adjustment->getAmount()) : $adjustment->getAmount();
@@ -322,13 +328,26 @@ class CheckoutSdk implements CheckoutSdkInterface {
       ];
     }
 
-    $promotion_total = $this->getAdjustmentsTotal($adjustments, ['promotion', 'commerce_giftcard']);
+    $promotion_total = $this->getAdjustmentsTotal($adjustments, ['promotion', 'commerce_giftcard', 'shipping_promotion']);
     if (!empty($promotion_total)) {
       $breakdown['discount'] = [
         'currency_code' => $promotion_total->getCurrencyCode(),
         'value' => Calculator::trim($promotion_total->multiply(-1)->getNumber()),
       ];
     }
+
+    // If an order was partially paid, add paid amount as discount.
+    if ($order->getTotalPrice()->greaterThan($order->getBalance())) {
+      $discount_total = $order->getTotalPrice()->subtract($order->getBalance());
+      if (!empty($promotion_total)) {
+        $discount_total = $discount_total->add($promotion_total->multiply(-1));
+      }
+      $breakdown['discount'] = [
+        'currency_code' => $discount_total->getCurrencyCode(),
+        'value' => Calculator::trim($discount_total->getNumber()),
+      ];
+    }
+
     $payer = [];
 
     if (!empty($order->getEmail())) {
@@ -354,15 +373,15 @@ class CheckoutSdk implements CheckoutSdkInterface {
           'custom_id' => $order->id(),
           'invoice_id' => $order->id() . '-' . $this->time->getRequestTime(),
           'amount' => [
-            'currency_code' => $order->getTotalPrice()->getCurrencyCode(),
-            'value' => Calculator::trim($order->getTotalPrice()->getNumber()),
+            'currency_code' => $order->getBalance()->getCurrencyCode(),
+            'value' => Calculator::trim($order->getBalance()->getNumber()),
             'breakdown' => $breakdown,
           ],
           'items' => $items,
         ],
       ],
       'application_context' => [
-        'brand_name' => mb_substr($order->getStore()->label(), 0, 127),
+        'brand_name' => mb_substr($order->getStore()->label() ?? '', 0, 127),
       ],
     ];
 
@@ -455,9 +474,9 @@ class CheckoutSdk implements CheckoutSdkInterface {
       'address' => [
         'address_line_1' => $address->getAddressLine1(),
         'address_line_2' => $address->getAddressLine2(),
-        'admin_area_2' => mb_substr($address->getLocality(), 0, 120),
+        'admin_area_2' => mb_substr($address->getLocality() ?? '', 0, 120),
         'admin_area_1' => $address->getAdministrativeArea(),
-        'postal_code' => mb_substr($address->getPostalCode(), 0, 60),
+        'postal_code' => mb_substr($address->getPostalCode() ?? '', 0, 60),
         'country_code' => $address->getCountryCode(),
       ],
     ];

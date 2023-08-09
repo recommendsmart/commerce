@@ -62,11 +62,12 @@ class EmailAttachmentEvaluator implements EmailAttachmentEvaluatorInterface {
       $attachments = $email->getAttachments();
       if (!empty($attachments)) {
         foreach ($attachments as $attachment) {
-          $file = new \stdClass();
-          $file->uri = $attachment->getFileUri();
-          $file->filename = $attachment->getFilename();
-          $file->filemime = $attachment->getMimeType();
-          $files[] = $file;
+          $file = [
+            'filepath' => $path,
+            'filename' => $this->fileSystem->basename($path),
+            'filemime' => $this->mimeTypeGuesser->guessMimeType($path),
+          ];
+         $files[] = $file;
         }
       }
     }
@@ -89,10 +90,11 @@ class EmailAttachmentEvaluator implements EmailAttachmentEvaluatorInterface {
             $this->saveAttachment($email, $realpath, $save_attachments_to);
           }
 
-          $file = new \stdClass();
-          $file->uri = $path;
-          $file->filename = $this->fileSystem->basename($path);
-          $file->filemime = $this->mimeTypeGuesser->guessMimeType($path);
+          $file = [
+            'filepath' => $path,
+            'filename' => $this->fileSystem->basename($path),
+            'filemime' => $this->mimeTypeGuesser->guessMimeType($path),
+          ];
           $files[] = $file;
         }
       }
@@ -109,7 +111,7 @@ class EmailAttachmentEvaluator implements EmailAttachmentEvaluatorInterface {
    */
   protected function saveAttachment(EasyEmailInterface $email, $source, $dest_directory) {
     \Drupal::service('file_system')->prepareDirectory($dest_directory, FileSystemInterface::CREATE_DIRECTORY | FileSystemInterface::MODIFY_PERMISSIONS);
-    $file_entity = file_save_data(file_get_contents($source), $dest_directory . '/' . $this->fileSystem->basename($source));
+    $file_entity = \Drupal::service('file.repository')->writeData(file_get_contents($source), $dest_directory . '/' . $this->fileSystem->basename($source));
     $email->addAttachment($file_entity->id());
   }
 

@@ -7,6 +7,9 @@ persistent_login.settings:
     lifetime:
       type: integer
       label: 'The maximum number of days for which a persistent login session is valid'
+    extend_lifetime:
+      type: boolean
+      label: 'If token lifetimes should be reset on use'
     max_tokens:
       type: integer
       label: 'The maximum number of tokens per user'

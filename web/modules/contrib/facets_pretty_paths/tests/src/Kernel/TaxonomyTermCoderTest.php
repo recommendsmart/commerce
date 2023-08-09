@@ -30,7 +30,7 @@ class TaxonomyTermCoderTest extends KernelTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     $this->installEntitySchema('taxonomy_term');
@@ -65,9 +65,7 @@ class TaxonomyTermCoderTest extends KernelTestBase {
 
     // Create the coder plugin. It doesn't really need a facet but we should
     // provider one as the plugins expect them.
-    $facet_mock = $this->getMockBuilder(Facet::class)
-      ->disableOriginalConstructor()
-      ->getMock();
+    $facet_mock = $this->createMock(Facet::class);
     /** @var \Drupal\facets_pretty_paths\Coder\CoderInterface $coder */
     $coder = $this->container->get('plugin.manager.facets_pretty_paths.coder')
       ->createInstance('taxonomy_term_coder', ['facet' => $facet_mock]);

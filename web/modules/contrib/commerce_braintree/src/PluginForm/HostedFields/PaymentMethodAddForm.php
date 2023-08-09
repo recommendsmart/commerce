@@ -96,6 +96,22 @@ class PaymentMethodAddForm extends BasePaymentMethodAddForm {
       ],
     ];
 
+    // Display credit card logos in checkout form.
+    if ($plugin->getConfiguration()['enable_credit_card_icons']) {
+      $element['#attached']['library'][] = 'commerce_braintree/credit_card_icons';
+      $element['#attached']['library'][] = 'commerce_payment/payment_method_icons';
+
+      $supported_credit_cards = [];
+      foreach ($plugin->getCreditCardTypes() as $credit_card) {
+        $supported_credit_cards[] = $credit_card->getId();
+      }
+
+      $element['credit_card_logos'] = [
+        '#theme' => 'commerce_braintree_credit_card_logos',
+        '#credit_cards' => $supported_credit_cards,
+      ];
+    }
+
     $element['number'] = [
       '#type' => 'item',
       '#title' => t('Card number'),

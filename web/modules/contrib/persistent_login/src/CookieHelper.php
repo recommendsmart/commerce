@@ -50,7 +50,9 @@ class CookieHelper implements CookieHelperInterface {
     // collision.
     // @see \Drupal\Core\Session\SessionConfiguration::getName()
     if ($request->isSecure()) {
-      $prefix = 'S' . $prefix;
+      // Preserve __Secure- or __Host- prefixes.
+      // @see https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Set-Cookie#cookie_prefixes
+      $prefix = preg_replace('<^(__(?:Secure|Host)-)?>', '$1S', $prefix);
     }
 
     $sessionConfigurationSettings = $this->sessionConfiguration->getOptions($request);

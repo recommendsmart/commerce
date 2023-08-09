@@ -118,9 +118,6 @@
 	"CUC": {
 		"name": "ક્યુબન રૂપાંતર યોગ્ય પેસો"
 	},
-	"HRK": {
-		"name": "ક્રોએશિયન ક્યુના"
-	},
 	"GYD": {
 		"name": "ગયાનિઝ ડોલર"
 	},
@@ -484,14 +481,5 @@
 	},
 	"HNL": {
 		"name": "હોન્ડ્યુરન લેમ્પિરા"
-	},
-	"SVC": {
-		"name": "Salvadoran Colón"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	}
 }

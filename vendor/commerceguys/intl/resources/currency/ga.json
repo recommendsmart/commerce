@@ -231,9 +231,6 @@
 	"ISK": {
 		"name": "Króna na hÍoslainne"
 	},
-	"HRK": {
-		"name": "Kuna na Cróite"
-	},
 	"MWK": {
 		"name": "Kwacha na Maláive"
 	},
@@ -468,9 +465,6 @@
 	"MNT": {
 		"name": "Tugrik na Mongóile"
 	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
-	},
 	"VUV": {
 		"name": "Vatu Vanuatú"
 	},
@@ -488,9 +482,6 @@
 	"CNY": {
 		"name": "Yuan na Síne",
 		"symbol": "CN¥"
-	},
-	"ZWL": {
-		"name": "Zimbabwean Dollar (2009)"
 	},
 	"PLN": {
 		"name": "Zloty na Polainne"

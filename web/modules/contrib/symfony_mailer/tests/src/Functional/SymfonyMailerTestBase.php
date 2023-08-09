@@ -12,6 +12,9 @@ abstract class SymfonyMailerTestBase extends BrowserTestBase {
 
   use MailerTestTrait;
 
+  /**
+   * Human-readable string representing 'all'.
+   */
   protected const TYPE_ALL = '<b>*All*</b>';
 
   /**
@@ -41,18 +44,28 @@ abstract class SymfonyMailerTestBase extends BrowserTestBase {
   protected $siteName = 'Tom & Jerry';
 
   /**
+   * The site email.
+   *
+   * @var string
+   */
+  protected $siteEmail = 'site@example.org';
+
+  /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
-    $this->config('system.site')->set('name', $this->siteName)->save();
+    $this->config('system.site')
+      ->set('name', $this->siteName)
+      ->set('mail', $this->siteEmail)
+      ->save();
     $this->adminUser = $this->drupalCreateUser(['administer mailer']);
   }
 
   /**
    * {@inheritdoc}
    */
-  protected function tearDown() {
+  protected function tearDown(): void {
     parent::tearDown();
     // @todo Test for no mail not working?
     $this->noMail();

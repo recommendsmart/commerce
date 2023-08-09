@@ -2,6 +2,7 @@
 
 namespace Drupal\media_library_form_element\Element;
 
+use Drupal\Component\Render\FormattableMarkup;
 use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Ajax\AjaxResponse;
 use Drupal\Core\Ajax\OpenModalDialogCommand;
@@ -9,6 +10,7 @@ use Drupal\Core\Field\FieldStorageDefinitionInterface;
 use Drupal\Core\Form\FormStateInterface;
 use Drupal\Core\Render\Element\FormElement;
 use Drupal\media\Entity\Media;
+use Drupal\media\MediaInterface;
 use Drupal\media_library\MediaLibraryState;
 use Drupal\media_library\MediaLibraryUiBuilder;
 
@@ -25,7 +27,7 @@ use Drupal\media_library\MediaLibraryUiBuilder;
  *     '#type' => 'media_library',
  *     '#allowed_bundles' => ['image'],
  *     '#title' => t('Upload your image'),
- *     '#default_value' => NULL|1,
+ *     '#default_value' => NULL|'1'|'2,3,1',
  *     '#description' => t('Upload or select your profile image.'),
  *     '#cardinality' => -1|1,
  *   ];
@@ -49,8 +51,6 @@ class MediaLibrary extends FormElement {
    * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
   public static function processMediaLibrary(array &$element, FormStateInterface $form_state, array &$complete_form): array {
-    $referenced_entity = NULL;
-    $entity_id = NULL;
     $default_value = NULL;
     $referenced_entities = [];
 
@@ -62,12 +62,19 @@ class MediaLibrary extends FormElement {
       $entity_ids = [$default_value['media_selection_id']];
     }
     else {
-      $entity_ids = array_filter(explode(',', $default_value));
+      $entity_ids = array_filter(explode(',', $default_value ?? ''));
     }
 
     if (!empty($entity_ids)) {
       foreach ($entity_ids as $entity_id) {
-        $referenced_entities[] = \Drupal::entityTypeManager()->getStorage('media')->load($entity_id);
+        $entity = \Drupal::entityTypeManager()
+          ->getStorage('media')
+          ->load($entity_id);
+        // EntityStorageInterface::load can return null.
+        // @see https://www.drupal.org/project/media_library_form_element/issues/3243411
+        if ($entity instanceof MediaInterface) {
+          $referenced_entities[] = $entity;
+        }
       }
     }
 
@@ -126,6 +133,29 @@ class MediaLibrary extends FormElement {
     ];
 
     foreach ($referenced_entities as $delta => $referenced_entity) {
+      if ($referenced_entity->access('view')) {
+        // @todo Make the view mode configurable in https://www.drupal.org/project/drupal/issues/2971209.
+        $preview = $view_builder->view($referenced_entity, 'media_library');
+      }
+      else {
+        $item_label = $referenced_entity->access('view label')
+          ? $referenced_entity->label()
+          : new FormattableMarkup('@label @id', [
+            '@label' => $referenced_entity->getEntityType()->getSingularLabel(),
+            '@id' => $referenced_entity->id(),
+          ]);
+        $preview = [
+          '#theme' => 'media_embed_error',
+          '#message' => t('You do not have permission to view @item_label.', [
+            '@item_label' => $item_label,
+          ]),
+        ];
+      }
+
+      $remove_label = $referenced_entity->access('view label')
+        ? t('Remove @label', ['@label' => $referenced_entity->label()])
+        : t('Remove media');
+
       $element['selection'][$delta] = [
         '#type' => 'container',
         '#attributes' => [
@@ -154,22 +184,21 @@ class MediaLibrary extends FormElement {
             '#media_id' => $referenced_entity->id(),
             '#attributes' => [
               'class' => ['media-library-item__remove'],
-              'aria-label' => t('Remove @label', ['@label' => $referenced_entity->label()]),
+              'aria-label' => $remove_label,
             ],
             '#ajax' => [
               'callback' => [static::class, 'updateFormElement'],
               'wrapper' => $wrapper_id,
               'progress' => [
                 'type' => 'throbber',
-                'message' => t('Removing @label.', ['@label' => $referenced_entity->label()]),
+                'message' => $remove_label,
               ],
             ],
             '#submit' => [[static::class, 'removeItem']],
             // Prevent errors in other widgets from preventing removal.
             '#limit_validation_errors' => $limit_validation_errors,
           ],
-          // @todo Make the view mode configurable in https://www.drupal.org/project/drupal/issues/2971209
-          'rendered_entity' => $view_builder->view($referenced_entity, 'media_library'),
+          'rendered_entity' => $preview,
           'target_id' => [
             '#type' => 'hidden',
             '#value' => $referenced_entity->id(),
@@ -178,7 +207,7 @@ class MediaLibrary extends FormElement {
         'weight' => [
           '#type' => 'number',
           '#theme' => 'input__number__media_library_item_weight',
-          '#title' => \Drupal::translation()->translate('Weight'),
+          '#title' => t('Weight'),
           '#default_value' => $delta,
           '#attributes' => [
             'class' => [
@@ -195,10 +224,12 @@ class MediaLibrary extends FormElement {
     // Inform the user of how many items are remaining.
     if (!$cardinality_unlimited) {
       if ($remaining) {
-        $cardinality_message = \Drupal::translation()->formatPlural($remaining, 'One media item remaining.', '@count media items remaining.');
+        $cardinality_message = \Drupal::translation()
+          ->formatPlural($remaining, 'One media item remaining.', '@count media items remaining.');
       }
       else {
-        $cardinality_message = \Drupal::translation()->translate('The maximum number of media items have been selected.');
+        $cardinality_message = \Drupal::translation()
+          ->translate('The maximum number of media items have been selected.');
       }
 
       // Add a line break between the field message and the cardinality message.
@@ -291,7 +322,7 @@ class MediaLibrary extends FormElement {
       '#submit' => [[static::class, 'updateItem']],
       // Prevent errors in other widgets from preventing updates.
       // Exclude other validations in case there is no data yet.
-      '#limit_validation_errors' => !empty($referenced_entity) ? $limit_validation_errors : [],
+      '#limit_validation_errors' => !empty($referenced_entities) ? $limit_validation_errors : [],
     ];
 
     return $element;
@@ -403,30 +434,30 @@ class MediaLibrary extends FormElement {
     }
 
     // Validate that each selected media is of an allowed bundle.
-    $all_bundles = \Drupal::service('entity_type.bundle.info')->getBundleInfo('media');
-    $bundle_labels = array_map(
-      static function ($bundle) use ($all_bundles) {
-        return $all_bundles[$bundle]['label'];
-      },
-      $element['#target_bundles']
-    );
+    $all_bundles = \Drupal::service('entity_type.bundle.info')
+      ->getBundleInfo('media');
+    $bundle_labels = array_map(function ($bundle) use ($all_bundles) {
+      return $all_bundles[$bundle]['label'];
+    }, $element['#target_bundles']);
 
-    if ($element['#target_bundles'] && !in_array($media->bundle(), $element['#target_bundles'], TRUE)) {
-      $form_state->setError(
-        $element,
-        t(
-          'The media item "@label" is not of an accepted type. Allowed types: @types',
-          [
-            '@label' => $media->label(),
-            '@types' => implode(', ', $bundle_labels),
-          ]
-        )
-      );
+    if ($element['#target_bundles']) {
+      // Validate the bundle of each selected media entity.
+      foreach ($media as $media_entity) {
+        if (!in_array($media_entity->bundle(), $element['#target_bundles'], TRUE)) {
+          $form_state->setError(
+            $element,
+            t('The media item "@label" is not of an accepted type. Allowed types: @types', [
+              '@label' => $media_entity->label(),
+              '@types' => implode(', ', $bundle_labels),
+            ])
+          );
+        }
+      }
     }
   }
 
   /**
-   * Gets newly selected media item.
+   * Gets newly selected media item(s).
    *
    * @param array $element
    *   The wrapping element for this widget.
@@ -434,7 +465,7 @@ class MediaLibrary extends FormElement {
    *   The current state of the form.
    *
    * @return array
-   *   An array selected media item.
+   *   An array with selected media item(s).
    */
   protected static function getNewMediaItem(array $element, FormStateInterface $form_state) {
     // Get the new media IDs passed to our hidden button.
@@ -473,9 +504,6 @@ class MediaLibrary extends FormElement {
    *   The form array.
    * @param \Drupal\Core\Form\FormStateInterface $form_state
    *   The form state.
-   *
-   * @return mixed
-   *   The updated form element.
    */
   public static function removeItem(array &$form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
@@ -494,19 +522,15 @@ class MediaLibrary extends FormElement {
 
     if (isset($element['selection'][$delta])) {
       unset($element['selection'][$delta]);
-      $items = array_filter(
-        $element['selection'],
-        static function ($k) {
-          return is_numeric($k);
-        },
-        ARRAY_FILTER_USE_KEY
-      );
+      $items = array_filter($element['selection'], function ($k) {
+        return is_numeric($k);
+      }, ARRAY_FILTER_USE_KEY);
       $remaining_items = [];
 
       foreach ($items as $item) {
         /** @var \Drupal\media\Entity\Media $media_item */
         $media_item = $item['preview']['rendered_entity']['#media'];
-        if ($media_item instanceof Media) {
+        if ($media_item instanceof MediaInterface) {
           $remaining_items[] = $media_item->id();
         }
       }
@@ -546,7 +570,8 @@ class MediaLibrary extends FormElement {
    */
   public static function openMediaLibrary(array $form, FormStateInterface $form_state) {
     $triggering_element = $form_state->getTriggeringElement();
-    $library_ui = \Drupal::service('media_library.ui_builder')->buildUi($triggering_element['#media_library_state']);
+    $library_ui = \Drupal::service('media_library.ui_builder')
+      ->buildUi($triggering_element['#media_library_state']);
     $dialog_options = MediaLibraryUiBuilder::dialogOptions();
 
     return (new AjaxResponse())->addCommand(new OpenModalDialogCommand($dialog_options['title'], $library_ui, $dialog_options, NULL, '#modal-media-library'));

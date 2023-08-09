@@ -421,9 +421,6 @@
 	"SVC": {
 		"name": "كولون سلفادوري"
 	},
-	"HRK": {
-		"name": "كونا كرواتي"
-	},
 	"MMK": {
 		"name": "كيات ميانمار"
 	},
@@ -509,8 +506,5 @@
 	"EUR": {
 		"name": "يورو",
 		"symbol": "€"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	}
 }

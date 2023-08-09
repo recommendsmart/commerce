@@ -116,7 +116,7 @@ class EntitySelectWidgetTest extends CommerceBrowserTestBase {
     // Check store 1.
     $edit['stores[target_id][value][' . $store_ids[0] . ']'] = $store_ids[0];
     $edit['stores[target_id][value][' . $store_ids[1] . ']'] = FALSE;
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
 
     \Drupal::entityTypeManager()->getStorage('node')->resetCache();
     $this->node = Node::load($this->node->id());
@@ -148,7 +148,7 @@ class EntitySelectWidgetTest extends CommerceBrowserTestBase {
     // Reference both stores 1 and 2.
     $edit = [];
     $edit['stores[target_id][value]'] = $store_labels[0] . ', ' . $store_labels[1];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     \Drupal::entityTypeManager()->getStorage('node')->resetCache();
     $this->node = Node::load($this->node->id());
     $node_store_ids = [];

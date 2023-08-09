@@ -89,6 +89,13 @@ class SquareSettings extends ConfigFormBase {
   ];
 
   /**
+   * Returns the Authorize URL for requesting an OAuth authorization code.
+   */
+  public function getAuthorizeUrl() {
+    return 'https://squareup.com/oauth2/authorize';
+  }
+
+  /**
    * {@inheritdoc}
    */
   protected function getEditableConfigNames() {
@@ -109,45 +116,17 @@ class SquareSettings extends ConfigFormBase {
     $form = parent::buildForm($form, $form_state);
     $config = $this->config('commerce_square.settings');
 
+    // When merchants return from the Square OAuth authorize page with a valid
+    // authorization code, they are redirected to this settings form. If this
+    // form builder sees a code in the query parameters, it attempts to obtain
+    // the OAuth access token and refresh token, storing both in the site's
+    // state via key / value pairs, and returning a redirect response that
+    // reloads the settings form route without query parameters.
     $code = $this->getRequest()->query->get('code');
     if (!empty($code)) {
-      try {
-        $client = $this->connect->getClient(Environment::PRODUCTION);
-        $oauth_api = $client->getOAuthApi();
-
-        // Obtain token request.
-        $obtain_token_request = new ObtainTokenRequest(
-          $config->get('production_app_id'),
-          $config->get('app_secret'),
-          'authorization_code'
-        );
-        $obtain_token_request->setCode($code);
-        $api_response = $oauth_api->obtainToken($obtain_token_request);
-
-        if ($api_response->isSuccess()) {
-          $token_response = $api_response->getResult();
-          $this->state->setMultiple([
-            'commerce_square.production_access_token' => $token_response->getAccessToken(),
-            'commerce_square.production_access_token_expiry' => strtotime($token_response->getExpiresAt()),
-            'commerce_square.production_refresh_token' => $token_response->getRefreshToken(),
-          ]);
-          $this->messenger()->addStatus($this->t('Your Drupal Commerce store and Square have been successfully connected.'));
-        }
-        else {
-          throw ErrorHelper::convertException(
-            new ApiException(
-              $api_response->getBody(),
-              $api_response->getRequest()
-            )
-          );
-        }
-      }
-      catch (ApiException $e) {
-        $this->messenger()->addError($e->getResponseBody()->message);
-      }
-      // Redirect back to the form so the OAuth code is removed from the URL.
-      return new RedirectResponse(Url::fromRoute('commerce_square.settings')->toString());
+      return $this->requestAccessToken($code);
     }
+
     if (!$form_state->isProcessingInput()) {
       $this->messenger()->addWarning($this->t('After clicking save you will be redirected to Square to sign in and connect your Drupal Commerce store.'));
     }
@@ -244,9 +223,65 @@ class SquareSettings extends ConfigFormBase {
         'scope' => implode(' ', $this->permissionScope),
       ],
     ];
-    $url = Url::fromUri('https://connect.squareup.com/oauth2/authorize', $options);
+    $url = Url::fromUri($this->getAuthorizeUrl(), $options);
     $form_state->setResponse(new TrustedRedirectResponse($url->toString()));
     parent::submitForm($form, $form_state);
+  }
+
+  /**
+   * Requests an OAuth access token from Square using the authorization code.
+   *
+   * @param string $code
+   *   An authorization code for the grants required by this integration.
+   *
+   * @return \Symfony\Component\HttpFoundation\RedirectResponse
+   *   A redirect response that will reload the settings form.
+   */
+  public function requestAccessToken($code) {
+    $config = $this->config('commerce_square.settings');
+
+    try {
+      $oauth_api = $this->connect->getClient(Environment::PRODUCTION)->getOAuthApi();
+
+      // Prepare and submit an obtain token request.
+      $request = new ObtainTokenRequest(
+        $config->get('production_app_id'),
+        $config->get('app_secret'),
+        'authorization_code'
+      );
+      $request->setCode($code);
+      $response = $oauth_api->obtainToken($request);
+
+      // If the request succeeded, store the result in the site state. The
+      // code is only good for 5 minutes, but absent a failure to redirect
+      // properly, there shouldn't be any reason for it to fail.
+      if ($response->isSuccess()) {
+        $result = $response->getResult();
+        $this->state->setMultiple([
+          'commerce_square.production_access_token' => $result->getAccessToken(),
+          'commerce_square.production_access_token_expiry' => strtotime($result->getExpiresAt()),
+          'commerce_square.production_refresh_token' => $result->getRefreshToken(),
+        ]);
+        $this->messenger()->addStatus($this->t('Your Drupal Commerce store and Square have been successfully connected.'));
+      }
+      else {
+        // Otherwise, throw an exception that is caught and displayed as an
+        // error message on the page when the form builds.
+        throw ErrorHelper::convertException(
+          new ApiException(
+            $response->getBody(),
+            $response->getRequest()
+          )
+        );
+      }
+    }
+    catch (ApiException $e) {
+      $this->messenger()->addError($e->getResponseBody()->message);
+    }
+
+    // Interrupt the form building process at this point, reloading the page
+    // with the temporary OAuth code removed from the URL.
+    return new RedirectResponse(Url::fromRoute('commerce_square.settings')->toString());
   }
 
 }

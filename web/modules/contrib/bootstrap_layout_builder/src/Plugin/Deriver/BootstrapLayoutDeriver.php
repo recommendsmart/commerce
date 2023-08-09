@@ -47,7 +47,7 @@ class BootstrapLayoutDeriver extends DeriverBase implements ContainerDeriverInte
    * {@inheritdoc}
    */
   public function getDerivativeDefinitions($base_plugin_definition) {
-    $layouts = $this->entityTypeManager->getStorage('blb_layout')->getQuery()->sort('number_of_columns', 'ASC')->execute();
+    $layouts = $this->entityTypeManager->getStorage('blb_layout')->getQuery()->accessCheck(TRUE)->sort('number_of_columns', 'ASC')->execute();
     if ($layouts) {
       foreach ($layouts as $layout_id) {
         $layout = $this->entityTypeManager->getStorage('blb_layout')->load($layout_id);
@@ -59,6 +59,7 @@ class BootstrapLayoutDeriver extends DeriverBase implements ContainerDeriverInte
           'regions' => $this->getRegions($layout->getNumberOfColumns()),
           'theme_hook' => 'blb_section',
           'icon_map' => $this->getIconMap($layout->getNumberOfColumns()),
+          'provider' => 'bootstrap_layout_builder',
         ]);
       }
     }

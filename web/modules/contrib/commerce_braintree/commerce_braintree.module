@@ -1,0 +1,19 @@
+<?php
+
+/**
+ * @file
+ * Provides Commerce integration for Braintree Payments.
+ */
+
+/**
+ * Implements hook_theme().
+ */
+function commerce_braintree_theme() {
+  return [
+    'commerce_braintree_credit_card_logos' => [
+      'variables' => [
+        'credit_cards' => [],
+      ],
+    ],
+  ];
+}

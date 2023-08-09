@@ -63,7 +63,7 @@ final class PreparedAttribute {
     $this->id = $definition['id'];
     $this->label = $definition['label'];
     $this->elementType = $definition['element_type'];
-    $this->required = isset($definition['required']) ? $definition['required'] : TRUE;
+    $this->required = $definition['required'] ?? TRUE;
     $this->values = $definition['values'];
   }
 

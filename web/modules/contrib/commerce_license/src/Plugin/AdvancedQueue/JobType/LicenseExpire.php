@@ -5,9 +5,9 @@ namespace Drupal\commerce_license\Plugin\AdvancedQueue\JobType;
 use Drupal\advancedqueue\Job;
 use Drupal\advancedqueue\JobResult;
 use Drupal\advancedqueue\Plugin\AdvancedQueue\JobType\JobTypeBase;
+use Drupal\Component\Datetime\TimeInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\Core\Plugin\ContainerFactoryPluginInterface;
-use Exception;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
@@ -28,6 +28,13 @@ class LicenseExpire extends JobTypeBase implements ContainerFactoryPluginInterfa
   protected $entityTypeManager;
 
   /**
+   * The time.
+   *
+   * @var \Drupal\Component\Datetime\TimeInterface
+   */
+  protected $time;
+
+  /**
    * Constructs a new LicenseExpire object.
    *
    * @param array $configuration
@@ -38,11 +45,14 @@ class LicenseExpire extends JobTypeBase implements ContainerFactoryPluginInterfa
    *   The plugin implementation definition.
    * @param \Drupal\Core\Entity\EntityTypeManagerInterface $entity_type_manager
    *   The entity type manager.
+   * @param \Drupal\Component\Datetime\TimeInterface $time
+   *   The time.
    */
-  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager) {
+  public function __construct(array $configuration, $plugin_id, $plugin_definition, EntityTypeManagerInterface $entity_type_manager, TimeInterface $time) {
     parent::__construct($configuration, $plugin_id, $plugin_definition);
 
     $this->entityTypeManager = $entity_type_manager;
+    $this->time = $time;
   }
 
   /**
@@ -53,7 +63,8 @@ class LicenseExpire extends JobTypeBase implements ContainerFactoryPluginInterfa
       $configuration,
       $plugin_id,
       $plugin_definition,
-      $container->get('entity_type.manager')
+      $container->get('entity_type.manager'),
+      $container->get('datetime.time')
     );
   }
 
@@ -69,17 +80,24 @@ class LicenseExpire extends JobTypeBase implements ContainerFactoryPluginInterfa
       return JobResult::failure('License not found.');
     }
 
-    if ($license->getState()->getId() != 'active') {
+    if (!in_array($license->getState()->getId(), [
+      'active',
+      'renewal_in_progress',
+    ], TRUE)) {
       return JobResult::failure('License is no longer active.');
+    }
+
+    if ($license->getExpiresTime() > $this->time->getRequestTime()) {
+      return JobResult::failure('License is not expired.');
     }
 
     try {
       // Set the license to expired. The plugin will take care of revoking it.
-      $license->state = 'expired';
+      $license->getState()->applyTransitionById('expire');
       $license->save();
     }
-    catch (Exception $exception) {
-      return $result = JobResult::failure($exception->getMessage());
+    catch (\Exception $exception) {
+      return JobResult::failure($exception->getMessage());
     }
 
     // If the license was successfully expired, create and queue a job to send

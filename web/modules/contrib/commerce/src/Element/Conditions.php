@@ -175,7 +175,7 @@ class Conditions extends FormElement {
           $inline_form = $inline_form_manager->createInstance('plugin_configuration', [
             'plugin_type' => 'commerce_condition',
             'plugin_id' => $plugin_id,
-            'plugin_configuration' => isset($default_value[$plugin_id]) ? $default_value[$plugin_id] : [],
+            'plugin_configuration' => $default_value[$plugin_id] ?? [],
             'enforce_unique_parents' => FALSE,
           ]);
           $element[$category_id][$plugin_id]['configuration']['#inline_form'] = $inline_form;

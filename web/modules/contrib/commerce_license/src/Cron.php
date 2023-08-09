@@ -67,12 +67,16 @@ class Cron implements CronInterface {
    *
    * @return array
    *   IDs of matching commerce_license entities.
+   *
+   * @throws \Drupal\Component\Plugin\Exception\InvalidPluginDefinitionException
+   * @throws \Drupal\Component\Plugin\Exception\PluginNotFoundException
    */
-  protected function getLicensesToExpire($time) {
-    // Get all of the active expired licenses.
+  protected function getLicensesToExpire(int $time): array {
+    // Get all the 'active' expired licenses.
     $query = $this->entityTypeManager->getStorage('commerce_license')
       ->getQuery()
-      ->condition('state', 'active')
+      ->accessCheck(FALSE)
+      ->condition('state', ['active', 'renewal_in_progress'], 'IN')
       ->condition('expires', $time, '<=')
       ->condition('expires', 0, '<>');
 

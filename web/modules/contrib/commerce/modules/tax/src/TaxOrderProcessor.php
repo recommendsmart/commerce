@@ -56,6 +56,9 @@ class TaxOrderProcessor implements OrderProcessorInterface {
   public function process(OrderInterface $order) {
     $tax_types = $this->getTaxTypes();
     foreach ($tax_types as $tax_type) {
+      if (!$tax_type->applies($order)) {
+        continue;
+      }
       if ($tax_type->getPlugin()->applies($order)) {
         $tax_type->getPlugin()->apply($order);
       }

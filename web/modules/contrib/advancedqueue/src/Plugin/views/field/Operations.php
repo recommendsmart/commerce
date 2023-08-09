@@ -66,6 +66,17 @@ class Operations extends FieldPluginBase {
       ];
     }
 
+    if ($state == Job::STATE_FAILURE) {
+      $operations['retry'] = [
+        'title' => $this->t('Retry'),
+        'weight' => -5,
+        'url' => Url::fromRoute('advancedqueue.job.retry', [
+          'advancedqueue_queue' => $queue_id,
+          'job_id' => $job_id,
+        ]),
+      ];
+    }
+
     $operations['delete'] = [
       'title' => $this->t('Delete'),
       'weight' => 0,

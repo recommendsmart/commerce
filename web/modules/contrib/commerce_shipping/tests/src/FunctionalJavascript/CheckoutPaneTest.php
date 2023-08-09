@@ -81,11 +81,6 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
   /**
    * {@inheritdoc}
    */
-  protected $defaultTheme = 'classy';
-
-  /**
-   * {@inheritdoc}
-   */
   protected function getAdministratorPermissions() {
     return array_merge([
       'access checkout',
@@ -451,7 +446,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     }
     $this->assertSession()->pageTextContains('Shipment #1');
     $this->assertSession()->pageTextContains('Shipment #2');
-    $this->assertSession()->elementsCount('xpath', '//div[@class="field__item" and .="Standard shipping"]', 2);
+    $this->assertSession()->elementsCount('xpath', '//div[contains(text(), "Standard shipping")]', 2);
     // Confirm the integrity of the shipment.
     $this->submitForm([], 'Pay and complete purchase');
 
@@ -795,7 +790,6 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
     $this->drupalGet($this->firstProduct->toUrl()->toString());
     $this->submitForm([], 'Add to cart');
     $this->drupalGet('checkout/1');
-    $page = $this->getSession()->getPage();
     $this->assertRenderedAddress($this->defaultAddress, 'shipping_information[shipping_profile]');
     $this->assertSession()->pageTextContains('Overnight shipping: $19.99 $16.99');
     $this->assertSession()->pageTextNotContains('Standard shipping');
@@ -805,7 +799,7 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
 
     if (!$auto_recalculate) {
       $this->assertSession()->pageTextNotContains('An illegal choice has been detected. Please contact the site administrator.');
-      $page->findButton('Recalculate shipping')->click();
+      $this->getSession()->getPage()->findButton('Recalculate shipping')->click();
       $this->assertSession()->assertWaitOnAjaxRequest();
     }
     else {
@@ -823,13 +817,13 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
       'postal_code' => '75002',
     ];
     $address_prefix = 'shipping_information[shipping_profile][address][0][address]';
-    $page->fillField($address_prefix . '[country_code]', 'DE');
+    $this->getSession()->getPage()->fillField($address_prefix . '[country_code]', 'DE');
     $this->assertSession()->assertWaitOnAjaxRequest();
     foreach ($address_de as $property => $value) {
-      $page->fillField($address_prefix . '[' . $property . ']', $value);
+      $this->getSession()->getPage()->fillField($address_prefix . '[' . $property . ']', $value);
     }
     if (!$auto_recalculate) {
-      $page->findButton('Recalculate shipping')->click();
+      $this->getSession()->getPage()->findButton('Recalculate shipping')->click();
       $this->assertSession()->assertWaitOnAjaxRequest();
     }
     else {
@@ -849,49 +843,47 @@ class CheckoutPaneTest extends CommerceWebDriverTestBase {
       'postal_code' => '90014',
     ];
     $address_prefix = 'shipping_information[shipping_profile][address][0][address]';
-    $page = $this->getSession()->getPage();
-    $page->fillField($address_prefix . '[country_code]', 'US');
+    usleep(100000);
+    $this->getSession()->getPage()->fillField($address_prefix . '[country_code]', 'US');
     $this->assertSession()->assertWaitOnAjaxRequest();
     foreach ($address_us as $property => $value) {
-      $page->fillField($address_prefix . '[' . $property . ']', $value);
+      $this->getSession()->getPage()->fillField($address_prefix . '[' . $property . ']', $value);
     }
     if (!$auto_recalculate) {
-      $page->findButton('Recalculate shipping')->click();
+      $this->getSession()->getPage()->findButton('Recalculate shipping')->click();
       $this->assertSession()->assertWaitOnAjaxRequest();
     }
     else {
       $this->assertSession()->waitForText('Overnight shipping');
+      usleep(100000);
     }
     $this->assertSession()->pageTextNotContains('An illegal choice has been detected. Please contact the site administrator.');
-    $first_radio_button = $page->findField('Standard shipping: $9.99');
-    $second_radio_button = $page->findField('Overnight shipping: $19.99 $16.99');
+    $first_radio_button = $this->getSession()->getPage()->findField('Standard shipping: $9.99');
+    $second_radio_button = $this->getSession()->getPage()->findField('Overnight shipping: $19.99 $16.99');
     $this->assertNull($first_radio_button);
     $this->assertNotNull($second_radio_button);
     $this->assertNotEmpty($second_radio_button->getAttribute('checked'));
     $selector = '//div[@data-drupal-selector="edit-order-summary"]';
     $this->assertSession()->elementTextContains('xpath', $selector, 'Shipping $16.99');
-    // commerce_field_widget_form_alter() removes the description. Probably a
-    // bug.
-    $this->assertSession()->pageTextNotContains('At your door tomorrow morning');
 
     $address_prefix = 'shipping_information[shipping_profile][address][0][address]';
-    $page = $this->getSession()->getPage();
-    $page->fillField($address_prefix . '[country_code]', 'FR');
+    usleep(100000);
+    $this->getSession()->getPage()->fillField($address_prefix . '[country_code]', 'FR');
     $this->assertSession()->assertWaitOnAjaxRequest();
     unset($address_fr['country_code']);
     foreach ($address_fr as $property => $value) {
-      $page->fillField($address_prefix . '[' . $property . ']', $value);
+      $this->getSession()->getPage()->fillField($address_prefix . '[' . $property . ']', $value);
     }
     if (!$auto_recalculate) {
-      $page->findButton('Recalculate shipping')->click();
+      $this->getSession()->getPage()->findButton('Recalculate shipping')->click();
       $this->assertSession()->assertWaitOnAjaxRequest();
     }
     else {
       $this->assertSession()->waitForText('Standard shipping');
     }
     $this->assertSession()->pageTextNotContains('An illegal choice has been detected. Please contact the site administrator.');
-    $first_radio_button = $page->findField('Standard shipping: $9.99');
-    $second_radio_button = $page->findField('Overnight shipping: $19.99 $16.99');
+    $first_radio_button = $this->getSession()->getPage()->findField('Standard shipping: $9.99');
+    $second_radio_button = $this->getSession()->getPage()->findField('Overnight shipping: $19.99 $16.99');
     $this->assertNotNull($first_radio_button);
     $this->assertNull($second_radio_button);
     $this->assertNotEmpty($first_radio_button->getAttribute('checked'));

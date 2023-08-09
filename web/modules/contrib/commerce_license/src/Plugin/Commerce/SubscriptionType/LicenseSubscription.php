@@ -2,11 +2,11 @@
 
 namespace Drupal\commerce_license\Plugin\Commerce\SubscriptionType;
 
-use Drupal\entity\BundleFieldDefinition;
 use Drupal\commerce_order\Entity\OrderInterface;
 use Drupal\commerce_order\Entity\OrderItemInterface;
 use Drupal\commerce_recurring\Entity\SubscriptionInterface;
 use Drupal\commerce_recurring\Plugin\Commerce\SubscriptionType\SubscriptionTypeBase;
+use Drupal\entity\BundleFieldDefinition;
 
 /**
  * Provides a Commerce Recurring subscription type for use with licenses.
@@ -24,12 +24,11 @@ class LicenseSubscription extends SubscriptionTypeBase {
    */
   public function onSubscriptionCreate(SubscriptionInterface $subscription, OrderItemInterface $order_item) {
     $purchased_entity = $subscription->getPurchasedEntity();
-    $uid = $subscription->getCustomerId();
 
     // Ensure that the order item being used has the license trait, otherwise
     // the license won't get handled properly.
     if (!$order_item->hasField('license')) {
-      throw new \Exception(sprintf("Order item type %s used for product variation %s is missing the license field.",
+      throw new \RuntimeException(sprintf('Order item type %s used for product variation %s is missing the license field.',
         $order_item->bundle(),
         $purchased_entity->id()
       ));
@@ -45,7 +44,7 @@ class LicenseSubscription extends SubscriptionTypeBase {
       // Something's gone wrong: either other code has changed priorities, or
       // the modules' relative priorities have become out of sync due to changes
       // in code.
-      throw new \Exception(sprintf("Attempt to create a license subscription with order item ID %s that doesn't have a license.",
+      throw new \RuntimeException(sprintf("Attempt to create a license subscription with order item ID %s that doesn't have a license.",
         $order_item->id()
       ));
     }
@@ -54,8 +53,8 @@ class LicenseSubscription extends SubscriptionTypeBase {
     $license = $order_item->license->entity;
 
     // Ensure that the license expiry is unlimited.
-    if ($license->expiration_type->target_plugin_id != 'unlimited') {
-      throw new \Exception(sprintf("Invalid expiry type %s on product variation %s",
+    if ($license->expiration_type->target_plugin_id !== 'unlimited') {
+      throw new \RuntimeException(sprintf('Invalid expiry type %s on product variation %s',
         $license->expiration_type->target_plugin_id,
         $purchased_entity->id()
       ));
@@ -79,6 +78,9 @@ class LicenseSubscription extends SubscriptionTypeBase {
    */
   public function onSubscriptionRenew(SubscriptionInterface $subscription, OrderInterface $order, OrderInterface $next_order) {
     $license = $subscription->license->entity;
+    if (!$license) {
+      return;
+    }
 
     // Change the license's renewed time and save it.
     // Use the subscription's renewed time rather than the current time to
@@ -91,25 +93,35 @@ class LicenseSubscription extends SubscriptionTypeBase {
    * {@inheritdoc}
    */
   public function onSubscriptionExpire(SubscriptionInterface $subscription) {
+    /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
     $license = $subscription->license->entity;
+    if (!$license) {
+      return;
+    }
 
     // Change the license's state to expired.
     // The License entity will handle deactivating the license type plugin.
-    $transition = $license->getState()->getWorkflow()->getTransition('expire');
-    $license->getState()->applyTransition($transition);
-    $license->save();
+    if ($license->getState()->isTransitionAllowed('expire')) {
+      $license->getState()->applyTransitionById('expire');
+      $license->save();
+    }
   }
 
   /**
    * {@inheritdoc}
    */
   public function onSubscriptionCancel(SubscriptionInterface $subscription) {
+    /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
     $license = $subscription->license->entity;
+    if (!$license) {
+      return;
+    }
 
     // Change the license's state to canceled.
-    $transition = $license->getState()->getWorkflow()->getTransition('cancel');
-    $license->getState()->applyTransition($transition);
-    $license->save();
+    if ($license->getState()->isTransitionAllowed('cancel')) {
+      $license->getState()->applyTransitionById('cancel');
+      $license->save();
+    }
   }
 
   /**
@@ -119,11 +131,21 @@ class LicenseSubscription extends SubscriptionTypeBase {
     $fields = parent::buildFieldDefinitions();
 
     $fields['license'] = BundleFieldDefinition::create('entity_reference')
-      ->setLabel(t('License'))
-      ->setDescription(t('The license this subscription controls.'))
+      ->setLabel($this->t('License'))
+      ->setDescription($this->t('The license this subscription controls.'))
       ->setCardinality(1)
       ->setRequired(TRUE)
-      ->setSetting('target_type', 'commerce_license');
+      ->setSetting('target_type', 'commerce_license')
+      ->setDisplayConfigurable('view', TRUE)
+      ->setDisplayConfigurable('form', TRUE)
+      ->setDisplayOptions('view', [
+        'label' => 'above',
+        'type' => 'entity_reference_label',
+        'weight' => 1,
+        'settings' => [
+          'link' => TRUE,
+        ],
+      ]);
 
     return $fields;
   }

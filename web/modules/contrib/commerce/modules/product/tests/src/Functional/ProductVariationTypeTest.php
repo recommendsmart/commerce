@@ -49,7 +49,7 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
       'label' => 'Clothing',
       'orderItemType' => 'default',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Clothing product variation type.');
 
     $variation_type = ProductVariationType::load($edit['id']);
@@ -67,7 +67,7 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
       'label' => 'Default2',
       'attributes[color]' => 'color',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Default2 product variation type.');
 
     $variation_type = ProductVariationType::load('default');
@@ -81,7 +81,7 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
       'label' => 'Default2',
       'attributes[color]' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Default2 product variation type.');
 
     // Confirm that the attribute field has been deleted.
@@ -98,7 +98,7 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
       'attributes[color]' => 'color',
       'attributes[size]' => 'size',
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
 
     $this->drupalGet('admin/commerce/config/product-variation-types/default/duplicate');
     $this->assertSession()->fieldValueEquals('label', 'Default');
@@ -111,7 +111,7 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
       'attributes[color]' => 'color',
       'attributes[size]' => FALSE,
     ];
-    $this->submitForm($edit, t('Save'));
+    $this->submitForm($edit, $this->t('Save'));
     $this->assertSession()->pageTextContains('Saved the Default2 product variation type.');
 
     // Confirm that the original variation type is unchanged.
@@ -147,8 +147,8 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
 
     // Confirm that the type can't be deleted while there's a variation.
     $this->drupalGet($variation_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('@type is used by 1 product variation on your site. You cannot remove this product variation type until you have removed all of the @type product variations.', ['@type' => $variation_type->label()]));
-    $this->assertSession()->pageTextNotContains(t('This action cannot be undone.'));
+    $this->assertSession()->pageTextContains($this->t('@type is used by 1 product variation on your site. You cannot remove this product variation type until you have removed all of the @type product variations.', ['@type' => $variation_type->label()]));
+    $this->assertSession()->pageTextNotContains($this->t('This action cannot be undone.'));
 
     // Confirm that the delete page is not available when the type is locked.
     $variation_type->lock();
@@ -161,8 +161,8 @@ class ProductVariationTypeTest extends ProductBrowserTestBase {
     $variation_type->unlock();
     $variation_type->save();
     $this->drupalGet($variation_type->toUrl('delete-form'));
-    $this->assertSession()->pageTextContains(t('Are you sure you want to delete the product variation type @type?', ['@type' => $variation_type->label()]));
-    $this->assertSession()->pageTextContains(t('This action cannot be undone.'));
+    $this->assertSession()->pageTextContains($this->t('Are you sure you want to delete the product variation type @type?', ['@type' => $variation_type->label()]));
+    $this->assertSession()->pageTextContains($this->t('This action cannot be undone.'));
     $this->getSession()->getPage()->pressButton('Delete');
     $exists = (bool) ProductVariationType::load($variation_type->id());
     $this->assertEmpty($exists);

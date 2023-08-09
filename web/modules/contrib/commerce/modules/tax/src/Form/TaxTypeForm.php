@@ -55,11 +55,7 @@ class TaxTypeForm extends EntityForm {
     $form = parent::form($form, $form_state);
     /** @var \Drupal\commerce_tax\Entity\TaxTypeInterface $type */
     $type = $this->entity;
-    $plugins = array_column($this->pluginManager->getDefinitions(), 'label', 'id');
-    asort($plugins);
-    // Move the Custom plugin to the front.
-    unset($plugins['custom']);
-    $plugins = ['custom' => $this->t('Custom')] + $plugins;
+    $plugins = $this->buildPluginOptions();
 
     // Use the first available plugin as the default value.
     if (!$type->getPluginId()) {
@@ -73,7 +69,6 @@ class TaxTypeForm extends EntityForm {
     $plugin_configuration = $type->getPluginId() == $plugin ? $type->getPluginConfiguration() : [];
 
     $wrapper_id = Html::getUniqueId('tax-type-form');
-    $form['#tree'] = TRUE;
     $form['#prefix'] = '<div id="' . $wrapper_id . '">';
     $form['#suffix'] = '</div>';
 
@@ -119,6 +114,23 @@ class TaxTypeForm extends EntityForm {
       '#title' => $this->t('Enabled'),
       '#default_value' => $type->status(),
     ];
+    $form['conditions'] = [
+      '#type' => 'commerce_conditions',
+      '#title' => $this->t('Conditions'),
+      '#entity_types' => ['commerce_order'],
+      '#parent_entity_type' => 'commerce_tax_type',
+      '#default_value' => $type->get('conditions'),
+    ];
+    $form['conditionOperator'] = [
+      '#type' => 'radios',
+      '#title' => $this->t('Condition operator'),
+      '#title_display' => 'invisible',
+      '#options' => [
+        'AND' => $this->t('All conditions must pass'),
+        'OR' => $this->t('Only one condition must pass'),
+      ],
+      '#default_value' => $type->getConditionOperator(),
+    ];
 
     return $form;
   }
@@ -148,6 +160,25 @@ class TaxTypeForm extends EntityForm {
     $this->entity->save();
     $this->messenger()->addMessage($this->t('Saved the %label tax type.', ['%label' => $this->entity->label()]));
     $form_state->setRedirect('entity.commerce_tax_type.collection');
+  }
+
+  /**
+   * Retrieves the list of plugins to be listed in the tax type form.
+   *
+   * @return array
+   *   The list of plugins to be listed.
+   */
+  protected function buildPluginOptions() {
+    $plugins = array_column($this->pluginManager->getDefinitions(), 'label', 'id');
+    asort($plugins);
+    // Move the "custom" plugin to the front, if it exists.
+    if (isset($plugins['custom'])) {
+      $custom_label = $plugins['custom'];
+      unset($plugins['custom']);
+      $plugins = ['custom' => $custom_label] + $plugins;
+    }
+
+    return $plugins;
   }
 
 }

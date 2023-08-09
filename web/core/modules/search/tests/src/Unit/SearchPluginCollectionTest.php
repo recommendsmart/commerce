@@ -36,6 +36,8 @@ class SearchPluginCollectionTest extends UnitTestCase {
    * {@inheritdoc}
    */
   protected function setUp(): void {
+    parent::setUp();
+
     $this->pluginManager = $this->createMock('Drupal\Component\Plugin\PluginManagerInterface');
     $this->searchPluginCollection = new SearchPluginCollection($this->pluginManager, 'banana', ['id' => 'banana', 'color' => 'yellow'], 'fruit_stand');
   }
@@ -47,7 +49,7 @@ class SearchPluginCollectionTest extends UnitTestCase {
     $plugin = $this->createMock('Drupal\search\Plugin\SearchInterface');
     $this->pluginManager->expects($this->once())
       ->method('createInstance')
-      ->will($this->returnValue($plugin));
+      ->willReturn($plugin);
     $this->assertSame($plugin, $this->searchPluginCollection->get('banana'));
   }
 
@@ -59,11 +61,11 @@ class SearchPluginCollectionTest extends UnitTestCase {
     $plugin->expects($this->once())
       ->method('setSearchPageId')
       ->with('fruit_stand')
-      ->will($this->returnValue($plugin));
+      ->willReturn($plugin);
 
     $this->pluginManager->expects($this->once())
       ->method('createInstance')
-      ->will($this->returnValue($plugin));
+      ->willReturn($plugin);
 
     $this->assertSame($plugin, $this->searchPluginCollection->get('banana'));
   }

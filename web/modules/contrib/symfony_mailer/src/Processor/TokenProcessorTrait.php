@@ -12,11 +12,15 @@ use Drupal\symfony_mailer\EmailInterface;
 trait TokenProcessorTrait {
 
   /**
+   * The data for token replacement.
+   *
    * @var array
    */
   protected $data;
 
   /**
+   * The options for token replacement.
+   *
    * @var array
    */
   protected $options = [];

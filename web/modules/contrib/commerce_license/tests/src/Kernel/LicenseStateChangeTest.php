@@ -16,11 +16,9 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
    *
    * @var array
    */
-  public static $modules = [
-    'recurring_period',
+  protected static $modules = [
     'commerce_license',
     'commerce_license_test',
-    'interval',
   ];
 
   /**
@@ -44,7 +42,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
   /**
    * Tests that changes to a license's state causes the plugin to react.
    */
-  public function testLicenseStateChanges() {
+  public function testLicenseStateChanges(): void {
     $owner = $this->createUser();
 
     // Create a license in the 'new' state.
@@ -63,7 +61,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is not active: the plugin should not react.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), NULL);
+    self::assertEquals(NULL, \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Activate the license: this puts it into the 'pending' state.
     $transition = $license->getState()->getWorkflow()->getTransition('activate');
@@ -71,7 +69,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is not active: the plugin should not react.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), NULL);
+    self::assertEquals(NULL, \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Confirm the license: this puts it into the 'active' state.
     $transition = $license->getState()->getWorkflow()->getTransition('confirm');
@@ -79,7 +77,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is now active: the plugin should be called.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), 'grantLicense');
+    self::assertEquals('grantLicense', \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Reset the test tracking state.
     \Drupal::state()->set('commerce_license_state_change_test', NULL);
@@ -88,7 +86,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is unchanged: the plugin should not react.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), NULL);
+    self::assertEquals(NULL, \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Suspend the license.
     $transition = $license->getState()->getWorkflow()->getTransition('suspend');
@@ -96,7 +94,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is now inactive: the plugin should be called.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), 'revokeLicense');
+    self::assertEquals('revokeLicense', \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Reset the test tracking state.
     \Drupal::state()->set('commerce_license_state_change_test', NULL);
@@ -108,12 +106,12 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
 
     // Although the license state changed, it has gone from one inactive state
     // to another: the plugin should not react.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), NULL);
+    self::assertEquals(NULL, \Drupal::state()->get('commerce_license_state_change_test'));
 
     // Reset the test tracking state.
     \Drupal::state()->set('commerce_license_state_change_test', NULL);
 
-    // Test creating a license initially in the active state.
+    // Test creating a license initially in the 'active' state.
     $license = $this->licenseStorage->create([
       'type' => 'state_change_test',
       'state' => 'active',
@@ -128,7 +126,7 @@ class LicenseStateChangeTest extends OrderKernelTestBase {
     $license->save();
 
     // The license is created active: the plugin should be called.
-    $this->assertEqual(\Drupal::state()->get('commerce_license_state_change_test'), 'grantLicense');
+    self::assertEquals('grantLicense', \Drupal::state()->get('commerce_license_state_change_test'));
   }
 
 }

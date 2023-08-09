@@ -4,7 +4,9 @@ namespace Drupal\advancedqueue\Form;
 
 use Drupal\advancedqueue\BackendManager;
 use Drupal\advancedqueue\Entity\QueueInterface;
+use Drupal\advancedqueue\Job;
 use Drupal\Component\Utility\Html;
+use Drupal\Component\Utility\NestedArray;
 use Drupal\Core\Entity\EntityForm;
 use Drupal\Core\Form\FormStateInterface;
 use Symfony\Component\DependencyInjection\ContainerInterface;
@@ -129,7 +131,79 @@ class QueueForm extends EntityForm {
       '#min' => 0,
     ];
 
+    $threshold = $queue->getThreshold();
+    $threshold_type = $threshold['type'] ?? 0;
+    $threshold_limit = $threshold['limit'] ?? 0;
+    $threshold_state = $threshold['state'] ?? 'all';
+
+    // Ajax callbacks need to be in form state.
+    $user_input = $form_state->getUserInput();
+    if (isset($user_input['threshold']['type'])) {
+      $threshold_type = $user_input['threshold']['type'] ?? 0;
+      $threshold_limit = $user_input['threshold']['limit'] ?? 0;
+      $threshold_state = $user_input['threshold']['state'] ?? 'all';
+      $form_state->set(['threshold', 'type'], $threshold_type);
+      $form_state->set(['threshold', 'limit'], $threshold_limit);
+      $form_state->set(['threshold', 'state'], $threshold_state);
+    }
+
+    $threshold_wrapper_id = Html::getUniqueId('threshold-wrapper');
+
+    $form['threshold'] = [
+      '#type' => 'container',
+      '#prefix' => '<div id="' . $threshold_wrapper_id . '">',
+      '#suffix' => '</div>',
+      '#tree' => TRUE,
+    ];
+
+    $form['threshold']['type'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Remove completed items'),
+      '#description' => $this->t('Remove completed items based on items count or number of days.'),
+      '#default_value' => $threshold_type,
+      '#options' => [
+        0 => $this->t('Leave all items'),
+        QueueInterface::QUEUE_THRESHOLD_ITEMS => $this->t('Number of items'),
+        QueueInterface::QUEUE_THRESHOLD_DAYS => $this->t('Number of days'),
+      ],
+      '#limit_validation_errors' => [],
+      '#ajax' => [
+        'callback' => [get_class($this), 'ajaxCallback'],
+        'wrapper' => $threshold_wrapper_id,
+      ],
+    ];
+
+    $form['threshold']['limit'] = [
+      '#type' => 'select',
+      '#title' => $threshold_type == QueueInterface::QUEUE_THRESHOLD_DAYS ? $this->t('Number of days') : $this->t('Number of items'),
+      '#description' => $threshold_type == QueueInterface::QUEUE_THRESHOLD_DAYS ? $this->t('How long to keep completed items in the database.') : $this->t('Number of completed items to keep in the database.'),
+      '#field_suffix' => $threshold_type == QueueInterface::QUEUE_THRESHOLD_DAYS ? $this->t('days') : $this->t('items'),
+      '#options' => $threshold_type == QueueInterface::QUEUE_THRESHOLD_DAYS ? array_combine(QueueInterface::QUEUE_THRESHOLD_DAYS_LIMITS, QueueInterface::QUEUE_THRESHOLD_DAYS_LIMITS) : array_combine(QueueInterface::QUEUE_THRESHOLD_ITEMS_LIMITS, QueueInterface::QUEUE_THRESHOLD_ITEMS_LIMITS),
+      '#default_value' => $threshold_limit,
+      '#access' => !empty($threshold_type),
+    ];
+
+    $form['threshold']['state'] = [
+      '#type' => 'select',
+      '#title' => $this->t('Completed jobs state to remove'),
+      '#description' => $this->t('State of completed items to remove.'),
+      '#default_value' => $threshold_state,
+      '#options' => [
+        'all' => $this->t('Both failed and success state'),
+        Job::STATE_SUCCESS => $this->t('Only success state'),
+      ],
+      '#access' => !empty($threshold_type),
+    ];
+
     return $form;
+  }
+
+  /**
+   * Ajax callback for returning threshold element.
+   */
+  public static function ajaxCallback(array $form, FormStateInterface $form_state) {
+    $element_parents = array_slice($form_state->getTriggeringElement()['#array_parents'], 0, 1);
+    return NestedArray::getValue($form, $element_parents);
   }
 
   /**

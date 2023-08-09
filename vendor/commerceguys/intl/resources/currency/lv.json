@@ -170,9 +170,6 @@
 		"name": "Honkongas dolārs",
 		"symbol": "HK$"
 	},
-	"HRK": {
-		"name": "Horvātijas kuna"
-	},
 	"INR": {
 		"name": "Indijas rūpija",
 		"symbol": "₹"
@@ -459,9 +456,6 @@
 	},
 	"HUF": {
 		"name": "Ungārijas forints"
-	},
-	"UYW": {
-		"name": "Uruguayan Nominal Wage Index Unit"
 	},
 	"UYU": {
 		"name": "Urugvajas peso"

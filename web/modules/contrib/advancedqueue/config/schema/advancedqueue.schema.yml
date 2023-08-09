@@ -22,6 +22,18 @@ advancedqueue.advancedqueue_queue.*:
     locked:
       type: boolean
       label: 'Locked'
+    threshold:
+      type: mapping
+      mapping:
+        type:
+          type: integer
+          label: 'Threshold type'
+        limit:
+          type: integer
+          label: 'Threshold limit'
+        state:
+          type: string
+          label: 'Threshold state'
 
 advancedqueue.backend.*:
   type: advancedqueue_backend_configuration

@@ -8,10 +8,14 @@
 use Drupal\commerce_checkout\Entity\CheckoutFlowInterface;
 use Drupal\commerce_payment\Entity\PaymentGateway;
 use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\CheckoutInterface;
+use Drupal\commerce_paypal\Plugin\Commerce\PaymentGateway\PayflowLinkInterface;
 use Drupal\commerce_price\Calculator;
 use Drupal\Core\Access\AccessResult;
+use Drupal\Core\Asset\AttachedAssetsInterface;
 use Drupal\Core\Form\FormStateInterface;
+use Drupal\Core\Routing\TrustedRedirectResponse;
 use Drupal\Core\Session\AccountInterface;
+use Drupal\Core\Url;
 
 /**
  * Implements hook_theme().
@@ -20,6 +24,11 @@ function commerce_paypal_theme() {
   $theme = [
     'commerce_paypal_checkout_custom_card_fields' => [
       'variables' => [],
+    ],
+    'commerce_paypal_credit_card_logos' => [
+      'variables' => [
+        'credit_cards' => [],
+      ],
     ],
   ];
 
@@ -100,8 +109,7 @@ function commerce_paypal_form_commerce_checkout_flow_alter(&$form, FormStateInte
       }
     }
   }
-  // Inject the Smart payment buttons on the review page.
-  if ($form['#step_id'] !== 'review') {
+  if (!in_array($form['#step_id'], ['review', 'complete'])) {
     return;
   }
   if ($order->get('payment_gateway')->isEmpty() ||
@@ -109,14 +117,50 @@ function commerce_paypal_form_commerce_checkout_flow_alter(&$form, FormStateInte
     $order->get('checkout_flow')->target_id === 'paypal_checkout') {
     return;
   }
+  /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $payment_gateway */
+  $payment_gateway = $order->get('payment_gateway')->entity;
+  $payment_gateway_plugin = $payment_gateway->getPlugin();
+
+  // Add fixes for Payflow Link iframe.
+  if ($payment_gateway_plugin instanceof PayflowLinkInterface) {
+    if ($payment_gateway_plugin->getConfiguration()['redirect_mode'] === 'iframe') {
+      $form['#attached']['library'][] = 'commerce_paypal/paypal_payflow_link_iframe_fix';
+      $form['#attached']['library'][] = 'commerce_paypal/paypal_payflow_link';
+      // Error handling for PayflowLink iframe.
+      if ($form['#step_id'] === 'review') {
+        $form['#attached']['drupalSettings']['commercePayflow'] = ['page' => 'review'];
+
+        // Don't cache form,
+        // otherwise following code will not work properly for anonymous user.
+        \Drupal::service('page_cache_kill_switch')->trigger();
+
+        // If the Payflow query variable is present, reshow the error message and
+        // reload the page.
+        $query_params = \Drupal::request()->query->all();
+        if (isset($query_params['payflow-page']) && $query_params['payflow-page'] == 'review') {
+          \Drupal::messenger()
+            ->addMessage(t('Payment failed at the payment server. Please review your information and try again.'), 'error');
+          $redirect_url = Url::fromRoute('commerce_checkout.form', [
+            'commerce_order' => $order->id(),
+            'step' => 'review',
+          ])->toString();
+          $redirect = new TrustedRedirectResponse($redirect_url);
+          $redirect->send();
+        }
+      }
+    }
+  }
+  elseif ($form['#step_id'] !== 'review') {
+    return;
+  }
+
+  // Inject the Smart payment buttons on the review page.
   // Skip injecting the smart payment buttons if the order total is zero or
   // negative.
   if (!$order->getTotalPrice() || !$order->getTotalPrice()->isPositive()) {
     return;
   }
-  /** @var \Drupal\commerce_payment\Entity\PaymentGatewayInterface $payment_gateway */
-  $payment_gateway = $order->get('payment_gateway')->entity;
-  $payment_gateway_plugin = $payment_gateway->getPlugin();
+
   if (!$payment_gateway_plugin instanceof CheckoutInterface ||
     $payment_gateway_plugin->getPaymentSolution() !== 'smart_payment_buttons') {
     return;
@@ -184,7 +228,6 @@ function commerce_paypal_form_commerce_order_item_add_to_cart_form_alter(&$form,
     return;
   }
   // Add Credit Messaging JS to the form.
-  // @todo ensure messaging reapplies after an Ajax refresh.
   $form['#attached']['library'][] = 'commerce_paypal/credit_messaging';
 
   $form['paypal_credit_messaging_product'] = [
@@ -202,12 +245,14 @@ function commerce_paypal_form_commerce_order_item_add_to_cart_form_alter(&$form,
 /**
  * Implements hook_js_alter().
  */
-function commerce_paypal_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAssetsInterface $assets) {
+function commerce_paypal_js_alter(&$javascript, AttachedAssetsInterface $assets) {
   $client_id = \Drupal::config('commerce_paypal.credit_messaging_settings')->get('client_id');
   if (!$client_id) {
     return;
   }
-  $paypal_checkout_js = drupal_get_path('module', 'commerce_paypal') . '/js/paypal-checkout.js';
+  /** @var \Drupal\Core\Extension\ExtensionPathResolver $extension_path_resolver */
+  $extension_path_resolver = \Drupal::service('extension.path.resolver');
+  $paypal_checkout_js = $extension_path_resolver->getPath('module', 'commerce_paypal') . '/js/paypal-checkout.js';
   // The paypal-checkout JS file isn't present, no need to do anything.
   if (!isset($javascript[$paypal_checkout_js])) {
     return;
@@ -217,6 +262,82 @@ function commerce_paypal_js_alter(&$javascript, \Drupal\Core\Asset\AttachedAsset
     if (strpos($key, 'https://www.paypal.com/sdk/js') === 0) {
       unset($javascript[$key]);
       break;
+    }
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter().
+ */
+function commerce_paypal_form_commerce_payment_method_add_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  // The current PayPal checkout implementation doesn't support tokenization.
+  unset($form["payment_method"]["#options"]["new--paypal_checkout--paypal"]);
+}
+
+/**
+ * Returns the list of funding sources to be enabled or disabled.
+ *
+ * The full list can be found at:
+ * https://developer.paypal.com/sdk/js/configuration/#enable-funding.
+ *
+ * @return array
+ *   Machine name as key and translated label as value.
+ */
+function commerce_paypal_get_funding_sources() {
+  return [
+    'paypal' => t('PayPal'),
+    'card' => t('Credit or debit card'),
+    'credit' => t('PayPal Credit'),
+    'paylater' => t('Pay Later'),
+    'bancontact' => t('Bancontact'),
+    'blik' => t('BLIK'),
+    'eps' => t('eps'),
+    'giropay' => t('giropay'),
+    'ideal' => t('iDEAL'),
+    'mercadopago' => t('Mercado Pago'),
+    'mybank' => t('MyBank'),
+    'p24' => t('Przelewy24'),
+    'sepa' => t('SEPA-Lastschrift'),
+    'sofort' => t('Sofort'),
+    'venmo' => t('Venmo'),
+  ];
+}
+
+/**
+ * Returns the label to use for a PayPal funding source.
+ *
+ * @param string $funding_source
+ *   The machine-name of the funding source returned by PayPal.
+ *
+ * @return string
+ *   The label to show a customer for the funding source.
+ */
+function commerce_paypal_funding_source_label($funding_source) {
+  $funding_sources = commerce_paypal_get_funding_sources();
+
+  return $funding_sources[$funding_source] ?? '';
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ *
+ * To facilitate the display of the funding source in order templates, this
+ * function looks for an order with a PayPal Checkout funding source set and
+ * adds its label to the array of available template variables.
+ *
+ * @see https://developer.paypal.com/docs/checkout/standard/customize/display-funding-source/
+ */
+function commerce_paypal_preprocess_commerce_order(&$variables) {
+  if (!empty($variables['elements']['#commerce_order'])) {
+    /** @var Drupal\commerce_order\Entity\OrderInterface $order */
+    $order = $variables['elements']['#commerce_order'];
+
+    // Check for a PayPal Checkout funding source.
+    $data = $order->getData('commerce_paypal_checkout', []);
+
+    // If we found a funding source, add its label to the template variables.
+    if (!empty($data['funding_source'])) {
+      $variables['order']['funding_source'] = commerce_paypal_funding_source_label($data['funding_source']);
     }
   }
 }

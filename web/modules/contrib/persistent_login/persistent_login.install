@@ -5,6 +5,8 @@
  * Installation functions for Persistent Login module.
  */
 
+use Drupal\Component\Utility\Crypt;
+
 /**
  * Implements hook_schema().
  */
@@ -130,4 +132,36 @@ function persistent_login_update_8104() {
   Drupal::configFactory()->getEditable('persistent_login.settings')
     ->set('cookie_prefix', 'PL')
     ->save();
+}
+
+/**
+ * Add default value for extend_lifetime config.
+ */
+function persistent_login_update_8105() {
+  Drupal::configFactory()->getEditable('persistent_login.settings')
+    ->set('extend_lifetime', FALSE)
+    ->save();
+}
+
+/**
+ * Hash series and instance values in the database.
+ */
+function persistent_login_update_8106(&$sandbox) {
+  Drupal::service('persistent_login.token_manager')->cleanupExpiredTokens();
+
+  $db = Drupal::database();
+
+  $queryResult = $db->select('persistent_login', 'pl')
+    ->fields('pl', ['series', 'instance'])
+    ->execute();
+
+  while ($token = $queryResult->fetchObject()) {
+    $db->update('persistent_login')
+      ->fields([
+        'series' => Crypt::hashBase64($token->series),
+        'instance' => Crypt::hashBase64($token->instance),
+      ])
+      ->condition('series', $token->series)
+      ->execute();
+  }
 }

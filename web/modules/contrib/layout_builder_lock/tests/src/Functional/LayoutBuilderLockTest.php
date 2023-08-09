@@ -9,8 +9,6 @@ use Drupal\layout_builder_lock\LayoutBuilderLock;
 use Drupal\node\NodeInterface;
 use Drupal\Tests\BrowserTestBase;
 use Drupal\Tests\WebAssert;
-use Drupal\user\Entity\Role;
-use Drupal\user\RoleInterface;
 
 /**
  * Tests Layout Builder Lock.
@@ -28,6 +26,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     'block_content',
     'block',
     'node',
+    'field_ui',
     'user',
   ];
 
@@ -129,7 +128,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
   /**
    * {@inheritdoc}
    */
-  protected function setUp() {
+  protected function setUp(): void {
     parent::setUp();
 
     // Enable Layout Builder for landing page.
@@ -198,7 +197,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     $edit['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_BLOCK_MOVE . ']'] = TRUE;
     $edit['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_AFTER . ']'] = TRUE;
     $edit['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']'] = TRUE;
-    $this->drupalPostForm(NULL, $edit, 'Update');
+    $this->submitForm($edit, 'Update');
     $page->pressButton('Save layout');
 
     // Create second node.
@@ -241,7 +240,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     $assert_session->responseContains('Lock settings');
     $edit = [];
     $edit['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_AFTER . ']'] = FALSE;
-    $this->drupalPostForm(NULL, $edit, 'Update');
+    $this->submitForm($edit, 'Update');
     $page->pressButton('Save layout');
 
     $this->drupalLogin($this->editor);
@@ -253,7 +252,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/1/layout_onecol');
     $assert_session->statusCodeEquals(200);
     $assert_session->responseContains('Locks can be configured when the section has been added.');
-    $this->drupalPostForm(NULL, [], 'Add section');
+    $this->submitForm([], 'Add section');
     $assert_session->statusCodeEquals(200);
 
     // Test the 'bypass lock settings on layout overrides', in combination
@@ -272,12 +271,12 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     $this->drupalGet('/layout_builder/configure/section/defaults/node.landing_page.default/0');
     $edit = [];
     $edit['layout_builder_lock[' . LayoutBuilderLock::LOCKED_BLOCK_ADD . ']'] = FALSE;
-    $this->drupalPostForm(NULL, $edit, 'Update');
+    $this->submitForm($edit, 'Update');
     $this->drupalGet('/layout_builder/add/block/defaults/node.landing_page.default/0/content/inline_block:basic');
     $edit = [];
     $edit['settings[label]'] = 'Default custom block title';
     $edit['settings[block_form][body][0][value]'] = 'Default custom block content';
-    $this->drupalPostForm(NULL, $edit, 'Add block');
+    $this->submitForm($edit, 'Add block');
 
     // Get the block uuid from the custom block.
     $id = $assert_session->elementExists('css', '.layout-builder__region > div:nth-child(4)');
@@ -303,7 +302,7 @@ class LayoutBuilderLockTest extends BrowserTestBase {
     $edit = [];
     $edit['settings[label]'] = 'Editor block title';
     $edit['settings[block_form][body][0][value]'] = 'Editor block content';
-    $this->drupalPostForm(NULL, $edit, 'Add block');
+    $this->submitForm($edit, 'Add block');
     $id = $assert_session->elementExists('css', '.layout-builder__region > div:nth-child(5)');
     $this->custom_editor_block_uuid = $id->getAttribute('data-layout-block-uuid');
     $page->pressButton('Save layout');
@@ -333,15 +332,15 @@ class LayoutBuilderLockTest extends BrowserTestBase {
 
     // Add a new section above default
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/0/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'section above default'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'section above default'], 'Add section');
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/0');
-    $this->drupalPostForm(NULL, ['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE], 'Update');
+    $this->submitForm(['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE], 'Update');
 
     // Add a new section between previous created and default
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/1/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'new section in between'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'new section in between'], 'Add section');
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/1');
-    $this->drupalPostForm(NULL, ['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_BEFORE . ']' => TRUE], 'Update');
+    $this->submitForm(['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_BEFORE . ']' => TRUE], 'Update');
 
     $page->pressButton('Save layout');
 
@@ -382,23 +381,23 @@ class LayoutBuilderLockTest extends BrowserTestBase {
 
     // Add a section without config so it has a section delta > 1.
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/2/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'section without any lock config'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'section without any lock config'], 'Add section');
 
     // Add extra sections that have section configuration locked
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/3/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'section with locked section configuration  1'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'section with locked section configuration  1'], 'Add section');
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/3');
-    $this->drupalPostForm(NULL, ['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration  1'], 'Update');
+    $this->submitForm(['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration  1'], 'Update');
 
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/5/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'section with locked section configuration  2'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'section with locked section configuration  2'], 'Add section');
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/5');
-    $this->drupalPostForm(NULL, ['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration  2'], 'Update');
+    $this->submitForm(['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration  2'], 'Update');
 
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/6/layout_onecol');
-    $this->drupalPostForm(NULL, ['layout_settings[label]' => 'section with locked section configuration  3'], 'Add section');
+    $this->submitForm(['layout_settings[label]' => 'section with locked section configuration  3'], 'Add section');
     $this->drupalGet('layout_builder/configure/section/defaults/node.landing_page.default/6');
-    $this->drupalPostForm(NULL, ['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration 3'], 'Update');
+    $this->submitForm(['layout_builder_lock[' . LayoutBuilderLock::LOCKED_SECTION_CONFIGURE . ']' => TRUE, 'layout_settings[label]' => 'section with locked section configuration 3'], 'Update');
 
     $page->pressButton('Save layout');
 

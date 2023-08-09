@@ -17,6 +17,7 @@ class PriceListForm extends ContentEntityForm {
   public function buildForm(array $form, FormStateInterface $form_state) {
     /** @var \Drupal\commerce_pricelist\Entity\PriceList $entity */
     $store_query = $this->entityTypeManager->getStorage('commerce_store')->getQuery();
+    $store_query->accessCheck(FALSE);
     if ($store_query->count()->execute() == 0) {
       $link = Link::createFromRoute('Add a new store.', 'entity.commerce_store.add_page');
       $form['warning'] = [

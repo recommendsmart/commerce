@@ -63,7 +63,7 @@ class OrderReassignTest extends OrderWebDriverTestBase {
   /**
    * Tests the reassign form with a new user.
    */
-  public function testReassignToNewUser() {
+  public function testReassignToNewUser(): void {
     $this->drupalGet($this->order->toUrl('reassign-form'));
     $this->getSession()->getPage()->fillField('customer_type', 'new');
     $this->assertSession()->assertWaitOnAjaxRequest();
@@ -71,9 +71,10 @@ class OrderReassignTest extends OrderWebDriverTestBase {
       'mail' => 'example@example.com',
     ];
     $this->submitForm($values, 'Reassign order');
-    $collection_url = $this->order->toUrl('collection', ['absolute' => TRUE]);
+    $collection_url = $this->order->toUrl('canonical', ['absolute' => TRUE]);
     $this->assertSession()->addressEquals($collection_url);
-    $this->assertSession()->pageTextContains(t('has been assigned to customer @customer.', [
+    $this->assertSession()->pageTextContains($this->t('The @label has been assigned to customer @customer.', [
+      '@label' => $this->order->label(),
       '@customer' => 'example@example.com',
     ]));
 
@@ -85,13 +86,14 @@ class OrderReassignTest extends OrderWebDriverTestBase {
   /**
    * Tests the reassign form with an existing user.
    */
-  public function testReassignToExistingUser() {
+  public function testReassignToExistingUser(): void {
     $another_user = $this->createUser();
     $this->drupalGet($this->order->toUrl('reassign-form'));
     $this->submitForm(['uid' => $another_user->getAccountName()], 'Reassign order');
-    $collection_url = $this->order->toUrl('collection', ['absolute' => TRUE]);
+    $collection_url = $this->order->toUrl('canonical', ['absolute' => TRUE]);
     $this->assertSession()->addressEquals($collection_url);
-    $this->assertSession()->pageTextContains(t('has been assigned to customer @customer.', [
+    $this->assertSession()->pageTextContains($this->t('The @label has been assigned to customer @customer.', [
+      '@label' => $this->order->label(),
       '@customer' => $another_user->getAccountName(),
     ]));
 

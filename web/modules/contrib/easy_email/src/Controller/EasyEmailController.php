@@ -113,28 +113,54 @@ class EasyEmailController extends ControllerBase implements ContainerInjectionIn
 
   public function preview(EasyEmailInterface $easy_email) {
     $message = \Drupal::service('easy_email.handler')->preview($easy_email);
-    $body = trim($message['body']);
+    $body = $message['body'];
     // If email is plain text, HTML body is empty.
-    if (!empty($message['headers']['Content-Type']) && strstr($message['headers']['Content-Type'], 'text/plain')) {
+    $content_type = $this->getContentType($message);
+    if ($content_type === 'text/plain') {
       $body = '';
     }
-    $response = new Response();
-    $response->setContent($body);
-    $response->headers->set('Content-Type', 'text/html; charset=utf-8');
-    return $response;
+    return $this->sendNormalizedResponse($body, 'text/html; charset=utf-8');
   }
 
   public function previewPlain(EasyEmailInterface $easy_email) {
     $message = \Drupal::service('easy_email.handler')->preview($easy_email);
-    $body = !empty($message['plain']) ? trim($message['plain']) : '';
-    // If email is plain text, plain text body is the main body
-    if (!empty($message['headers']['Content-Type']) && strstr($message['headers']['Content-Type'], 'text/plain')) {
-      $body = trim($message['body']);
+    $body = !empty($message['plain']) ? $message['plain'] : '';
+    // If email is plain text, plain text body is the main body.
+    $content_type = $this->getContentType($message);
+    if ($content_type === 'text/plain') {
+      $body = $message['body'];
     }
+    return $this->sendNormalizedResponse($body, 'text/plain; charset=utf-8');
+  }
+
+  protected function sendNormalizedResponse($body, $content_type) {
+    if (is_array($body)) {
+      $body = \Drupal::service('renderer')->render($body);
+    }
+    $body = trim($body);
     $response = new Response();
     $response->setContent($body);
-    $response->headers->set('Content-Type', 'text/plain; charset=utf-8');
+    $response->headers->set('Content-Type', $content_type);
     return $response;
+  }
+
+  /**
+   * Get content type from message array.
+   *
+   * @param array $message
+   *
+   * @return string
+   */
+  protected function getContentType($message) {
+    $content_type_header = NULL;
+    // Headers end up under params with Symfony Mailer.
+    if (!empty($message['headers']['Content-Type'])) {
+      $content_type_header = $message['headers']['Content-Type'];
+    }
+    if (str_contains($content_type_header, 'text/html')) {
+      return 'text/html';
+    }
+    return 'text/plain';
   }
 
   /**

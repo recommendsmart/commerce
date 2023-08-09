@@ -111,7 +111,7 @@ class ProductAttributeFieldManager implements ProductAttributeFieldManagerInterf
 
     if ($variation_type_id) {
       // The map is empty for any variation type that has no attribute fields.
-      return isset($this->fieldMap[$variation_type_id]) ? $this->fieldMap[$variation_type_id] : [];
+      return $this->fieldMap[$variation_type_id] ?? [];
     }
     else {
       return $this->fieldMap;

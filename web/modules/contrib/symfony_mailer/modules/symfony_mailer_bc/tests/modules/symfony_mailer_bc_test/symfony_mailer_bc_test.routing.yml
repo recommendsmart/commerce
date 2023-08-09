@@ -1,9 +1,0 @@
-symfony_mailer_bc_test.send:
-  path: '/admin/symfony_mailer_bc_test/send'
-  defaults:
-    _form: 'Drupal\symfony_mailer_bc_test\Form\BcTestMailForm'
-    _title: 'Send BC test mail'
-  requirements:
-    _access: 'TRUE'
-  options:
-    _admin_route: TRUE

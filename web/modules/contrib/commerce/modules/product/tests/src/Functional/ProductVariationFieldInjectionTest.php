@@ -102,7 +102,8 @@ class ProductVariationFieldInjectionTest extends ProductBrowserTestBase {
 
     // Have to call this save to get the cache to clear, we set the tags
     // correctly in a hook, but unless you trigger the submit it doesn't seem
-    // to clear. Something additional happens on save that we're missing.
+    // to clear. This save should invalidate the commerce_product_variation_view
+    // tag to display product variation correctly.
     $this->drupalGet('admin/commerce/config/product-variation-types/default/edit/display');
     $this->submitForm([], 'Save');
 
@@ -141,6 +142,13 @@ class ProductVariationFieldInjectionTest extends ProductBrowserTestBase {
       'type' => 'string',
     ]);
     $variation_view_display->save();
+
+    // Have to call this save to get the cache to clear, we set the tags
+    // correctly in a hook, but unless you trigger the submit it doesn't seem
+    // to clear. This save should invalidate the commerce_product_variation_view
+    // tag to display product variation correctly.
+    $this->drupalGet('admin/commerce/config/product-variation-types/default/edit/display');
+    $this->submitForm([], 'Save');
 
     $this->drupalGet($this->product->toUrl());
     $this->assertSession()->pageTextContains('INJECTION-CYAN');

@@ -32,8 +32,6 @@ class DisplayPageTest extends ViewsKernelTestBase {
    * @var array
    */
   protected static $modules = [
-    // @todo Remove this in https://www.drupal.org/node/3219959
-    'block',
     'system',
     'user',
     'field',
@@ -244,7 +242,7 @@ class DisplayPageTest extends ViewsKernelTestBase {
       'html_list' => '//div[@class="item-list"]//li',
     ];
 
-    $themes = ['bartik', 'classy', 'olivero', 'seven', 'stable', 'stark'];
+    $themes = ['olivero', 'stable9', 'stark', 'claro'];
 
     foreach ($themes as $theme) {
       \Drupal::service('theme_installer')->install([$theme]);

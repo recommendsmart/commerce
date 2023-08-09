@@ -15,7 +15,7 @@ class ResolverTest extends CommerceKernelTestBase {
   /**
    * {@inheritdoc}
    */
-  public static $modules = [
+  protected static $modules = [
     'commerce_store_domain',
   ];
 

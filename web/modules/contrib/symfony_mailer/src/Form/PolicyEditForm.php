@@ -53,7 +53,7 @@ class PolicyEditForm extends EntityForm {
     $common_adjusters = array_flip($this->entity->getCommonAdjusters());
     $options = $options2 = [];
     foreach ($this->entity->adjusterDefinitions() as $name => $definition) {
-      if (!$adjusters->has($name)) {
+      if (!$adjusters->has($name) && !$definition['automatic']) {
         if (isset($common_adjusters[$name])) {
           $options[$name] = $definition['label'];
         }

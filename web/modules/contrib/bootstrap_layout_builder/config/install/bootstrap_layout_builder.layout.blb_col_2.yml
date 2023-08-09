@@ -3,4 +3,4 @@ status: true
 dependencies: {  }
 id: blb_col_2
 label: 'Bootstrap 2 Cols'
-number_of_columns: '2'
+number_of_columns: 2

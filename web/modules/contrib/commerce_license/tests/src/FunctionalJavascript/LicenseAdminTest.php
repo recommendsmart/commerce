@@ -17,7 +17,7 @@ class LicenseAdminTest extends CommerceWebDriverTestBase {
    *
    * @var array
    */
-  public static $modules = [
+  protected static $modules = [
     'block',
     'path',
     'commerce_product',
@@ -76,7 +76,7 @@ class LicenseAdminTest extends CommerceWebDriverTestBase {
   /**
    * Tests creating a license.
    */
-  public function testCreateLicense() {
+  public function testCreateLicense(): void {
     $this->drupalGet('admin/commerce/licenses');
     $this->getSession()->getPage()->clickLink('Add license');
 
@@ -94,7 +94,7 @@ class LicenseAdminTest extends CommerceWebDriverTestBase {
     $this->getSession()->getPage()->fillField('product_variation[0][target_id]', $this->variation->getSku() . ' (' . $this->variation->id() . ')');
     $roles = $this->adminUser->getRoles(TRUE);
     $this->getSession()->getPage()->selectFieldOption('license_role', reset($roles));
-    $this->submitForm([], t('Save'));
+    $this->submitForm([], $this->t('Save'));
 
     /** @var \Drupal\commerce_license\Entity\LicenseInterface $license */
     $license = $this->container->get('entity_type.manager')->getStorage('commerce_license')->load(1);

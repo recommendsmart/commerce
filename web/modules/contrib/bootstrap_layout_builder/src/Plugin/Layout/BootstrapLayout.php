@@ -11,6 +11,9 @@ use Drupal\Core\Serialization\Yaml;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Drupal\Core\Entity\EntityTypeManagerInterface;
 use Drupal\bootstrap_styles\StylesGroup\StylesGroupManager;
+use Drupal\Core\Ajax\AjaxResponse;
+use Drupal\Core\Ajax\ReplaceCommand;
+use Drupal\Core\Render\Element;
 
 /**
  * A layout from our bootstrap layout builder.
@@ -225,6 +228,21 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
   }
 
   /**
+   * Helper function to get live preview status.
+   *
+   * @return bool
+   *   Live preview status.
+   */
+  public function livePreviewIsEnabled() {
+    $config = $this->configFactory->get('bootstrap_layout_builder.settings');
+    $live_preview = FALSE;
+    if ($config->get('live_preview')) {
+      $live_preview = (bool) $config->get('live_preview');
+    }
+    return $live_preview;
+  }
+
+  /**
    * Helper function to get the options of given style name.
    *
    * @param string $name
@@ -312,7 +330,7 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
           'title' => $tab['title'],
           'target' => $tab['machine_name'],
           'active' => isset($tab['active']) && $tab['active'] == TRUE ? 'active' : '',
-          'icon' => drupal_get_path('module', 'bootstrap_styles') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg'),
+          'icon' => \Drupal::service('extension.list.module')->getPath('bootstrap_styles') . '/images/ui/' . ($tab['icon'] ? $tab['icon'] : 'default.svg'),
         ],
       ];
 
@@ -370,14 +388,23 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
     }
 
     $layout_id = $this->getPluginDefinition()->id();
-    $breakpoints = $this->entityTypeManager->getStorage('blb_breakpoint')->getQuery()->sort('weight', 'ASC')->execute();
+    $breakpoints = $this->entityTypeManager->getStorage('blb_breakpoint')->getQuery()->accessCheck(TRUE)->sort('weight', 'ASC')->execute();
     foreach ($breakpoints as $breakpoint_id) {
       $breakpoint = $this->entityTypeManager->getStorage('blb_breakpoint')->load($breakpoint_id);
       $layout_options = $breakpoint->getLayoutOptions($layout_id);
       if ($layout_options) {
-        $default_value = '';
+        $options = $this->entityTypeManager->getStorage('blb_layout_option')->loadByProperties(['layout_id' => $layout_id]);
+        $default_value = NULL;
         if ($this->configuration['breakpoints'] && isset($this->configuration['breakpoints'][$breakpoint_id])) {
           $default_value = $this->configuration['breakpoints'][$breakpoint_id];
+        }
+        else {
+          $options = $this->entityTypeManager->getStorage('blb_layout_option')->loadByProperties(['layout_id' => $layout_id]);
+          foreach ($options as $layoutOption) {
+            if (array_search($breakpoint->id(), $layoutOption->getDefaultBreakpointsIds()) !== FALSE) {
+              $default_value = $layoutOption->getStructureId();
+            }
+          }
         }
         $form['ui']['tab_content']['layout']['breakpoints'][$breakpoint_id] = [
           '#type' => 'radios',
@@ -389,6 +416,13 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
             'class' => ['blb_breakpoint_cols'],
           ],
         ];
+
+        // Check if the live preview enabled.
+        if ($this->livePreviewIsEnabled()) {
+          $form['ui']['tab_content']['layout']['breakpoints'][$breakpoint_id]['#ajax']['callback'] = [$this, 'livePreviewCallback'];
+          $form['ui']['tab_content']['layout']['breakpoints'][$breakpoint_id]['#ajax']['event'] = 'click';
+          $form['ui']['tab_content']['layout']['breakpoints'][$breakpoint_id]['#ajax']['progress'] = ['type' => 'none'];
+        }
       }
     }
 
@@ -475,12 +509,72 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
       }
     }
 
+    // Check if the live preview enabled.
+    if ($this->livePreviewIsEnabled()) {
+      // Add the ajax live preview to form elements.
+      $this->addAjaxLivePreviewToElement($form['ui']['tab_content']);
+    }
+
     // Attach Bootstrap Styles base library.
     $form['#attached']['library'][] = 'bootstrap_styles/layout_builder_form_style';
 
     // Attach the Bootstrap Layout Builder base library.
     $form['#attached']['library'][] = 'bootstrap_layout_builder/layout_builder_form_style';
+
     return $form;
+  }
+
+  /**
+   * Add live preview to element.
+   * 
+   * @param array $element
+   *   The target element.
+   */
+  public function addAjaxLivePreviewToElement(array &$element) {
+    $types = [
+      'radios',
+      'radio',
+      'checkbox',
+      'textfield',
+      'textarea',
+      'range',
+    ];
+
+    if (!isset($element['#type'])) {
+      return;
+    }
+
+    if (in_array($element['#type'], $types) && !isset($element['#ajax']) && !isset($element['#disable_live_preview'])) {
+      $element['#ajax']['callback'] = [$this, 'livePreviewCallback'];
+      $element['#ajax']['event'] = 'change';
+      $element['#ajax']['progress'] = ['type' => 'none'];
+    }
+
+    if (Element::children($element)) {
+      foreach (Element::children($element) as $key) {
+        $this->addAjaxLivePreviewToElement($element[$key]);
+      }
+    }
+  }
+
+  /**
+   * {@inheritdoc}
+   */
+  public function livePreviewCallback(array $form, FormStateInterface $form_state) {
+    $form_state->getFormObject()->submitForm($form, $form_state);
+    $layout = [
+      '#type' => 'layout_builder',
+      '#section_storage' => $form_state->getFormObject()->getSectionStorage(),
+    ];
+
+    $data = [];
+    $tempstore = \Drupal::service('tempstore.private')->get('bootstrap_styles');
+    $data['active_device'] = $tempstore->get('active_device');
+
+    $response = new AjaxResponse();
+    $response->addCommand(new ReplaceCommand('#layout-builder', $layout));
+
+    return $response;
   }
 
   /**
@@ -542,7 +636,7 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
     $style_tab = ['ui', 'tab_content', 'appearance'];
     $settings_tab = ['ui', 'tab_content', 'settings'];
 
-    // Save sction label.
+    // Save section label.
     $this->configuration['label'] = $form_state->getValue(array_merge($settings_tab, ['label']));
 
     // Container type.
@@ -577,6 +671,15 @@ class BootstrapLayout extends LayoutDefault implements ContainerFactoryPluginInt
         if (!$this->sectionSettingsIsHidden()) {
           $this->configuration['regions_classes'][$region_name] = $form_state->getValue(array_merge($settings_tab, ['regions', $region_name . '_classes']));
           $this->configuration['regions_attributes'][$region_name] = Yaml::decode($form_state->getValue(array_merge($settings_tab, ['regions', $region_name . '_attributes'])));
+        }
+      }
+    }
+    else {
+      foreach ($this->getPluginDefinition()->getRegionNames() as $key => $region_name) {
+        // Cols classes from advanced mode.
+        if (!$this->sectionSettingsIsHidden()) {
+          $this->configuration['regions_classes'][$region_name] = $form_state->getValue(array_merge($settings_tab,['regions', $region_name . '_classes']));
+          $this->configuration['regions_attributes'][$region_name] = Yaml::decode($form_state->getValue(array_merge($settings_tab,['regions', $region_name . '_attributes'])));
         }
       }
     }

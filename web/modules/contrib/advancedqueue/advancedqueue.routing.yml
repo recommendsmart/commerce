@@ -13,3 +13,11 @@ advancedqueue.job.delete:
     _title: Delete job
   requirements:
     _permission: 'administer advancedqueue'
+
+advancedqueue.job.retry:
+  path: /admin/config/system/queues/{advancedqueue_queue}/jobs/{job_id}/retry
+  defaults:
+    _form: \Drupal\advancedqueue\Form\RetryJob
+    _title: Retry job
+  requirements:
+    _permission: 'administer advancedqueue'

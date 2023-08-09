@@ -6,11 +6,14 @@ use Drupal\Core\DestructableInterface;
 use Drupal\Core\State\StateInterface;
 use Drupal\symfony_mailer\EmailInterface;
 use Drupal\symfony_mailer\Processor\EmailProcessorInterface;
+use Drupal\symfony_mailer\Processor\EmailProcessorTrait;
 
 /**
  * Tracks sent emails for testing.
  */
 class MailerTestService implements MailerTestServiceInterface, EmailProcessorInterface, DestructableInterface {
+
+  use EmailProcessorTrait;
 
   /**
    * The state service.
@@ -19,6 +22,11 @@ class MailerTestService implements MailerTestServiceInterface, EmailProcessorInt
    */
   protected $state;
 
+  /**
+   * The emails that have been sent.
+   *
+   * @var \Drupal\symfony_mailer\EmailInterface[]
+   */
   protected $emails = [];
 
   /**
@@ -46,9 +54,10 @@ class MailerTestService implements MailerTestServiceInterface, EmailProcessorInt
   /**
    * {@inheritdoc}
    */
-  public function init(EmailInterface $email) {
-    $email->addProcessor([$this, 'postRender'], EmailInterface::PHASE_POST_RENDER, 10000, static::class);
-    $email->addProcessor([$this, 'postSend'], EmailInterface::PHASE_POST_SEND, 10000, static::class);
+  public function getEmails() {
+    $emails = $this->emails;
+    $this->emails = [];
+    return $emails;
   }
 
   /**

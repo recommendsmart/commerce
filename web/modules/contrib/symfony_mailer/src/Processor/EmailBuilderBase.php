@@ -8,7 +8,7 @@ use Drupal\symfony_mailer\EmailInterface;
 /**
  * Defines the base class for EmailBuilder plug-ins.
  */
-class EmailBuilderBase extends EmailProcessorBase implements EmailBuilderInterface {
+abstract class EmailBuilderBase extends EmailProcessorBase implements EmailBuilderInterface {
 
   /**
    * The default weight for an email builder.

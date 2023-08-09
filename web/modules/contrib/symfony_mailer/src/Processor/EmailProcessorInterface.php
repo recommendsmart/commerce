@@ -29,4 +29,66 @@ interface EmailProcessorInterface {
    */
   public function init(EmailInterface $email);
 
+  /**
+   * Process emails during the build phase.
+   *
+   * Must not trigger any rendering because cannot yet rely on the correct
+   * language, theme, and account. For example, must not cast a translatable
+   * string into a plain string, or replace tokens.
+   *
+   * @param \Drupal\symfony_mailer\EmailInterface $email
+   *   The email to process.
+   */
+  public function build(EmailInterface $email);
+
+  /**
+   * Process emails during the pre-render phase.
+   *
+   * Not normally needed. Only if there is a rendering step that needs to be
+   * done before the main rendering call.
+   *
+   * @param \Drupal\symfony_mailer\EmailInterface $email
+   *   The email to process.
+   */
+  public function preRender(EmailInterface $email);
+
+  /**
+   * Process emails during the post-render phase.
+   *
+   * Act on the rendered HTML, or any header.
+   *
+   * @param \Drupal\symfony_mailer\EmailInterface $email
+   *   The email to process.
+   */
+  public function postRender(EmailInterface $email);
+
+  /**
+   * Process emails during the post-send phase.
+   *
+   * No further alterations allowed.
+   *
+   * @param \Drupal\symfony_mailer\EmailInterface $email
+   *   The email to process.
+   */
+  public function postSend(EmailInterface $email);
+
+  /**
+   * Gets the weight of the email processor.
+   *
+   * @param int $phase
+   *   The phase that will run, one of the EmailInterface::PHASE_ constants.
+   *
+   * @return int
+   *   The weight.
+   */
+  public function getWeight(int $phase);
+
+  /**
+   * Gets the ID of the email processor.
+   *
+   * @return string
+   *   The ID.
+   */
+  public function getId();
+
 }

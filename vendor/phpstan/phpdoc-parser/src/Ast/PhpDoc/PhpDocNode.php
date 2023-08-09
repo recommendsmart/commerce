@@ -300,6 +300,62 @@ class PhpDocNode implements Node
 	}
 
 
+	/**
+	 * @return AssertTagPropertyValueNode[]
+	 */
+	public function getAssertPropertyTagValues(string $tagName = '@phpstan-assert'): array
+	{
+		return array_filter(
+			array_column($this->getTagsByName($tagName), 'value'),
+			static function (PhpDocTagValueNode $value): bool {
+				return $value instanceof AssertTagPropertyValueNode;
+			}
+		);
+	}
+
+
+	/**
+	 * @return AssertTagMethodValueNode[]
+	 */
+	public function getAssertMethodTagValues(string $tagName = '@phpstan-assert'): array
+	{
+		return array_filter(
+			array_column($this->getTagsByName($tagName), 'value'),
+			static function (PhpDocTagValueNode $value): bool {
+				return $value instanceof AssertTagMethodValueNode;
+			}
+		);
+	}
+
+
+	/**
+	 * @return SelfOutTagValueNode[]
+	 */
+	public function getSelfOutTypeTagValues(string $tagName = '@phpstan-this-out'): array
+	{
+		return array_filter(
+			array_column($this->getTagsByName($tagName), 'value'),
+			static function (PhpDocTagValueNode $value): bool {
+				return $value instanceof SelfOutTagValueNode;
+			}
+		);
+	}
+
+
+	/**
+	 * @return ParamOutTagValueNode[]
+	 */
+	public function getParamOutTypeTagValues(string $tagName = '@param-out'): array
+	{
+		return array_filter(
+			array_column($this->getTagsByName($tagName), 'value'),
+			static function (PhpDocTagValueNode $value): bool {
+				return $value instanceof ParamOutTagValueNode;
+			}
+		);
+	}
+
+
 	public function __toString(): string
 	{
 		$children = array_map(

@@ -46,7 +46,8 @@ entity.commerce_pricelist.bundle_page:
   options:
     _admin_route: 'TRUE'
     parameters:
-      bundle: 'string'
+      bundle:
+        type: 'string'
 
 entity.commerce_pricelist_item.bundle_page:
   path: '/admin/commerce/config/price-lists/item-types/{bundle}'
@@ -58,7 +59,8 @@ entity.commerce_pricelist_item.bundle_page:
   options:
     _admin_route: 'TRUE'
     parameters:
-      bundle: 'string'
+      bundle:
+        type: 'string'
 
 commerce_pricelist.configuration:
   path: '/admin/commerce/config/price-lists'

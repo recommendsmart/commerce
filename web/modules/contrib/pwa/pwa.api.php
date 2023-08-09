@@ -1,5 +1,6 @@
 <?php
 
+use Drupal\node\Entity\Node;
 /**
  * @file
  * Hooks provided by the Progressive Web App module.
@@ -30,7 +31,7 @@ use Drupal\Core\Cache\CacheableMetadata;
  */
 function hook_pwa_cache_urls_alter(&$cacheUrls, CacheableMetadata &$cacheableMetadata) {
   // Get a node URL and its cacheability metadata.
-  $generated_url = \Drupal\node\Entity\Node::load('1')->toUrl()->toString(TRUE);
+  $generated_url = Node::load('1')->toUrl()->toString(TRUE);
   // Add the URL to the list.
   $cacheUrls[] = $generated_url->getGeneratedUrl();
   // Merge the cacheability metadata.
@@ -70,7 +71,7 @@ function hook_pwa_exclude_urls_alter(&$excludeUrls, CacheableMetadata &$cacheabl
  * @see hook_pwa_cache_urls_assets_page_alter()
  */
 function hook_pwa_cache_urls_assets_alter(&$resources) {
-  $module_path = drupal_get_path('module', 'pwa');
+  $module_path = \Drupal::service('extension.list.module')->getPath('pwa');
   $resources[] = "/$module_path/assets/loading.gif";
 }
 

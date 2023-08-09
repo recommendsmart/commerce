@@ -3,12 +3,12 @@
  * Behaviors Section Library general scripts.
  */
 
-(function ($, _, Drupal, drupalSettings) {
+(function ($, Drupal, once) {
   "use strict";
 
   var layoutBuilderSectionLibraryFiltered = false;
 
-  Drupal.behaviors.sctionLibrary = {
+  Drupal.behaviors.sectionLibrary = {
     attach: function (context) {
       var $filterLinks = $('.js-layout-builder-section-library-link');
 
@@ -31,8 +31,7 @@
         }
       };
 
-      $('input.js-layout-builder-section-library-filter', context).once('js-layout-builder-section-library-filter').on('keyup', Drupal.debounce(filterSectionLibraryList, 200));
+      $(once('js-layout-builder-section-library-filter', 'input.js-layout-builder-section-library-filter', context)).on('keyup', Drupal.debounce(filterSectionLibraryList, 200));
     }
   };
-
-})(window.jQuery, window._, window.Drupal, window.drupalSettings);
+})(jQuery, Drupal, once);

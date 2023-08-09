@@ -23,6 +23,11 @@ use Drupal\Core\Entity\EntityDisplayRepositoryInterface;
  * editor, this dialog allows users to set the alt text, alignment, and
  * captioning status for embedded media items.
  *
+ * @deprecated in drupal:10.1.0 and is removed from drupal:11.0.0. There is no
+ * replacement.
+ *
+ * @see https://www.drupal.org/project/drupal/issues/3291493
+ *
  * @internal
  *   This is an internal part of the media system in Drupal core and may be
  *   subject to change in minor releases. This class should not be
@@ -53,6 +58,7 @@ class EditorMediaDialog extends FormBase {
    *   The entity display repository.
    */
   public function __construct(EntityRepositoryInterface $entity_repository, EntityDisplayRepositoryInterface $entity_display_repository) {
+    @trigger_error(__NAMESPACE__ . '\EditorMediaDialog is deprecated in drupal:10.1.0 and is removed from drupal:11.0.0. There is no replacement. See https://www.drupal.org/project/drupal/issues/3291493', E_USER_DEPRECATED);
     $this->entityRepository = $entity_repository;
     $this->entityDisplayRepository = $entity_display_repository;
   }
@@ -96,7 +102,6 @@ class EditorMediaDialog extends FormBase {
       $editor_object = $form_state->getUserInput()['editor_object'];
       // The data that the text editor sends to any dialog is in
       // the 'editor_object' key.
-      // @see core/modules/ckeditor/js/ckeditor.es6.js
       $media_embed_element = $editor_object['attributes'];
       $form_state->set('media_embed_element', $media_embed_element);
       $has_caption = $editor_object['hasCaption'];

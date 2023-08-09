@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Drupal\Tests\config_split\Unit;
 
+use Prophecy\PhpUnit\ProphecyTrait;
 use Drupal\config_split\Config\ConfigPatch;
 use Drupal\config_split\Config\ConfigPatchMerge;
 use Drupal\config_split\Config\ConfigSorter;
@@ -21,6 +22,7 @@ use Prophecy\Argument;
  */
 class ConfigPatchTest extends TestCase {
 
+  use ProphecyTrait;
   /**
    * The patch merge service under test.
    *

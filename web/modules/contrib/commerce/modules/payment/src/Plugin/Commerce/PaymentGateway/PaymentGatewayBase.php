@@ -45,6 +45,14 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
   protected $parentEntity;
 
   /**
+   * The ID of the parent entity (used for serialization).
+   *
+   * @var string|int|null
+   */
+  // phpcs:ignore Drupal.Classes.PropertyDeclaration
+  protected $_parentEntityId;
+
+  /**
    * The ID of the parent config entity.
    *
    * @deprecated in commerce:8.x-2.16 and is removed from commerce:3.x.
@@ -220,6 +228,9 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
    * {@inheritdoc}
    */
   public function getSupportedModes() {
+    // If modes are not explicitly set on the payment gateway plugin, supported
+    // modes will default to test and live in the payment gateway annotation.
+    // @see \Drupal\commerce_payment\Annotation\CommercePaymentGateway
     return $this->pluginDefinition['modes'];
   }
 
@@ -476,7 +487,7 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
    */
   public function getRemoteCustomerId(UserInterface $account) {
     $remote_id = NULL;
-    if ($account->isAuthenticated()) {
+    if (!$account->isAnonymous()) {
       $provider = $this->parentEntity->id() . '|' . $this->getMode();
       /** @var \Drupal\commerce\Plugin\Field\FieldType\RemoteIdFieldItemListInterface $remote_ids */
       $remote_ids = $account->get('commerce_remote_id');
@@ -504,7 +515,7 @@ abstract class PaymentGatewayBase extends PluginBase implements PaymentGatewayIn
    *   The remote customer ID.
    */
   protected function setRemoteCustomerId(UserInterface $account, $remote_id) {
-    if ($account->isAuthenticated()) {
+    if (!$account->isAnonymous()) {
       /** @var \Drupal\commerce\Plugin\Field\FieldType\RemoteIdFieldItemListInterface $remote_ids */
       $remote_ids = $account->get('commerce_remote_id');
       $remote_ids->setByProvider($this->parentEntity->id() . '|' . $this->getMode(), $remote_id);

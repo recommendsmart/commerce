@@ -87,12 +87,7 @@ class CommentInterfaceTest extends CommentTestBase {
     $this->drupalGet('node/' . $this->node->id());
     $this->assertSession()->pageTextContains($subject_text);
     $this->assertSession()->pageTextContains($comment_text);
-    $arguments = [
-      ':link' => base_path() . 'comment/' . $comment->id() . '#comment-' . $comment->id(),
-    ];
-    $pattern_permalink = '//footer/a[contains(@href,:link) and text()="Permalink"]';
-    $permalink = $this->xpath($pattern_permalink, $arguments);
-    $this->assertNotEmpty($permalink, 'Permalink link found.');
+    $this->assertSession()->elementExists('xpath', '//footer/a[contains(@href,"' . base_path() . 'comment/' . $comment->id() . '#comment-' . $comment->id() . '") and text()="Permalink"]');
 
     // Set comments to have subject and preview to optional.
     $this->drupalLogout();
@@ -126,7 +121,7 @@ class CommentInterfaceTest extends CommentTestBase {
     // Reply to comment #2 creating comment #3 with optional preview and no
     // subject though field enabled.
     $this->drupalLogin($this->webUser);
-    // Deliberately use the wrong url to test
+    // Deliberately use the wrong URL to test
     // \Drupal\comment\Controller\CommentController::redirectNode().
     $this->drupalGet('comment/' . $this->node->id() . '/reply');
     // Verify we were correctly redirected.
@@ -241,15 +236,15 @@ class CommentInterfaceTest extends CommentTestBase {
     $this->drupalGet('node/' . $this->node->id());
 
     // Break when there is a word boundary before 29 characters.
-    $body_text = 'Lorem ipsum Lorem ipsum Loreming ipsum Lorem ipsum';
+    $body_text = 'A quick brown fox jumped over the lazy dog';
     $comment1 = $this->postComment(NULL, $body_text, '', TRUE);
     $this->assertTrue($this->commentExists($comment1), 'Form comment found.');
-    $this->assertEquals('Lorem ipsum Lorem ipsum…', $comment1->getSubject());
+    $this->assertEquals('A quick brown fox jumped…', $comment1->getSubject());
 
     // Break at 29 characters where there's no boundary before that.
-    $body_text2 = 'LoremipsumloremipsumLoremingipsumLoremipsum';
+    $body_text2 = 'AQuickBrownFoxJumpedOverTheLazyDog';
     $comment2 = $this->postComment(NULL, $body_text2, '', TRUE);
-    $this->assertEquals('LoremipsumloremipsumLoreming…', $comment2->getSubject());
+    $this->assertEquals('AQuickBrownFoxJumpedOverTheL…', $comment2->getSubject());
   }
 
   /**

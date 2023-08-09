@@ -13,9 +13,11 @@ function pwa_extras_page_attachments(array &$attachments) {
     return;
   }
 
+  $site_name = \Drupal::config('pwa.config')->get('site_name') ?: \Drupal::config('system.site')->get('name');
   $config = \Drupal::config('pwa_extras.settings.apple');
-  $status_color = $config->get('color_select');
-  $tag_list = pwa_extras_tag_list($status_color);
+  $mask_color = $config->get('mask_color') ?: '#0678be';
+  $status_color = $config->get('color_select') ?: 'default';
+  $tag_list = pwa_extras_tag_list($site_name, $mask_color, $status_color);
 
   $meta_tags = $config->get('touch_icons') + $config->get('meta_tags') + $config->get('home_screen_icons');
   if (empty($meta_tags)) return;
@@ -47,9 +49,9 @@ function pwa_extras_page_attachments(array &$attachments) {
   }
 }
 
-function pwa_extras_tag_list($status_color) {
-  $touch_icons = pwa_extras_apple_touch_icons();
-  $meta_tags = pwa_extras_apple_meta_tags($status_color);
+function pwa_extras_tag_list($site_name, $mask_color, $status_color) {
+  $touch_icons = pwa_extras_apple_touch_icons($mask_color);
+  $meta_tags = pwa_extras_apple_meta_tags($site_name, $status_color);
   $homescreen_icons = pwa_extras_apple_home_screen_icons();
   return array_merge($touch_icons, $meta_tags, $homescreen_icons);
 }
@@ -62,10 +64,11 @@ function pwa_extras_apple_touch_icons() {
   ];
 }
 
-function pwa_extras_apple_meta_tags($status_color = '') {
+function pwa_extras_apple_meta_tags($site_name = '', $status_color = '') {
   return [
     'meta-capable' => '<meta name="apple-mobile-web-app-capable" content="yes">',
     'meta-status-bar-style' => '<meta name="apple-mobile-web-app-status-bar-style" content="' . $status_color . '">',
+    'meta-app-title' => '<meta name="apple-mobile-web-app-title" content="' . $site_name . '">',
   ];
 }
 

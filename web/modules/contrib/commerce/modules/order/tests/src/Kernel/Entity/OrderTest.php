@@ -50,6 +50,7 @@ class OrderTest extends OrderKernelTestBase {
   /**
    * Tests the order entity and its methods.
    *
+   * @covers ::label
    * @covers ::getOrderNumber
    * @covers ::setOrderNumber
    * @covers ::getStore
@@ -144,10 +145,19 @@ class OrderTest extends OrderKernelTestBase {
       'store_id' => $this->store->id(),
     ]);
     $order->save();
+    $this->assertNull($order->label());
+    $order->set('state', 'draft');
+    $this->assertEquals('Draft 1', $order->label());
+    $order->set('state', 'completed');
+    // Test the label alteration with a test event subscriber.
+    $order->setData('custom_label', 'My custom label 1');
+    $this->assertEquals('My custom label 1', $order->label());
+    $order->unsetData('custom_label');
 
     $order->setOrderNumber(7);
     $this->assertEquals(7, $order->getOrderNumber());
     $this->assertFalse($order->isPaid());
+    $this->assertEquals('Order 7', $order->label());
 
     $order->setStore($this->store);
     $this->assertEquals($this->store, $order->getStore());
@@ -520,7 +530,7 @@ class OrderTest extends OrderKernelTestBase {
     $order_item->delete();
     $another_order_item->delete();
     $order->recalculateTotalPrice();
-    $this->assertNull($order->getTotalPrice());
+    $this->assertEquals(new Price('2.12', 'USD'), $order->getTotalPrice());
   }
 
   /**
