@@ -65,6 +65,7 @@
         "composer/installers": "^2.0",
         "cweagans/composer-patches": "^1.7",
         "drupal/chosen": "^4.0",
+        "drupal/ckeditor": "^1.0",
         "drupal/config_delete": "^2.0",
         "drupal/core-composer-scaffold": "^10",
         "drupal/core-project-message": "^10.1",
