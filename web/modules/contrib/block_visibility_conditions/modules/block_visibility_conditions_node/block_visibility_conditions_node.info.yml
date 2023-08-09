@@ -1,0 +1,14 @@
+name: 'Block Visibility Conditions Node'
+description: 'Provides some extra block visibility conditions for Node.'
+package: Block
+type: module
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+dependencies:
+  - block_visibility_conditions:block_visibility_conditions
+  - drupal:node
+
+# Information added by Drupal.org packaging script on 2023-02-09
+version: '2.1.0'
+project: 'block_visibility_conditions'
+datestamp: 1675931539

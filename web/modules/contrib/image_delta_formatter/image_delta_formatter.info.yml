@@ -1,0 +1,12 @@
+name: 'Image Delta Formatter'
+description: 'Provides a formatter that displays a specific delta of a multivalue imagefield.'
+core: 8.x
+core_version_requirement: ^8 || ^9 || ^10
+type: module
+dependencies:
+  - drupal:image
+
+# Information added by Drupal.org packaging script on 2023-05-31
+version: '8.x-1.2'
+project: 'image_delta_formatter'
+datestamp: 1685543778

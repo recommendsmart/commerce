@@ -1,0 +1,178 @@
+{
+    "name": "centarro/commerce_kickstart",
+    "type": "drupal-profile",
+    "description": "Commerce Kickstart installation profile.",
+    "homepage": "https://www.drupal.org/project/commerce_kickstart",
+    "license": "GPL-2.0-or-later",
+    "minimum-stability": "dev",
+    "prefer-stable": true,
+    "config": {
+        "bin-dir": "bin",
+        "sort-packages": true,
+        "preferred-install": {
+            "drupal/core": "dist"
+        },
+        "allow-plugins": {
+            "composer/installers": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "cweagans/composer-patches": true,
+            "drupal/core-composer-scaffold": true,
+            "oomphinc/composer-installers-extender": true
+        }
+    },
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://git.drupalcode.org/project/commerce_demo.git"
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "furf/jquery-ui-touch-punch",
+                "version": "0.2.3",
+                "type": "drupal-library",
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/furf/jquery-ui-touch-punch/archive/4bc009145202d9c7483ba85f3a236a8f3470354d.zip"
+                }
+            }
+        },
+        {
+            "type": "package",
+            "package": {
+                "name": "select2/select2",
+                "version": "4.1.0-rc.0",
+                "type": "drupal-library",
+                "dist": {
+                    "type": "zip",
+                    "url": "https://github.com/select2/select2/archive/refs/tags/4.1.0-rc.0.zip"
+                }
+            }
+        },
+        {
+            "type": "composer",
+            "url": "https://packages.drupal.org/8"
+        }
+    ],
+    "require": {
+        "drupal/admin_toolbar": "^3.0",
+        "drupal/better_exposed_filters": "^6",
+        "drupal/block_visibility_conditions": "^2.1",
+        "drupal/bootstrap_basic_image_gallery": "^1.5",
+        "drupal/bootstrap_layout_builder": "^2.0",
+        "drupal/commerce": "^2.35",
+        "drupal/color": "^1",
+        "drupal/config_rewrite": "^1.4",
+        "drupal/config_split": "^2.0@beta",
+        "drupal/core_views_facets": "^2.0",
+        "drupal/facets_pretty_paths": "^1.2",
+        "drupal/field_group": "^3.2",
+        "drupal/image_delta_formatter": "^1.1",
+        "drupal/inline_block_title_automatic": "^1.0",
+        "drupal/jquery_ui_touch_punch": "^1.0",
+        "drupal/layout_builder_blocks": "^1.0",
+        "drupal/layout_builder_lock": "^1.1",
+        "drupal/layout_builder_modal": "^1.1",
+        "drupal/layout_builder_operation_link": "^2.1",
+        "drupal/layout_builder_restrictions": "^2.12",
+        "drupal/section_library": "^1.0",
+        "drupal/select2": "^1.13",
+        "drupal/search_api": "^1.23",
+        "drupal/symfony_mailer": "^1.2",
+        "drupal/token": "^1.0",
+        "furf/jquery-ui-touch-punch": "0.2.3",
+        "select2/select2": "4.1.0-rc.0",
+        "oomphinc/composer-installers-extender": "^2.0"
+    },
+    "require-dev": {
+        "centarro/certified-projects": "^1.1",
+        "composer/installers": "^1.2",
+        "cweagans/composer-patches": "^1.6.5",
+        "dealerdirect/phpcodesniffer-composer-installer": "~0.6 || ~0.7",
+        "drupal/commerce_demo": "3.0.x-dev",
+        "drupal/core-composer-scaffold": "^10",
+        "drupal/core-dev": "^10",
+        "drupal/devel": "^4.1",
+        "drupal/features": "^3.12",
+        "drupal/masquerade": "^2.0",
+        "drush/drush": "^11.4",
+        "kporras07/composer-symlinks": "^1.1",
+        "mglaman/phpstan-drupal": "~0.12.0",
+        "phpspec/prophecy-phpunit": "^2",
+        "phpstan/phpstan-deprecation-rules": "~0.12.0"
+    },
+    "scripts": {
+        "post-install-cmd": [
+            "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks"
+        ],
+        "post-update-cmd": [
+            "Kporras07\\ComposerSymlinks\\ScriptHandler::createSymlinks"
+        ]
+    },
+    "extra": {
+        "symlinks": {
+            "commerce_kickstart.profile": "web/profiles/commerce_kickstart/commerce_kickstart.profile",
+            "commerce_kickstart.install": "web/profiles/commerce_kickstart/commerce_kickstart.install",
+            "commerce_kickstart.info.yml": "web/profiles/commerce_kickstart/commerce_kickstart.info.yml",
+            "commerce_kickstart.links.menu.yml": "web/profiles/commerce_kickstart/commerce_kickstart.links.menu.yml",
+            "commerce_kickstart.services.yml": "web/profiles/commerce_kickstart/commerce_kickstart.services.yml",
+            "src": "web/profiles/commerce_kickstart/src",
+            "modules": "web/profiles/commerce_kickstart/modules",
+            "themes": "web/profiles/commerce_kickstart/themes",
+            "config/install": "web/profiles/commerce_kickstart/config/install",
+            "config/optional": "web/profiles/commerce_kickstart/config/optional",
+            "content": "web/profiles/commerce_kickstart/content"
+        },
+        "drupal-scaffold": {
+            "locations": {
+                "web-root": "./web"
+            },
+            "overwrite": true,
+            "file-mapping": {
+                "[web-root]/sites/default/settings.php": "assets/settings.php",
+                "[web-root]/sites/default/settings.lando.php": "assets/settings.lando.php",
+                "[web-root]/libraries/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js": "libraries/jquery-ui-touch-punch/jquery.ui.touch-punch.min.js",
+                "[web-root]/libraries/select2/dist/js/select2.min.js": "libraries/select2/dist/js/select2.min.js",
+                "[web-root]/libraries/select2/dist/css/select2.min.css": "libraries/select2/dist/css/select2.min.css"
+            }
+        },
+        "installer-name": "commerce_kickstart",
+        "installer-paths": {
+            "web/core": [
+                "type:drupal-core"
+            ],
+            "web/profiles/{$name}": [
+                "type:drupal-profile"
+            ],
+            "web/modules/contrib/{$name}": [
+                "type:drupal-module"
+            ],
+            "web/themes/contrib/{$name}": [
+                "type:drupal-theme"
+            ],
+            "libraries/{$name}": [
+                "furf/jquery-ui-touch-punch",
+                "select2/select2"
+            ],
+            "web/libraries/{$name}": [
+                "type:drupal-library"
+            ],
+            "web/modules/custom/{$name}": [
+                "type:drupal-custom-module"
+            ],
+            "web/themes/custom/{$name}": [
+                "type:drupal-custom-theme"
+            ],
+            "drush/contrib/{$name}": [
+                "type:drupal-drush"
+            ]
+        },
+        "enable-patching": true,
+        "composer-exit-on-patch-failure": true,
+        "patches": {
+            "drupal/bootstrap_basic_image_gallery": {
+                "#3363948 - Fix D10 compatibility issues": "https://www.drupal.org/files/issues/2023-06-01/3363948-3.patch"
+            }
+        }
+    }
+}
