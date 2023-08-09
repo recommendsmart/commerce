@@ -100,6 +100,7 @@ return array(
     'Firebase\\JWT\\' => array($vendorDir . '/firebase/php-jwt/src'),
     'Enlightn\\SecurityChecker\\' => array($vendorDir . '/enlightn/security-checker/src'),
     'Egulias\\EmailValidator\\' => array($vendorDir . '/egulias/email-validator/src'),
+    'EasyRdf\\' => array($vendorDir . '/easyrdf/easyrdf/lib'),
     'Drush\\' => array($vendorDir . '/drush/drush/src'),
     'Drupal\\facets_pretty_paths\\' => array($baseDir . '/web/modules/contrib/facets_pretty_paths/src'),
     'Drupal\\Core\\' => array($baseDir . '/web/core/lib/Drupal/Core'),
