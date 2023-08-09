@@ -1,8 +1,0 @@
-name: Drupal Symfony Mailer
-type: module
-description: Integrate Symfony Mailer into Drupal.
-core_version_requirement: ^9.4 || ^10
-package: Mail
-configure: entity.mailer_policy.collection
-dependencies:
-  - drupal:filter

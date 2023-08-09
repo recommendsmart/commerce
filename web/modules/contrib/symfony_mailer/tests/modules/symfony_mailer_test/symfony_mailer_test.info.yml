@@ -1,7 +1,0 @@
-name: Drupal Symfony Mailer Test
-type: module
-description: For testing of Drupal Symfony Mailer.
-package: Testing
-hidden: true
-dependencies:
-  - symfony_mailer:symfony_mailer

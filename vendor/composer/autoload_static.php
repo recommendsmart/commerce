@@ -14,9 +14,9 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         '662a729f963d39afe703c9d9b7ab4a8c' => __DIR__ . '/..' . '/symfony/polyfill-php83/bootstrap.php',
         'e69f7f6ee287b969198c3c9d6777bd38' => __DIR__ . '/..' . '/symfony/polyfill-intl-normalizer/bootstrap.php',
         '7b11c4dc42b3b3023073cb14e519683c' => __DIR__ . '/..' . '/ralouphie/getallheaders/src/getallheaders.php',
+        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '25072dd6e2470089de65ae7bf11d3109' => __DIR__ . '/..' . '/symfony/polyfill-php72/bootstrap.php',
         'f598d06aa772fa33d905e87be6398fb1' => __DIR__ . '/..' . '/symfony/polyfill-intl-idn/bootstrap.php',
-        '667aeda72477189d0494fecd327c3641' => __DIR__ . '/..' . '/symfony/var-dumper/Resources/functions/dump.php',
         '8825ede83f2f289127722d4e842cf7e8' => __DIR__ . '/..' . '/symfony/polyfill-intl-grapheme/bootstrap.php',
         'b6b991a57620e2fb6b2f66f03fe9ddc2' => __DIR__ . '/..' . '/symfony/string/Resources/functions.php',
         '37a3dc5111fe8f707ab4c132ef1dbc62' => __DIR__ . '/..' . '/guzzlehttp/guzzle/src/functions_include.php',
@@ -70,7 +70,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'T' => 
         array (
             'Twig\\' => 5,
-            'TijsVerkoyen\\CssToInlineStyles\\' => 31,
         ),
         'S' => 
         array (
@@ -146,10 +145,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
             'PHPStan\\' => 8,
             'PHPCSStandards\\Composer\\Plugin\\Installers\\PHPCodeSniffer\\' => 57,
         ),
-        'O' => 
-        array (
-            'OomphInc\\ComposerInstallersExtender\\' => 36,
-        ),
         'M' => 
         array (
             'Masterminds\\' => 12,
@@ -164,10 +159,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'J' => 
         array (
             'JsonSchema\\' => 11,
-        ),
-        'H' => 
-        array (
-            'Html2Text\\' => 10,
         ),
         'G' => 
         array (
@@ -189,7 +180,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'D' => 
         array (
             'Drush\\' => 6,
-            'Drupal\\facets_pretty_paths\\' => 27,
             'Drupal\\Core\\' => 12,
             'Drupal\\Composer\\Plugin\\Scaffold\\' => 32,
             'Drupal\\Composer\\Plugin\\ProjectMessage\\' => 38,
@@ -291,10 +281,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'Twig\\' => 
         array (
             0 => __DIR__ . '/..' . '/twig/twig/src',
-        ),
-        'TijsVerkoyen\\CssToInlineStyles\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/tijsverkoyen/css-to-inline-styles/src',
         ),
         'Symfony\\Polyfill\\Php83\\' => 
         array (
@@ -557,10 +543,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         array (
             0 => __DIR__ . '/..' . '/dealerdirect/phpcodesniffer-composer-installer/src',
         ),
-        'OomphInc\\ComposerInstallersExtender\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/oomphinc/composer-installers-extender/src',
-        ),
         'Masterminds\\' => 
         array (
             0 => __DIR__ . '/..' . '/masterminds/html5/src',
@@ -584,11 +566,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'JsonSchema\\' => 
         array (
             0 => __DIR__ . '/..' . '/justinrainbow/json-schema/src/JsonSchema',
-        ),
-        'Html2Text\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/html2text/html2text/src',
-            1 => __DIR__ . '/..' . '/html2text/html2text/test',
         ),
         'GuzzleHttp\\Psr7\\' => 
         array (
@@ -625,10 +602,6 @@ class ComposerStaticInit10af1657a91f2c2795b5f7360413a63f
         'Drush\\' => 
         array (
             0 => __DIR__ . '/..' . '/drush/drush/src',
-        ),
-        'Drupal\\facets_pretty_paths\\' => 
-        array (
-            0 => __DIR__ . '/../..' . '/web/modules/contrib/facets_pretty_paths/src',
         ),
         'Drupal\\Core\\' => 
         array (

@@ -1,9 +1,0 @@
-core_views_facets.views.ajax:
-  js:
-    js/core-views-facets-ajax.js: {}
-  dependencies:
-    - core/jquery
-    - core/jquery.once
-    - core/drupal
-    - core/drupalSettings
-    - core/drupal.ajax
