@@ -1,0 +1,97 @@
+<?php
+
+/**
+ * @file
+ * Provides back-compatibility when sending emails with Symfony Mailer.
+ */
+
+use Drupal\Core\Form\FormStateInterface;
+
+/**
+ * Implements hook_module_implements_alter().
+ */
+function symfony_mailer_bc_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'form_alter') {
+    // Move our implementation to the end of the list.
+    $value = $implementations['symfony_mailer_bc'];
+    unset($implementations['symfony_mailer_bc']);
+    $implementations['symfony_mailer_bc'] = $value;
+  }
+}
+
+/**
+ * Implements hook_form_alter().
+ */
+function symfony_mailer_bc_form_alter(&$form, FormStateInterface $form_state, $form_id) {
+  $config_all = [
+    'contact_form_edit_form' => [
+      'remove' => ['recipients'],
+      'entity' => 'mail',
+    ],
+
+    'simplenews_admin_settings_newsletter' => [
+      'remove' => ['simplenews_default_options', 'simplenews_sender_info'],
+    ],
+    'simplenews_admin_settings_subscription' => [
+      'remove' => ['subscription_mail'],
+      'type' => 'simplenews',
+    ],
+    'simplenews_newsletter_edit_form' => [
+      'remove' => [
+        'email',
+        'simplenews_sender_information',
+        'simplenews_subject',
+      ],
+      'entity' => 'node',
+    ],
+    'update_settings' => [
+      'remove' => ['update_notify_emails'],
+      'type' => 'update',
+    ],
+    'user_admin_settings' => [
+      'remove' => [
+        'mail_notification_address',
+        'email_admin_created',
+        'email_pending_approval',
+        'email_pending_approval_admin',
+        'email_no_approval_required',
+        'email_password_reset',
+        'email_activated',
+        'email_blocked',
+        'email_cancel_confirm',
+        'email_canceled',
+        // For user_registrationpassword.
+        'email_user_registrationpassword',
+      ],
+      'type' => 'user',
+    ],
+  ];
+
+  // Add forms same as edit.
+  $config_all['contact_form_add_form'] = $config_all['contact_form_edit_form'];
+  $config_all['simplenews_newsletter_add_form'] = $config_all['simplenews_newsletter_edit_form'];
+
+  if ($config = $config_all[$form_id] ?? NULL) {
+    $helper = Drupal::service('symfony_mailer.helper');
+
+    // Hide fields that are replaced by Mailer Policy.
+    foreach ($config['remove'] ?? [] as $key) {
+      $form[$key]['#access'] = FALSE;
+    }
+
+    // Add policy elements on entity forms.
+    if (!empty($config['entity'])) {
+      $form['mailer_policy'] = $helper->renderEntityPolicy($form_state->getFormObject()->getEntity(), $config['entity']);
+    }
+
+    // Add policy elements on settings forms.
+    if (!empty($config['type'])) {
+      $form['mailer_policy'] = $helper->renderTypePolicy($config['type']);
+    }
+  }
+
+  if ($form_id == 'contact_form_add_form') {
+    // Set a default value for the hidden field so the form can verify.
+    $form['recipients']['#default_value'] = \Drupal::config('system.site')->get('mail');
+  }
+}

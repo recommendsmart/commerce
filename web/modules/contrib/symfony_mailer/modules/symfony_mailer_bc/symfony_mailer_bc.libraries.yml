@@ -1,0 +1,4 @@
+contact:
+  css:
+    theme:
+      css/contact.email.css: {}
